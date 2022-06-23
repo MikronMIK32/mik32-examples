@@ -26,18 +26,18 @@ Discarded input sections
  .bss           0x0000000000000000        0x0 C:\Users\matya\.platformio\packages\toolchain-mik32\shared\runtime\crt0\crt0.o
  .data          0x0000000000000000        0x0 .pio\build\mik32\src\main.o
  .bss           0x0000000000000000        0x0 .pio\build\mik32\src\main.o
- .text          0x0000000000000000        0x0 .pio\build\mik32\src\main_demonstration.o
- .data          0x0000000000000000        0x0 .pio\build\mik32\src\main_demonstration.o
- .bss           0x0000000000000000        0x0 .pio\build\mik32\src\main_demonstration.o
- .comment       0x0000000000000000       0x29 .pio\build\mik32\src\main_demonstration.o
+ .text          0x0000000000000000        0x0 .pio\build\mik32\src\main_byte.o
+ .data          0x0000000000000000        0x0 .pio\build\mik32\src\main_byte.o
+ .bss           0x0000000000000000        0x0 .pio\build\mik32\src\main_byte.o
+ .comment       0x0000000000000000       0x29 .pio\build\mik32\src\main_byte.o
  .riscv.attributes
-                0x0000000000000000       0x26 .pio\build\mik32\src\main_demonstration.o
- .text          0x0000000000000000        0x0 .pio\build\mik32\src\main_master.o
- .data          0x0000000000000000        0x0 .pio\build\mik32\src\main_master.o
- .bss           0x0000000000000000        0x0 .pio\build\mik32\src\main_master.o
- .comment       0x0000000000000000       0x29 .pio\build\mik32\src\main_master.o
+                0x0000000000000000       0x26 .pio\build\mik32\src\main_byte.o
+ .text          0x0000000000000000        0x0 .pio\build\mik32\src\main_rabotaet.o
+ .data          0x0000000000000000        0x0 .pio\build\mik32\src\main_rabotaet.o
+ .bss           0x0000000000000000        0x0 .pio\build\mik32\src\main_rabotaet.o
+ .comment       0x0000000000000000       0x29 .pio\build\mik32\src\main_rabotaet.o
  .riscv.attributes
-                0x0000000000000000       0x26 .pio\build\mik32\src\main_master.o
+                0x0000000000000000       0x26 .pio\build\mik32\src\main_rabotaet.o
  .data          0x0000000000000000        0x0 .pio\build\mik32\lib1f7\libs.a(xprintf.o)
  .bss           0x0000000000000000        0x0 .pio\build\mik32\lib1f7\libs.a(xprintf.o)
  .data          0x0000000000000000        0x0 .pio\build\mik32\lib1f7\libs.a(common.o)
@@ -56,8 +56,8 @@ Linker script and memory map
 
 LOAD C:\Users\matya\.platformio\packages\toolchain-mik32\shared\runtime\crt0\crt0.o
 LOAD .pio\build\mik32\src\main.o
-LOAD .pio\build\mik32\src\main_demonstration.o
-LOAD .pio\build\mik32\src\main_master.o
+LOAD .pio\build\mik32\src\main_byte.o
+LOAD .pio\build\mik32\src\main_rabotaet.o
 START GROUP
 LOAD .pio\build\mik32\lib1f7\libs.a
 LOAD .pio\build\mik32\lib60a\libi2c_loop_common.a
@@ -67,7 +67,7 @@ END GROUP
                 0x0000000000000400                STACK_SIZE = 0x400
                 0x0000000000000010                CL_SIZE = 0x10
 
-.text           0x0000000000000000      0xdd0
+.text           0x0000000000000000      0xf30
                 [!provide]                        PROVIDE (__TEXT_START__ = .)
  *crt0.o(.text .text.*)
  .text          0x0000000000000000       0xf4 C:\Users\matya\.platformio\packages\toolchain-mik32\shared\runtime\crt0\crt0.o
@@ -77,78 +77,79 @@ END GROUP
                 0x00000000000000bc                MoveMepcToNextInstruction
                 0x00000000000000bc                trap_handler
  *(.text)
- .text          0x00000000000000f4       0xfc .pio\build\mik32\src\main.o
-                0x00000000000000f4                i2c_init_slave
-                0x0000000000000130                i2c_slave_write
-                0x000000000000019a                i2c_slave_read
- .text          0x00000000000001f0      0x5ee .pio\build\mik32\lib1f7\libs.a(xprintf.o)
-                0x00000000000001f0                xfputc
-                0x0000000000000216                xputs
-                0x00000000000004c0                xfputs
-                0x00000000000004f4                xprintf
-                0x0000000000000512                xsprintf
-                0x000000000000054a                xfprintf
-                0x0000000000000582                put_dump
-                0x0000000000000634                xgets
-                0x00000000000006bc                xfgets
-                0x00000000000006e6                xatoi
- .text          0x00000000000007de      0x220 .pio\build\mik32\lib1f7\libs.a(common.o)
-                0x00000000000007de                xputc
-                0x00000000000007fc                exit
-                0x0000000000000858                CheckTrapHandlerCalledOnce
-                0x0000000000000890                EnableInterrupts
-                0x00000000000008a0                DisableInterrupts
-                0x00000000000008ac                EnableAllClocks
-                0x00000000000008ba                SystemInit
-                0x0000000000000942                DisableAllClocks
-                0x0000000000000950                Port0_As_Gpio
-                0x0000000000000962                Port1_As_Gpio
-                0x0000000000000974                Port2_As_Gpio
-                0x0000000000000986                Port0_As_Func1
-                0x0000000000000990                Port1_As_Func1
-                0x000000000000099a                Port2_As_Func1
-                0x00000000000009a4                Port0_As_Func2
-                0x00000000000009b6                Port1_As_Func2
-                0x00000000000009c8                Port2_As_Func2
-                0x00000000000009da                Port0_As_Func3
-                0x00000000000009e6                Port1_As_Func3
-                0x00000000000009f2                Port2_As_Func3
- .text          0x00000000000009fe      0x102 .pio\build\mik32\lib1f7\libs.a(uart_lib.o)
-                0x00000000000009fe                UART_Init
-                0x0000000000000a42                UART_IsTransmissionFinished
-                0x0000000000000a4a                UART_WaitTransmission
-                0x0000000000000a60                UART_IsTxBufferFreed
-                0x0000000000000a68                UART_WriteByte
-                0x0000000000000a6c                UART_Write
-                0x0000000000000a9e                UART_IsRxFifoEmpty
-                0x0000000000000aaa                UART_IsRxFifoFull
-                0x0000000000000ab2                UART_WaitReceiving
-                0x0000000000000abc                UART_ReadByte
-                0x0000000000000ac4                UART_Read
-                0x0000000000000af2                UART_ClearRxFifo
+ .text          0x00000000000000f4      0x1fe .pio\build\mik32\src\main.o
+                0x00000000000000f4                i2c_slave_init
+                0x0000000000000136                i2c_slave_restart
+                0x000000000000017e                i2c_slave_write
+                0x0000000000000252                i2c_slave_read
+ .text          0x00000000000002f2      0x5ee .pio\build\mik32\lib1f7\libs.a(xprintf.o)
+                0x00000000000002f2                xfputc
+                0x0000000000000318                xputs
+                0x00000000000005c2                xfputs
+                0x00000000000005f6                xprintf
+                0x0000000000000614                xsprintf
+                0x000000000000064c                xfprintf
+                0x0000000000000684                put_dump
+                0x0000000000000736                xgets
+                0x00000000000007be                xfgets
+                0x00000000000007e8                xatoi
+ .text          0x00000000000008e0      0x220 .pio\build\mik32\lib1f7\libs.a(common.o)
+                0x00000000000008e0                xputc
+                0x00000000000008fe                exit
+                0x000000000000095a                CheckTrapHandlerCalledOnce
+                0x0000000000000992                EnableInterrupts
+                0x00000000000009a2                DisableInterrupts
+                0x00000000000009ae                EnableAllClocks
+                0x00000000000009bc                SystemInit
+                0x0000000000000a44                DisableAllClocks
+                0x0000000000000a52                Port0_As_Gpio
+                0x0000000000000a64                Port1_As_Gpio
+                0x0000000000000a76                Port2_As_Gpio
+                0x0000000000000a88                Port0_As_Func1
+                0x0000000000000a92                Port1_As_Func1
+                0x0000000000000a9c                Port2_As_Func1
+                0x0000000000000aa6                Port0_As_Func2
+                0x0000000000000ab8                Port1_As_Func2
+                0x0000000000000aca                Port2_As_Func2
+                0x0000000000000adc                Port0_As_Func3
+                0x0000000000000ae8                Port1_As_Func3
+                0x0000000000000af4                Port2_As_Func3
+ .text          0x0000000000000b00      0x102 .pio\build\mik32\lib1f7\libs.a(uart_lib.o)
+                0x0000000000000b00                UART_Init
+                0x0000000000000b44                UART_IsTransmissionFinished
+                0x0000000000000b4c                UART_WaitTransmission
+                0x0000000000000b62                UART_IsTxBufferFreed
+                0x0000000000000b6a                UART_WriteByte
+                0x0000000000000b6e                UART_Write
+                0x0000000000000ba0                UART_IsRxFifoEmpty
+                0x0000000000000bac                UART_IsRxFifoFull
+                0x0000000000000bb4                UART_WaitReceiving
+                0x0000000000000bbe                UART_ReadByte
+                0x0000000000000bc6                UART_Read
+                0x0000000000000bf4                UART_ClearRxFifo
  *(.text.*)
- .text.startup  0x0000000000000b00       0xb2 .pio\build\mik32\src\main.o
-                0x0000000000000b00                main
+ .text.startup  0x0000000000000c02       0xb8 .pio\build\mik32\src\main.o
+                0x0000000000000c02                main
  *(.rodata)
  *(.rodata.*)
- *fill*         0x0000000000000bb2        0x2 
+ *fill*         0x0000000000000cba        0x2 
  .rodata.str1.4
-                0x0000000000000bb4      0x141 .pio\build\mik32\src\main.o
- *fill*         0x0000000000000cf5        0x3 
+                0x0000000000000cbc      0x19d .pio\build\mik32\src\main.o
+ *fill*         0x0000000000000e59        0x3 
  .rodata.str1.4
-                0x0000000000000cf8       0x1f .pio\build\mik32\lib1f7\libs.a(xprintf.o)
- *fill*         0x0000000000000d17        0x1 
+                0x0000000000000e5c       0x1f .pio\build\mik32\lib1f7\libs.a(xprintf.o)
+ *fill*         0x0000000000000e7b        0x1 
  .rodata.str1.4
-                0x0000000000000d18       0xb4 .pio\build\mik32\lib1f7\libs.a(common.o)
+                0x0000000000000e7c       0xb4 .pio\build\mik32\lib1f7\libs.a(common.o)
                                          0xb6 (size before relaxing)
-                0x0000000000000dd0                . = ALIGN (CL_SIZE)
- *fill*         0x0000000000000dcc        0x4 
+                0x0000000000000f30                . = ALIGN (CL_SIZE)
+ *fill*         0x0000000000000f30        0x0 
                 [!provide]                        PROVIDE (__TEXT_END__ = .)
 
-.rela.dyn       0x0000000000000dd0        0x0
- .rela.text     0x0000000000000dd0        0x0 C:\Users\matya\.platformio\packages\toolchain-mik32\shared\runtime\crt0\crt0.o
+.rela.dyn       0x0000000000000f30        0x0
+ .rela.text     0x0000000000000f30        0x0 C:\Users\matya\.platformio\packages\toolchain-mik32\shared\runtime\crt0\crt0.o
 
-.ramtext        0x0000000002000000        0x0 load address 0x0000000000000dd0
+.ramtext        0x0000000002000000        0x0 load address 0x0000000000000f30
                 [!provide]                        PROVIDE (__RAMTEXT_START__ = .)
  *(.ramtext)
  *(.ramtext.*)
@@ -156,11 +157,11 @@ END GROUP
  *(.ramrodata)
  *(.ramrodata.*)
                 0x0000000002000000                . = ALIGN (CL_SIZE)
-                0x0000000000000dd0                __RAMTEXT_IMAGE_START__ = LOADADDR (.ramtext)
-                0x0000000000000dd0                __RAMTEXT_IMAGE_END__ = (LOADADDR (.ramtext) + SIZEOF (.ramtext))
+                0x0000000000000f30                __RAMTEXT_IMAGE_START__ = LOADADDR (.ramtext)
+                0x0000000000000f30                __RAMTEXT_IMAGE_END__ = (LOADADDR (.ramtext) + SIZEOF (.ramtext))
                 0x0000000000000001                ASSERT ((__RAMTEXT_IMAGE_END__ < (ORIGIN (rom) + LENGTH (rom))), RAMcode image overflows rom section)
 
-.data           0x0000000002000000        0x0 load address 0x0000000000000dd0
+.data           0x0000000002000000        0x0 load address 0x0000000000000f30
                 0x0000000002000000                PROVIDE (__DATA_START__ = .)
                 0x0000000002000000                _gp = .
  *(.srodata.cst16)
@@ -171,29 +172,29 @@ END GROUP
  *(.sdata .sdata.* .gnu.linkonce.s.*)
  *(.data .data.*)
                 0x0000000002000000                . = ALIGN (CL_SIZE)
-                0x0000000000000dd0                __DATA_IMAGE_START__ = LOADADDR (.data)
-                0x0000000000000dd0                __DATA_IMAGE_END__ = (LOADADDR (.data) + SIZEOF (.data))
+                0x0000000000000f30                __DATA_IMAGE_START__ = LOADADDR (.data)
+                0x0000000000000f30                __DATA_IMAGE_END__ = (LOADADDR (.data) + SIZEOF (.data))
                 0x0000000000000001                ASSERT ((__DATA_IMAGE_END__ < (ORIGIN (rom) + LENGTH (rom))), Data image overflows rom section)
 
-.tdata          0x0000000002000000        0x0 load address 0x0000000000000dd0
+.tdata          0x0000000002000000        0x0 load address 0x0000000000000f30
                 [!provide]                        PROVIDE (_tls_data = .)
                 [!provide]                        PROVIDE (_tdata_begin = .)
  *(.tdata .tdata.*)
                 [!provide]                        PROVIDE (_tdata_end = .)
                 0x0000000002000000                . = ALIGN (CL_SIZE)
 
-.tbss           0x0000000002000000        0x0 load address 0x0000000000000dd0
+.tbss           0x0000000002000000        0x0 load address 0x0000000000000f30
                 0x0000000002000000                PROVIDE (__BSS_START__ = .)
  *(.tbss .tbss.*)
                 0x0000000002000000                . = ALIGN (CL_SIZE)
                 [!provide]                        PROVIDE (_tbss_end = .)
 
-.sbss           0x0000000002000000        0x4 load address 0x0000000000000dd0
+.sbss           0x0000000002000000        0x4 load address 0x0000000000000f30
  *(.sbss .sbss.* .gnu.linkonce.sb.*)
  .sbss          0x0000000002000000        0x4 .pio\build\mik32\lib1f7\libs.a(xprintf.o)
  *(.scommon)
 
-.bss            0x0000000002000004       0x2c load address 0x0000000000000dd0
+.bss            0x0000000002000004       0x2c load address 0x0000000000000f30
  *(.bss .bss.*)
                 0x0000000002000010                . = ALIGN (CL_SIZE)
  *fill*         0x0000000002000004        0xc 
