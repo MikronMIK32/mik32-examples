@@ -1,24 +1,24 @@
 Archive member included to satisfy reference by file (symbol)
 
-.pio\build\mik32\lib8cb\libs.a(xprintf.o)
+.pio\build\mik32\lib319\libs.a(xprintf.o)
                               .pio\build\mik32\src\main.o (xprintf)
-.pio\build\mik32\lib8cb\libs.a(common.o)
-                              .pio\build\mik32\lib8cb\libs.a(xprintf.o) (xputc)
-.pio\build\mik32\lib8cb\libs.a(uart_lib.o)
-                              .pio\build\mik32\lib8cb\libs.a(common.o) (UART_Init)
+.pio\build\mik32\lib319\libs.a(common.o)
+                              .pio\build\mik32\lib319\libs.a(xprintf.o) (xputc)
+.pio\build\mik32\lib319\libs.a(uart_lib.o)
+                              .pio\build\mik32\lib319\libs.a(common.o) (UART_Init)
 
 Allocating common symbols
 Common symbol       size              file
 
-Dac0Monitor_p       0x4               .pio\build\mik32\lib8cb\libs.a(common.o)
+Dac0Monitor_p       0x4               .pio\build\mik32\lib319\libs.a(common.o)
 RealValueGenerator_p
-                    0x4               .pio\build\mik32\lib8cb\libs.a(common.o)
-EdgeCounter_p       0x4               .pio\build\mik32\lib8cb\libs.a(common.o)
-xfunc_in            0x4               .pio\build\mik32\lib8cb\libs.a(xprintf.o)
-xfunc_out           0x4               .pio\build\mik32\lib8cb\libs.a(xprintf.o)
-PowerGenerator_p    0x4               .pio\build\mik32\lib8cb\libs.a(common.o)
-Dac1Monitor_p       0x4               .pio\build\mik32\lib8cb\libs.a(common.o)
-PeriodMeasurer_p    0x4               .pio\build\mik32\lib8cb\libs.a(common.o)
+                    0x4               .pio\build\mik32\lib319\libs.a(common.o)
+EdgeCounter_p       0x4               .pio\build\mik32\lib319\libs.a(common.o)
+xfunc_in            0x4               .pio\build\mik32\lib319\libs.a(xprintf.o)
+xfunc_out           0x4               .pio\build\mik32\lib319\libs.a(xprintf.o)
+PowerGenerator_p    0x4               .pio\build\mik32\lib319\libs.a(common.o)
+Dac1Monitor_p       0x4               .pio\build\mik32\lib319\libs.a(common.o)
+PeriodMeasurer_p    0x4               .pio\build\mik32\lib319\libs.a(common.o)
 
 Discarded input sections
 
@@ -26,18 +26,12 @@ Discarded input sections
  .bss           0x0000000000000000        0x0 C:\Users\matya\.platformio\packages\toolchain-mik32\shared\runtime\crt0\crt0.o
  .data          0x0000000000000000        0x0 .pio\build\mik32\src\main.o
  .bss           0x0000000000000000        0x0 .pio\build\mik32\src\main.o
- .text          0x0000000000000000        0x0 .pio\build\mik32\src\main_rabotaet.o
- .data          0x0000000000000000        0x0 .pio\build\mik32\src\main_rabotaet.o
- .bss           0x0000000000000000        0x0 .pio\build\mik32\src\main_rabotaet.o
- .comment       0x0000000000000000       0x29 .pio\build\mik32\src\main_rabotaet.o
- .riscv.attributes
-                0x0000000000000000       0x26 .pio\build\mik32\src\main_rabotaet.o
- .data          0x0000000000000000        0x0 .pio\build\mik32\lib8cb\libs.a(xprintf.o)
- .bss           0x0000000000000000        0x0 .pio\build\mik32\lib8cb\libs.a(xprintf.o)
- .data          0x0000000000000000        0x0 .pio\build\mik32\lib8cb\libs.a(common.o)
- .bss           0x0000000000000000        0x0 .pio\build\mik32\lib8cb\libs.a(common.o)
- .data          0x0000000000000000        0x0 .pio\build\mik32\lib8cb\libs.a(uart_lib.o)
- .bss           0x0000000000000000        0x0 .pio\build\mik32\lib8cb\libs.a(uart_lib.o)
+ .data          0x0000000000000000        0x0 .pio\build\mik32\lib319\libs.a(xprintf.o)
+ .bss           0x0000000000000000        0x0 .pio\build\mik32\lib319\libs.a(xprintf.o)
+ .data          0x0000000000000000        0x0 .pio\build\mik32\lib319\libs.a(common.o)
+ .bss           0x0000000000000000        0x0 .pio\build\mik32\lib319\libs.a(common.o)
+ .data          0x0000000000000000        0x0 .pio\build\mik32\lib319\libs.a(uart_lib.o)
+ .bss           0x0000000000000000        0x0 .pio\build\mik32\lib319\libs.a(uart_lib.o)
 
 Memory Configuration
 
@@ -50,9 +44,8 @@ Linker script and memory map
 
 LOAD C:\Users\matya\.platformio\packages\toolchain-mik32\shared\runtime\crt0\crt0.o
 LOAD .pio\build\mik32\src\main.o
-LOAD .pio\build\mik32\src\main_rabotaet.o
 START GROUP
-LOAD .pio\build\mik32\lib8cb\libs.a
+LOAD .pio\build\mik32\lib319\libs.a
 LOAD c:/users/matya/.platformio/packages/toolchain-riscv/bin/../lib/gcc/riscv64-unknown-elf/8.3.0/../../../../riscv64-unknown-elf/lib/rv32im/ilp32\libc.a
 LOAD c:/users/matya/.platformio/packages/toolchain-riscv/bin/../lib/gcc/riscv64-unknown-elf/8.3.0/../../../../riscv64-unknown-elf/lib/rv32im/ilp32\libc.a
 END GROUP
@@ -74,7 +67,7 @@ END GROUP
                 0x000000000000013c                i2c_master_restart
                 0x0000000000000160                i2c_master_write
                 0x000000000000025e                i2c_master_read
- .text          0x0000000000000368      0x5ee .pio\build\mik32\lib8cb\libs.a(xprintf.o)
+ .text          0x0000000000000368      0x5ee .pio\build\mik32\lib319\libs.a(xprintf.o)
                 0x0000000000000368                xfputc
                 0x000000000000038e                xputs
                 0x0000000000000638                xfputs
@@ -85,7 +78,7 @@ END GROUP
                 0x00000000000007ac                xgets
                 0x0000000000000834                xfgets
                 0x000000000000085e                xatoi
- .text          0x0000000000000956      0x220 .pio\build\mik32\lib8cb\libs.a(common.o)
+ .text          0x0000000000000956      0x220 .pio\build\mik32\lib319\libs.a(common.o)
                 0x0000000000000956                xputc
                 0x0000000000000974                exit
                 0x00000000000009d0                CheckTrapHandlerCalledOnce
@@ -106,7 +99,7 @@ END GROUP
                 0x0000000000000b52                Port0_As_Func3
                 0x0000000000000b5e                Port1_As_Func3
                 0x0000000000000b6a                Port2_As_Func3
- .text          0x0000000000000b76      0x102 .pio\build\mik32\lib8cb\libs.a(uart_lib.o)
+ .text          0x0000000000000b76      0x102 .pio\build\mik32\lib319\libs.a(uart_lib.o)
                 0x0000000000000b76                UART_Init
                 0x0000000000000bba                UART_IsTransmissionFinished
                 0x0000000000000bc2                UART_WaitTransmission
@@ -128,10 +121,10 @@ END GROUP
                 0x0000000000000cdc      0x15d .pio\build\mik32\src\main.o
  *fill*         0x0000000000000e39        0x3 
  .rodata.str1.4
-                0x0000000000000e3c       0x1f .pio\build\mik32\lib8cb\libs.a(xprintf.o)
+                0x0000000000000e3c       0x1f .pio\build\mik32\lib319\libs.a(xprintf.o)
  *fill*         0x0000000000000e5b        0x1 
  .rodata.str1.4
-                0x0000000000000e5c       0xb4 .pio\build\mik32\lib8cb\libs.a(common.o)
+                0x0000000000000e5c       0xb4 .pio\build\mik32\lib319\libs.a(common.o)
                                          0xb6 (size before relaxing)
                 0x0000000000000f10                . = ALIGN (CL_SIZE)
  *fill*         0x0000000000000f10        0x0 
@@ -182,7 +175,7 @@ END GROUP
 
 .sbss           0x0000000002000000        0x4 load address 0x0000000000000f10
  *(.sbss .sbss.* .gnu.linkonce.sb.*)
- .sbss          0x0000000002000000        0x4 .pio\build\mik32\lib8cb\libs.a(xprintf.o)
+ .sbss          0x0000000002000000        0x4 .pio\build\mik32\lib319\libs.a(xprintf.o)
  *(.scommon)
 
 .bss            0x0000000002000004       0x2c load address 0x0000000000000f10
@@ -190,10 +183,10 @@ END GROUP
                 0x0000000002000010                . = ALIGN (CL_SIZE)
  *fill*         0x0000000002000004        0xc 
                 0x0000000002000010                PROVIDE (__BSS_END__ = .)
- COMMON         0x0000000002000010        0x8 .pio\build\mik32\lib8cb\libs.a(xprintf.o)
+ COMMON         0x0000000002000010        0x8 .pio\build\mik32\lib319\libs.a(xprintf.o)
                 0x0000000002000010                xfunc_in
                 0x0000000002000014                xfunc_out
- COMMON         0x0000000002000018       0x18 .pio\build\mik32\lib8cb\libs.a(common.o)
+ COMMON         0x0000000002000018       0x18 .pio\build\mik32\lib319\libs.a(common.o)
                 0x0000000002000018                Dac0Monitor_p
                 0x000000000200001c                RealValueGenerator_p
                 0x0000000002000020                EdgeCounter_p
@@ -222,15 +215,15 @@ OUTPUT(.pio\build\mik32\firmware.elf elf32-littleriscv)
  .riscv.attributes
                 0x0000000000000024       0x26 .pio\build\mik32\src\main.o
  .riscv.attributes
-                0x000000000000004a       0x26 .pio\build\mik32\lib8cb\libs.a(xprintf.o)
+                0x000000000000004a       0x26 .pio\build\mik32\lib319\libs.a(xprintf.o)
  .riscv.attributes
-                0x0000000000000070       0x26 .pio\build\mik32\lib8cb\libs.a(common.o)
+                0x0000000000000070       0x26 .pio\build\mik32\lib319\libs.a(common.o)
  .riscv.attributes
-                0x0000000000000096       0x26 .pio\build\mik32\lib8cb\libs.a(uart_lib.o)
+                0x0000000000000096       0x26 .pio\build\mik32\lib319\libs.a(uart_lib.o)
 
 .comment        0x0000000000000000       0x28
  .comment       0x0000000000000000       0x28 .pio\build\mik32\src\main.o
                                          0x29 (size before relaxing)
- .comment       0x0000000000000028       0x29 .pio\build\mik32\lib8cb\libs.a(xprintf.o)
- .comment       0x0000000000000028       0x29 .pio\build\mik32\lib8cb\libs.a(common.o)
- .comment       0x0000000000000028       0x29 .pio\build\mik32\lib8cb\libs.a(uart_lib.o)
+ .comment       0x0000000000000028       0x29 .pio\build\mik32\lib319\libs.a(xprintf.o)
+ .comment       0x0000000000000028       0x29 .pio\build\mik32\lib319\libs.a(common.o)
+ .comment       0x0000000000000028       0x29 .pio\build\mik32\lib319\libs.a(uart_lib.o)

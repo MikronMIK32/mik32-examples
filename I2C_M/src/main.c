@@ -109,7 +109,7 @@ void i2c_master_write(I2C_TypeDef* i2c, uint8_t slave_adr, uint8_t data[], uint8
         // Ошибка. При записи байта слейв прислал NACK
         if(i2c->ISR & I2C_ISR_NACKF_M)
         {
-            i2c->ICR |=  I2C_ICR_NACKCF_M; // сброс флага STOPF и сброс флага NACKF 
+            i2c->ICR |=  I2C_ICR_NACKCF_M; // сброс флага NACKF 
             xprintf("Ошибка при передаче\n");
             break;
         }
