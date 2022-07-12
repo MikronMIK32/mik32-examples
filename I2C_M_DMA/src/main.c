@@ -1,9 +1,8 @@
 #include "common.h"
 #include "i2c.h"
 #include "stdbool.h"
+#include "dma_config.h"
 
-//#include "dma_config.h"
-#include "periphery_dma_common.h"
 
 #define no_shift false
 #define DMA_CHANNEL_0     0
@@ -59,7 +58,15 @@ void i2c_master_init(I2C_TypeDef* i2c)
     i2c->CR1 = I2C_CR1_PE_M;
     xprintf("\nМастер. Старт\n");
 }
+void i2c_master_restart(I2C_TypeDef* i2c)
+{
+    // Программный сброс модуля i2c
+    i2c->CR1 &= ~I2C_CR1_PE_M;
+    for (volatile int i = 0; i < 1000000; i++); 
 
+    // Повторная инициализация
+    i2c_master_init(i2c);
+}
 void i2c_master_DMA_mode(I2C_TypeDef* i2c, i2c_dma dma_mode)
 {
     switch (dma_mode)
@@ -167,9 +174,10 @@ void DMA_Channels_init(
 
 }
 
-void DMA_Channels_Wait(DMA_CONFIG_TypeDef* dma, i2c_dma i2c_dma_mode)
+void DMA_Master_Wait(DMA_CONFIG_TypeDef* dma, i2c_dma i2c_dma_mode)
 {
-    int timeout = 1000000; //Wait = 181387 при чтении
+    uint32_t timeout = 10000000; 
+
     /*
     *
     * Последние 4 бита ConfigStatus - Статус состояния каналов:
@@ -177,40 +185,20 @@ void DMA_Channels_Wait(DMA_CONFIG_TypeDef* dma, i2c_dma i2c_dma_mode)
     * «0» - занят
     * 
     */
-
     switch(i2c_dma_mode)
     {
         case i2c_dma_tx:
-            while (((dma->ConfigStatus & DMA_STATUS_READY(DMA_CHANNEL_0)) == 0) &&
-           (--timeout > 0)) {}
+            while (((dma->ConfigStatus & DMA_STATUS_READY(DMA_CHANNEL_0)) == 0) && (--timeout < 0));
         break;
         case i2c_dma_rx:
-            while (((dma->ConfigStatus & DMA_STATUS_READY(DMA_CHANNEL_0)) == 0) &&
-           (--timeout > 0)) {}
+            while (((dma->ConfigStatus & DMA_STATUS_READY(DMA_CHANNEL_0)) == 0) && (--timeout < 0)); 
         break;
     }
-    if (timeout <= 0)
-    {
-        TEST_ERROR("DMA пока не готова");
-    }
 
-    // switch(i2c_dma_mode)
-    // {
-    //     case i2c_dma_tx:
-    //         while ((dma->ConfigStatus & DMA_STATUS_READY(DMA_CHANNEL_0)) == 0)
-    //         {
-    //             counter++;
-    //         }
-    //         xprintf("Wait = %d\n", counter);
-    //     break;
-    //     case i2c_dma_rx:
-    //         while ((dma->ConfigStatus & DMA_STATUS_READY(DMA_CHANNEL_0)) == 0)
-    //         {
-    //             counter++;
-    //         }
-    //         xprintf("Wait = %d\n", counter);
-    //     break;
-    // }
+    if (timeout < 0)
+    {
+        xprintf("DMA: ожидание готовности канала превышено\n");
+    }
 }
 
 void DMA_check_data(uint8_t data[], int count, i2c_dma i2c_dma_mode)
@@ -277,7 +265,7 @@ void i2c_master_DMA(I2C_TypeDef* i2c, int dma_request_index, uint8_t data[],
 
     i2c->CR2 |= I2C_CR2_START_M; // старт отправки адреса, а затем данных 
     
-    DMA_Channels_Wait(dma, i2c_dma_mode);
+    DMA_Master_Wait(dma, i2c_dma_mode);
     DMA_check_data(data, count, i2c_dma_mode);
 }
 
