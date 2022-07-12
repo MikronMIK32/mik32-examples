@@ -74,21 +74,6 @@ void i2c_slave_init(I2C_TypeDef *i2c, uint8_t slave_address)
 
 }
 
-void i2c_slave_restart(I2C_TypeDef* i2c)
-{
-    // Получение адреса ведомого
-    uint8_t slave_address = (uint8_t)(i2c->OAR1 & (0b1111111111));
-    slave_address >>= 1;
-    xprintf("Рестарт. adres = 0x%02x\n", slave_address);
-    
-    // Программный сброс модуля i2c
-    i2c->CR1 &= ~I2C_CR1_PE_M;
-    for (volatile int i = 0; i < 1000000; i++); 
-
-    // Повторная инициализация
-    i2c_slave_init(i2c, slave_address);
-}
-
 void i2c_slave_DMA_mode(I2C_TypeDef* i2c, i2c_dma dma_mode)
 {
     switch (dma_mode)
@@ -362,9 +347,6 @@ int main()
                 to_send = 0;
             }
         }
-
-        // // срос флага ADDR для подверждения принятия адреса
-        // I2C_0->ICR |= I2C_ICR_ADDRCF_M; 
 
     }
     

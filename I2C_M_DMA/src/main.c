@@ -58,15 +58,7 @@ void i2c_master_init(I2C_TypeDef* i2c)
     i2c->CR1 = I2C_CR1_PE_M;
     xprintf("\nМастер. Старт\n");
 }
-void i2c_master_restart(I2C_TypeDef* i2c)
-{
-    // Программный сброс модуля i2c
-    i2c->CR1 &= ~I2C_CR1_PE_M;
-    for (volatile int i = 0; i < 1000000; i++); 
 
-    // Повторная инициализация
-    i2c_master_init(i2c);
-}
 void i2c_master_DMA_mode(I2C_TypeDef* i2c, i2c_dma dma_mode)
 {
     switch (dma_mode)
@@ -106,13 +98,13 @@ void DMA_Channels_init(
     common_config |= DMA_CFG_CH_ENABLE_M | 
         DMA_CFG_CH_WRITE_REQ(dma_request_index) |
         DMA_CFG_CH_READ_REQ(dma_request_index);
+
     /*
     * Выбор канала DMA
     * Создаем указатель типа DMA_CHANNEL_TypeDef и присваиваем ему 
     * адрес нулевого канала dma с наивысшим приоритетом 
     * 
     */
-
     DMA_CHANNEL_TypeDef* dma_ch;
     switch (DMA_Channel)
     {
@@ -130,7 +122,6 @@ void DMA_Channels_init(
         break;
     }
     
-
     /*
     *
     * DESTINATIONS - CHx_DST. Регистр адреса назначения канала
@@ -151,7 +142,6 @@ void DMA_Channels_init(
     * DMA_CFG_CH_WRITE_no_INCREMENT_M - Write incr. Инкремент адреса назначения:
     * 
     */
-
     switch(i2c_dma_mode)
     {
         case i2c_dma_tx:
@@ -286,8 +276,6 @@ int main ()
     i2c_master_init(I2C_0);
 
     i2c_dma i2c_dma_mode;
-    
-    
 
     while (1)
     {
