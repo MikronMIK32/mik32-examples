@@ -74,7 +74,7 @@ void i2c_slave_init(I2C_TypeDef *i2c, uint8_t slave_address)
 
 }
 
-void i2c_slave_DMA_mode(I2C_TypeDef* i2c, i2c_dma dma_mode)
+void i2c_DMA_mode(I2C_TypeDef* i2c, i2c_dma dma_mode)
 {
     switch (dma_mode)
     {
@@ -88,7 +88,7 @@ void i2c_slave_DMA_mode(I2C_TypeDef* i2c, i2c_dma dma_mode)
         xprintf("Неизвестный режим поддержки DMA");
     }
 }
-void DMA_Channels_init(
+void i2c_DMA_Channels_init(
     DMA_CONFIG_TypeDef* dma, 
     void* tx_address, void* rx_address, 
     int dma_request_index, uint8_t DMA_Channel, uint8_t data[],uint32_t count,
@@ -180,7 +180,7 @@ void DMA_Channels_init(
 
 }
 
-void DMA_Slave_Wait(DMA_CONFIG_TypeDef* dma, i2c_dma i2c_dma_mode)
+void i2c_DMA_Wait(DMA_CONFIG_TypeDef* dma, i2c_dma i2c_dma_mode)
 {
     uint32_t timeout = 10000000; 
 
@@ -207,7 +207,7 @@ void DMA_Slave_Wait(DMA_CONFIG_TypeDef* dma, i2c_dma i2c_dma_mode)
     }
 }
 
-void DMA_check_data(uint8_t data[], int count, i2c_dma i2c_dma_mode)
+void i2c_DMA_check(uint8_t data[], int count, i2c_dma i2c_dma_mode)
 {
     for(int i = 0; i < count; i++)
     {
@@ -257,23 +257,11 @@ void i2c_slave_DMA(I2C_TypeDef* i2c, int dma_request_index, uint8_t data[],
     uint32_t config =   DMA_CFG_CH_READ_SIZE_byte_M |(0 << DMA_CFG_CH_READ_BURST_SIZE_S) | 
                         DMA_CFG_CH_WRITE_SIZE_byte_M |(0 << DMA_CFG_CH_WRITE_BURST_SIZE_S);
 
-    DMA_Channels_init(dma, (void*)&i2c->TXDR, (void*)&i2c->RXDR, dma_request_index, DMA_Channel, data, count, config, i2c_dma_mode);
-
-    switch (i2c_dma_mode)
-    {
-    case i2c_dma_tx:
-        i2c->CR2 = I2C_CR2_SADD(slave_adr) | I2C_CR2_WR_M | I2C_CR2_NBYTES(count) | I2C_CR2_AUTOEND_M;
-        break;
-    case i2c_dma_rx:
-        i2c->CR2 = I2C_CR2_SADD(slave_adr) | I2C_CR2_RD_M | I2C_CR2_NBYTES(count) | I2C_CR2_AUTOEND_M;
-        break;
-    }
-
-    i2c->CR2 |= I2C_CR2_START_M; // старт отправки адреса, а затем данных 
+    i2c_DMA_Channels_init(dma, (void*)&i2c->TXDR, (void*)&i2c->RXDR, dma_request_index, DMA_Channel, data, count, config, i2c_dma_mode);
     
     i2c->ICR |= I2C_ICR_ADDRCF_M; 
-    DMA_Slave_Wait(dma, i2c_dma_mode);
-    DMA_check_data(data, count, i2c_dma_mode);
+    i2c_DMA_Wait(dma, i2c_dma_mode);
+    i2c_DMA_check(data, count, i2c_dma_mode);
 }
 
 int main()
@@ -327,7 +315,7 @@ int main()
             data[1] = to_send & 0b0000000011111111;
 
             i2c_dma_mode = i2c_dma_tx;
-            i2c_slave_DMA_mode(I2C_0, i2c_dma_mode);
+            i2c_DMA_mode(I2C_0, i2c_dma_mode);
             i2c_slave_DMA(I2C_0, DMA_I2C_0_INDEX, data, sizeof(data), slave_address, i2c_dma_mode, DMA_CHANNEL_0, no_shift); 
         } 
         else // DIR = 0. Режим ведомого - приемник
@@ -336,7 +324,7 @@ int main()
             
             // Чтение двух байт от мастера и запись их в массив data 
             i2c_dma_mode = i2c_dma_rx;
-            i2c_slave_DMA_mode(I2C_0, i2c_dma_mode);
+            i2c_DMA_mode(I2C_0, i2c_dma_mode);
             i2c_slave_DMA(I2C_0, DMA_I2C_0_INDEX, data, sizeof(data), slave_address, i2c_dma_mode, DMA_CHANNEL_0, no_shift); 
 
             // Формирование принятого числа
