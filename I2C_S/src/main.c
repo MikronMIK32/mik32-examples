@@ -150,7 +150,7 @@ void i2c_slave_read(I2C_TypeDef* i2c, uint8_t data[], uint8_t byte_count)
 
             if((i2c->ISR & I2C_ISR_NACKF_M))
             {
-                // Мастер прислал NACK. Ошибка чтения
+                // Ведомый отправил NACK. Ошибка чтения
                 break;
             }
 

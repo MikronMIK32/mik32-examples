@@ -1,0 +1,253 @@
+Archive member included to satisfy reference by file (symbol)
+
+.pio\build\mik32\lib9ad\libs.a(common.o)
+                              .pio\build\mik32\src\main.o (EnableInterrupts)
+.pio\build\mik32\lib9ad\libs.a(uart_lib.o)
+                              .pio\build\mik32\lib9ad\libs.a(common.o) (UART_Init)
+.pio\build\mik32\lib9ad\libs.a(xprintf.o)
+                              .pio\build\mik32\src\main.o (xprintf)
+
+Allocating common symbols
+Common symbol       size              file
+
+Dac0Monitor_p       0x4               .pio\build\mik32\lib9ad\libs.a(common.o)
+RealValueGenerator_p
+                    0x4               .pio\build\mik32\lib9ad\libs.a(common.o)
+EdgeCounter_p       0x4               .pio\build\mik32\lib9ad\libs.a(common.o)
+xfunc_in            0x4               .pio\build\mik32\lib9ad\libs.a(xprintf.o)
+xfunc_out           0x4               .pio\build\mik32\lib9ad\libs.a(xprintf.o)
+PowerGenerator_p    0x4               .pio\build\mik32\lib9ad\libs.a(common.o)
+Dac1Monitor_p       0x4               .pio\build\mik32\lib9ad\libs.a(common.o)
+i2c                 0x4               .pio\build\mik32\src\main.o
+PeriodMeasurer_p    0x4               .pio\build\mik32\lib9ad\libs.a(common.o)
+epic_index          0x4               .pio\build\mik32\src\main.o
+
+Discarded input sections
+
+ .data          0x0000000000000000        0x0 C:\Users\matya\.platformio\packages\toolchain-mik32\shared\runtime\crt0\crt0.o
+ .bss           0x0000000000000000        0x0 C:\Users\matya\.platformio\packages\toolchain-mik32\shared\runtime\crt0\crt0.o
+ .data          0x0000000000000000        0x0 .pio\build\mik32\src\main.o
+ .bss           0x0000000000000000        0x0 .pio\build\mik32\src\main.o
+ .text          0x0000000000000000        0x0 .pio\build\mik32\src\main_int_old.o
+ .data          0x0000000000000000        0x0 .pio\build\mik32\src\main_int_old.o
+ .bss           0x0000000000000000        0x0 .pio\build\mik32\src\main_int_old.o
+ .comment       0x0000000000000000       0x29 .pio\build\mik32\src\main_int_old.o
+ .riscv.attributes
+                0x0000000000000000       0x26 .pio\build\mik32\src\main_int_old.o
+ .text          0x0000000000000000        0x0 .pio\build\mik32\src\main_no_int.o
+ .data          0x0000000000000000        0x0 .pio\build\mik32\src\main_no_int.o
+ .bss           0x0000000000000000        0x0 .pio\build\mik32\src\main_no_int.o
+ .comment       0x0000000000000000       0x29 .pio\build\mik32\src\main_no_int.o
+ .riscv.attributes
+                0x0000000000000000       0x26 .pio\build\mik32\src\main_no_int.o
+ .data          0x0000000000000000        0x0 .pio\build\mik32\lib9ad\libs.a(common.o)
+ .bss           0x0000000000000000        0x0 .pio\build\mik32\lib9ad\libs.a(common.o)
+ .data          0x0000000000000000        0x0 .pio\build\mik32\lib9ad\libs.a(uart_lib.o)
+ .bss           0x0000000000000000        0x0 .pio\build\mik32\lib9ad\libs.a(uart_lib.o)
+ .data          0x0000000000000000        0x0 .pio\build\mik32\lib9ad\libs.a(xprintf.o)
+ .bss           0x0000000000000000        0x0 .pio\build\mik32\lib9ad\libs.a(xprintf.o)
+
+Memory Configuration
+
+Name             Origin             Length             Attributes
+rom              0x0000000000000000 0x0000000000002000
+ram              0x0000000002000000 0x0000000000004000
+*default*        0x0000000000000000 0xffffffffffffffff
+
+Linker script and memory map
+
+LOAD C:\Users\matya\.platformio\packages\toolchain-mik32\shared\runtime\crt0\crt0.o
+LOAD .pio\build\mik32\src\main.o
+LOAD .pio\build\mik32\src\main_int_old.o
+LOAD .pio\build\mik32\src\main_no_int.o
+START GROUP
+LOAD .pio\build\mik32\lib9ad\libs.a
+LOAD c:/users/matya/.platformio/packages/toolchain-riscv/bin/../lib/gcc/riscv64-unknown-elf/8.3.0/../../../../riscv64-unknown-elf/lib/rv32im/ilp32\libc.a
+LOAD c:/users/matya/.platformio/packages/toolchain-riscv/bin/../lib/gcc/riscv64-unknown-elf/8.3.0/../../../../riscv64-unknown-elf/lib/rv32im/ilp32\libc.a
+END GROUP
+                0x0000000000000400                STACK_SIZE = 0x400
+                0x0000000000000010                CL_SIZE = 0x10
+
+.text           0x0000000000000000      0xdb0
+                [!provide]                        PROVIDE (__TEXT_START__ = .)
+ *crt0.o(.text .text.*)
+ .text          0x0000000000000000      0x17e C:\Users\matya\.platformio\packages\toolchain-mik32\shared\runtime\crt0\crt0.o
+                0x0000000000000000                _start
+                0x00000000000000b2                trap_entry
+                0x00000000000000b6                raw_trap_handler
+                0x0000000000000146                MoveMepcToNextInstruction
+ *(.text)
+ .text          0x000000000000017e       0xd6 .pio\build\mik32\src\main.o
+                0x000000000000017e                trap_handler
+                0x000000000000021c                Init
+                0x0000000000000232                Wait
+ .text          0x0000000000000254      0x220 .pio\build\mik32\lib9ad\libs.a(common.o)
+                0x0000000000000254                xputc
+                0x0000000000000272                exit
+                0x00000000000002ce                CheckTrapHandlerCalledOnce
+                0x0000000000000306                EnableInterrupts
+                0x0000000000000316                DisableInterrupts
+                0x0000000000000322                EnableAllClocks
+                0x0000000000000330                SystemInit
+                0x00000000000003b8                DisableAllClocks
+                0x00000000000003c6                Port0_As_Gpio
+                0x00000000000003d8                Port1_As_Gpio
+                0x00000000000003ea                Port2_As_Gpio
+                0x00000000000003fc                Port0_As_Func1
+                0x0000000000000406                Port1_As_Func1
+                0x0000000000000410                Port2_As_Func1
+                0x000000000000041a                Port0_As_Func2
+                0x000000000000042c                Port1_As_Func2
+                0x000000000000043e                Port2_As_Func2
+                0x0000000000000450                Port0_As_Func3
+                0x000000000000045c                Port1_As_Func3
+                0x0000000000000468                Port2_As_Func3
+ .text          0x0000000000000474      0x102 .pio\build\mik32\lib9ad\libs.a(uart_lib.o)
+                0x0000000000000474                UART_Init
+                0x00000000000004b8                UART_IsTransmissionFinished
+                0x00000000000004c0                UART_WaitTransmission
+                0x00000000000004d6                UART_IsTxBufferFreed
+                0x00000000000004de                UART_WriteByte
+                0x00000000000004e2                UART_Write
+                0x0000000000000514                UART_IsRxFifoEmpty
+                0x0000000000000520                UART_IsRxFifoFull
+                0x0000000000000528                UART_WaitReceiving
+                0x0000000000000532                UART_ReadByte
+                0x000000000000053a                UART_Read
+                0x0000000000000568                UART_ClearRxFifo
+ .text          0x0000000000000576      0x5f6 .pio\build\mik32\lib9ad\libs.a(xprintf.o)
+                0x0000000000000576                xfputc
+                0x000000000000059c                xputs
+                0x0000000000000846                xfputs
+                0x000000000000087a                xprintf
+                0x0000000000000898                xsprintf
+                0x00000000000008d0                xfprintf
+                0x0000000000000908                put_dump
+                0x00000000000009bc                xgets
+                0x0000000000000a4a                xfgets
+                0x0000000000000a74                xatoi
+ *(.text.*)
+ .text.startup  0x0000000000000b6c       0xcc .pio\build\mik32\src\main.o
+                0x0000000000000b6c                main
+ *(.rodata)
+ *(.rodata.*)
+ *fill*         0x0000000000000c38        0x0 
+ .rodata.str1.4
+                0x0000000000000c38       0xad .pio\build\mik32\src\main.o
+                                         0xb1 (size before relaxing)
+ *fill*         0x0000000000000ce5        0x3 
+ .rodata.str1.4
+                0x0000000000000ce8       0xa1 .pio\build\mik32\lib9ad\libs.a(common.o)
+                                         0xb6 (size before relaxing)
+ *fill*         0x0000000000000d89        0x3 
+ .rodata.str1.4
+                0x0000000000000d8c       0x20 .pio\build\mik32\lib9ad\libs.a(xprintf.o)
+                                         0x1f (size before relaxing)
+                0x0000000000000db0                . = ALIGN (CL_SIZE)
+ *fill*         0x0000000000000dac        0x4 
+                [!provide]                        PROVIDE (__TEXT_END__ = .)
+
+.rela.dyn       0x0000000000000db0        0x0
+ .rela.text     0x0000000000000db0        0x0 C:\Users\matya\.platformio\packages\toolchain-mik32\shared\runtime\crt0\crt0.o
+ .rela.text.startup
+                0x0000000000000db0        0x0 C:\Users\matya\.platformio\packages\toolchain-mik32\shared\runtime\crt0\crt0.o
+
+.ramtext        0x0000000002000000        0x0 load address 0x0000000000000db0
+                [!provide]                        PROVIDE (__RAMTEXT_START__ = .)
+ *(.ramtext)
+ *(.ramtext.*)
+ *xprintf.o(.text .text.*)
+ *(.ramrodata)
+ *(.ramrodata.*)
+                0x0000000002000000                . = ALIGN (CL_SIZE)
+                0x0000000000000db0                __RAMTEXT_IMAGE_START__ = LOADADDR (.ramtext)
+                0x0000000000000db0                __RAMTEXT_IMAGE_END__ = (LOADADDR (.ramtext) + SIZEOF (.ramtext))
+                0x0000000000000001                ASSERT ((__RAMTEXT_IMAGE_END__ < (ORIGIN (rom) + LENGTH (rom))), RAMcode image overflows rom section)
+
+.data           0x0000000002000000        0x0 load address 0x0000000000000db0
+                0x0000000002000000                PROVIDE (__DATA_START__ = .)
+                0x0000000002000000                _gp = .
+ *(.srodata.cst16)
+ *(.srodata.cst8)
+ *(.srodata.cst4)
+ *(.srodata.cst2)
+ *(.srodata*)
+ *(.sdata .sdata.* .gnu.linkonce.s.*)
+ *(.data .data.*)
+                0x0000000002000000                . = ALIGN (CL_SIZE)
+                0x0000000000000db0                __DATA_IMAGE_START__ = LOADADDR (.data)
+                0x0000000000000db0                __DATA_IMAGE_END__ = (LOADADDR (.data) + SIZEOF (.data))
+                0x0000000000000001                ASSERT ((__DATA_IMAGE_END__ < (ORIGIN (rom) + LENGTH (rom))), Data image overflows rom section)
+
+.tdata          0x0000000002000000        0x0 load address 0x0000000000000db0
+                [!provide]                        PROVIDE (_tls_data = .)
+                [!provide]                        PROVIDE (_tdata_begin = .)
+ *(.tdata .tdata.*)
+                [!provide]                        PROVIDE (_tdata_end = .)
+                0x0000000002000000                . = ALIGN (CL_SIZE)
+
+.tbss           0x0000000002000000        0x0 load address 0x0000000000000db0
+                0x0000000002000000                PROVIDE (__BSS_START__ = .)
+ *(.tbss .tbss.*)
+                0x0000000002000000                . = ALIGN (CL_SIZE)
+                [!provide]                        PROVIDE (_tbss_end = .)
+
+.sbss           0x0000000002000000        0x8 load address 0x0000000000000db0
+ *(.sbss .sbss.* .gnu.linkonce.sb.*)
+ .sbss          0x0000000002000000        0x4 .pio\build\mik32\src\main.o
+                0x0000000002000000                trap_handler_called
+ .sbss          0x0000000002000004        0x4 .pio\build\mik32\lib9ad\libs.a(xprintf.o)
+ *(.scommon)
+
+.bss            0x0000000002000008       0x30 load address 0x0000000000000db0
+ *(.bss .bss.*)
+                0x0000000002000010                . = ALIGN (CL_SIZE)
+ *fill*         0x0000000002000008        0x8 
+                0x0000000002000010                PROVIDE (__BSS_END__ = .)
+ COMMON         0x0000000002000010        0x8 .pio\build\mik32\src\main.o
+                0x0000000002000010                i2c
+                0x0000000002000014                epic_index
+ COMMON         0x0000000002000018       0x18 .pio\build\mik32\lib9ad\libs.a(common.o)
+                0x0000000002000018                Dac0Monitor_p
+                0x000000000200001c                RealValueGenerator_p
+                0x0000000002000020                EdgeCounter_p
+                0x0000000002000024                PowerGenerator_p
+                0x0000000002000028                Dac1Monitor_p
+                0x000000000200002c                PeriodMeasurer_p
+ COMMON         0x0000000002000030        0x8 .pio\build\mik32\lib9ad\libs.a(xprintf.o)
+                0x0000000002000030                xfunc_in
+                0x0000000002000034                xfunc_out
+                0x0000000002000038                _end = .
+                [!provide]                        PROVIDE (__end = .)
+
+.stack          0x0000000002003c00      0x400
+ FILL mask 0x00000000
+                [!provide]                        PROVIDE (__STACK_START__ = .)
+                0x0000000002004000                . = (. + STACK_SIZE)
+ *fill*         0x0000000002003c00      0x400 00000000
+                0x0000000002004000                PROVIDE (__C_STACK_TOP__ = .)
+                [!provide]                        PROVIDE (__STACK_END__ = .)
+
+/DISCARD/
+ *(.eh_frame .eh_frame.*)
+OUTPUT(.pio\build\mik32\firmware.elf elf32-littleriscv)
+
+.riscv.attributes
+                0x0000000000000000       0x26
+ .riscv.attributes
+                0x0000000000000000       0x24 C:\Users\matya\.platformio\packages\toolchain-mik32\shared\runtime\crt0\crt0.o
+ .riscv.attributes
+                0x0000000000000024       0x26 .pio\build\mik32\src\main.o
+ .riscv.attributes
+                0x000000000000004a       0x26 .pio\build\mik32\lib9ad\libs.a(common.o)
+ .riscv.attributes
+                0x0000000000000070       0x26 .pio\build\mik32\lib9ad\libs.a(uart_lib.o)
+ .riscv.attributes
+                0x0000000000000096       0x26 .pio\build\mik32\lib9ad\libs.a(xprintf.o)
+
+.comment        0x0000000000000000       0x28
+ .comment       0x0000000000000000       0x28 .pio\build\mik32\src\main.o
+                                         0x29 (size before relaxing)
+ .comment       0x0000000000000028       0x29 .pio\build\mik32\lib9ad\libs.a(common.o)
+ .comment       0x0000000000000028       0x29 .pio\build\mik32\lib9ad\libs.a(uart_lib.o)
+ .comment       0x0000000000000028       0x29 .pio\build\mik32\lib9ad\libs.a(xprintf.o)

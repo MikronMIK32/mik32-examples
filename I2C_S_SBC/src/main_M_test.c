@@ -198,7 +198,7 @@ int main()
     uint8_t slave_address = 0x36; 
 
     // Число для оптавки
-    uint16_t to_send = 13; 
+    uint16_t to_send = 250; 
     
     // Массив с байтами для отправки / приема
     uint8_t data[2] = {to_send >> 8, to_send & 0b0000000011111111}; // массив заполняется байтами числа to_send
@@ -209,14 +209,17 @@ int main()
 
     while (1)
     {
-        
-        // Запись данных по адресу slave_adr = 0x36 без сдвига адреса
-        i2c_master_write(I2C_0, slave_address, data, sizeof(data), false); 
-        for (volatile int i = 0; i < 1000000; i++); 
-
-        // // Чтение данных по адресу slave_adr = 0x36 без сдвига адреса
-        i2c_master_read(I2C_0, slave_address, data, sizeof(data), false); 
-        for (volatile int i = 0; i < 1000000; i++); 
+        to_send = 250;
+        for(int i = 0; i < 7; i++)
+        {
+            
+            data[0] = to_send >> 8;
+            data[1] = to_send & 0b0000000011111111; // массив заполняется байтами числа to_send
+            // Запись данных по адресу slave_adr = 0x36 без сдвига адреса
+            i2c_master_write(I2C_0, slave_address, data, sizeof(data), false); 
+            for (volatile int i = 0; i < 1000000; i++); 
+            to_send++;
+        }
 
     }
     
