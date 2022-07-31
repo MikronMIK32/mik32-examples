@@ -186,7 +186,7 @@ void read_data()
     SPIFI_CONFIG->CMD = (READ_DATA_COMMAND << SPIFI_CONFIG_CMD_OPCODE_S) |
                         (SPIFI_CONFIG_CMD_FRAMEFORM_OPCODE_3ADDR << SPIFI_CONFIG_CMD_FRAMEFORM_S)      |
                         (SPIFI_CONFIG_CMD_FIELDFORM_ALL_SERIAL << SPIFI_CONFIG_CMD_FIELDFORM_S)      |
-                        (1 << SPIFI_CONFIG_CMD_DATALEN_S);
+                        (READ_LEN << SPIFI_CONFIG_CMD_DATALEN_S);
     
     if(SPIFI_WaitIntrqTimeout(SPIFI_CONFIG, TIMEOUT) == 0)
     {
@@ -201,19 +201,27 @@ void read_data()
 void page_program()
 {
     xprintf("Start page program\n");
-    
     SPIFI_CONFIG->STAT |= SPIFI_CONFIG_STAT_INTRQ_M;
     SPIFI_CONFIG->CMD = (PAGE_PROGRAM_COMMAND << SPIFI_CONFIG_CMD_OPCODE_S) |
                         (SPIFI_CONFIG_CMD_FRAMEFORM_OPCODE_3ADDR << SPIFI_CONFIG_CMD_FRAMEFORM_S)      |
                         (SPIFI_CONFIG_CMD_FIELDFORM_ALL_SERIAL << SPIFI_CONFIG_CMD_FIELDFORM_S) |
                         SPIFI_CONFIG_CMD_DOUT_M | 
-                        (1 << SPIFI_CONFIG_CMD_DATALEN_S);
-    //SPIFI_CONFIG ->DATA8 = 0xFA;
-    if(SPIFI_WaitIntrqTimeout(SPIFI_CONFIG, TIMEOUT) == 0)
-    {
-        TEST_ERROR("Timeout executing page program command");
-        return;
-    }
+                        SPIFI_CONFIG_CMD_POLL_M |
+                        (0b0000 << SPIFI_CONFIG_CMD_DATALEN_S);
+    
+    SPIFI_CONFIG->DATA8 = 0;
+    // for(int i = 0; i < 255; i++)
+    // {
+    //     SPIFI_CONFIG->DATA8 = i;
+    // }
+    // if(SPIFI_WaitIntrqTimeout(SPIFI_CONFIG, TIMEOUT) == 0)
+    // {
+    //     TEST_ERROR("Timeout executing page program command");
+    //     return;
+    // }
+    while ((SPIFI_CONFIG -> STAT) & SPIFI_CONFIG_STAT_CMD_M);
+    
+    xprintf("Page program Completed\n");
 }
 
 void wait_busy()
@@ -234,9 +242,10 @@ void write()
     chip_erase();
     wait_busy();
 
+
     write_enable();
     page_program();
-    wait_busy();
+    //wait_busy();
 }
 
 
@@ -244,7 +253,7 @@ int main()
 {       
     InitSpifi();
     write();
-    read_data();
+    //read_data();
 
     while (1)
     {

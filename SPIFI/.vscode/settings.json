@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "w25q.h": "c",
+        "spifi_w25q_lib.h": "c"
+    }
+}
