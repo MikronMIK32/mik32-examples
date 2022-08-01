@@ -3,11 +3,15 @@
 #include "spifi.h"
 #include "epic.h"
 
+// #include "W25Q.h"
+// #include "SPIFI_W25Q_lib.h"
+#include "array.h"
+
 #define SREG1_BUSY                1
 
 #define READ_SREG                 1
-#define READ_LEN                  1
-#define TIMEOUT                 10000
+#define READ_LEN                  256
+#define TIMEOUT                 100000
 
 #define CHIP_ERASE_COMMAND    0xC7
 
@@ -143,6 +147,18 @@ uint8_t read_sreg_1()
     
 }
 
+void wait_busy()
+{
+    xprintf("Wait\n");
+    uint8_t sreg;
+    while (1)
+    {
+        sreg = read_sreg_1();
+        if(!(sreg & SREG1_BUSY))
+        break;
+    }
+}
+
 void chip_erase()
 {
     xprintf("Start erase\n");
@@ -157,10 +173,13 @@ void chip_erase()
     }
 }   
 
-void read_data()
+void read_data(unsigned int address, int byte_count)
 {
+    
     xprintf("read data\n");
-    uint8_t read_data;
+    char read_data[byte_count];
+    SPIFI_CONFIG->ADDR = address;
+
     /*
     *
     * CMD  код операции
@@ -186,75 +205,116 @@ void read_data()
     SPIFI_CONFIG->CMD = (READ_DATA_COMMAND << SPIFI_CONFIG_CMD_OPCODE_S) |
                         (SPIFI_CONFIG_CMD_FRAMEFORM_OPCODE_3ADDR << SPIFI_CONFIG_CMD_FRAMEFORM_S)      |
                         (SPIFI_CONFIG_CMD_FIELDFORM_ALL_SERIAL << SPIFI_CONFIG_CMD_FIELDFORM_S)      |
-                        (READ_LEN << SPIFI_CONFIG_CMD_DATALEN_S);
+                        (byte_count << SPIFI_CONFIG_CMD_DATALEN_S);
     
-    if(SPIFI_WaitIntrqTimeout(SPIFI_CONFIG, TIMEOUT) == 0)
-    {
-        TEST_ERROR("Timeout executing read data command");
-        return;
-    }
-
-    read_data = SPIFI_CONFIG->DATA8;
-    xprintf("DATA == 0x%02x\n", read_data);
-}
-
-void page_program()
-{
-    xprintf("Start page program\n");
-    SPIFI_CONFIG->STAT |= SPIFI_CONFIG_STAT_INTRQ_M;
-    SPIFI_CONFIG->CMD = (PAGE_PROGRAM_COMMAND << SPIFI_CONFIG_CMD_OPCODE_S) |
-                        (SPIFI_CONFIG_CMD_FRAMEFORM_OPCODE_3ADDR << SPIFI_CONFIG_CMD_FRAMEFORM_S)      |
-                        (SPIFI_CONFIG_CMD_FIELDFORM_ALL_SERIAL << SPIFI_CONFIG_CMD_FIELDFORM_S) |
-                        SPIFI_CONFIG_CMD_DOUT_M | 
-                        SPIFI_CONFIG_CMD_POLL_M |
-                        (0b0000 << SPIFI_CONFIG_CMD_DATALEN_S);
-    
-    SPIFI_CONFIG->DATA8 = 0;
-    // for(int i = 0; i < 255; i++)
-    // {
-    //     SPIFI_CONFIG->DATA8 = i;
-    // }
     // if(SPIFI_WaitIntrqTimeout(SPIFI_CONFIG, TIMEOUT) == 0)
     // {
-    //     TEST_ERROR("Timeout executing page program command");
+    //     TEST_ERROR("Timeout executing read data command");
     //     return;
     // }
-    while ((SPIFI_CONFIG -> STAT) & SPIFI_CONFIG_STAT_CMD_M);
-    
-    xprintf("Page program Completed\n");
-}
 
-void wait_busy()
-{
-    xprintf("Wait\n");
-    uint8_t sreg;
-    while (1)
+    for (int i = 0; i < byte_count; i++)    
     {
-        sreg = read_sreg_1();
-        if(!(sreg & SREG1_BUSY))
-        break;
+        read_data[i] = SPIFI_CONFIG->DATA8;
+        //xprintf("DATA[%d] = 0x%02x\n", address +i, read_data);
     }
+
+    for (int i = 0; i < byte_count; i++)
+    {
+        if(read_data[i] != bin_data[address + i])
+        {
+            xprintf("DATA[%d] = 0x%02x - ошибка\n", address + i, read_data[i]);
+        }
+        
+    }
+
+}
+void page_program(unsigned int ByteAddress, char data[], int byte_count)  {
+
+    if(byte_count > 256)
+    {
+        xprintf("Количество байт больше 256\n");
+    }
+    xprintf("Start page program\n");
+
+    //STAT:INTRQ
+	SPIFI_CONFIG->STAT |= SPIFI_CONFIG_STAT_INTRQ_M;
+
+	//ADDRESS
+    SPIFI_CONFIG->ADDR = ByteAddress;
+
+    //IDATA
+    SPIFI_CONFIG->IDATA = 0x00;
+
+    //CLIMIT
+    SPIFI_CONFIG->CLIMIT = 0x00000000;
+
+    //CMD
+    SPIFI_CONFIG->CMD = (PAGE_PROGRAM_COMMAND << SPIFI_CONFIG_CMD_OPCODE_S) | 
+                        (SPIFI_CONFIG_CMD_FRAMEFORM_OPCODE_3ADDR << SPIFI_CONFIG_CMD_FRAMEFORM_S) | 
+                        (SPIFI_CONFIG_CMD_FIELDFORM_ALL_SERIAL << SPIFI_CONFIG_CMD_FIELDFORM_S) |
+                        (0 << SPIFI_CONFIG_CMD_INTLEN_S) | 
+                        (1 << SPIFI_CONFIG_CMD_DOUT_S) |
+                        (0 << SPIFI_CONFIG_CMD_POLL_S) |
+                        (byte_count << SPIFI_CONFIG_CMD_DATALEN_S);
+
+    for(int i = ByteAddress; i < (ByteAddress + byte_count); i++)
+    {
+        SPIFI_CONFIG->DATA8 = data[i];
+    }
+    
+    SPIFI_CONFIG->STAT |= SPIFI_CONFIG_STAT_INTRQ_M;
+
 }
 
-void write()
+
+void erase()
 {
     write_enable();
     chip_erase();
     wait_busy();
+}
 
-
+void write(int address, char data[], int data_len)
+{
     write_enable();
-    page_program();
-    //wait_busy();
+    page_program(address, data, data_len);
+    wait_busy();
+    xprintf("written\n");
 }
 
 
 int main()
 {       
     InitSpifi();
-    write();
-    //read_data();
+    erase();
+    int bin_data_len = sizeof(bin_data);
+    xprintf("bin_data_len = %d\n", bin_data_len);
+    int address = 0;
+    char datus[256];
+    for(int i = 0; i < sizeof(datus); i++)
+    {
+        datus[i] = i;
+    }
 
+    for(address = 0; address < bin_data_len; address += 256)
+    {
+        if(address + 256 > bin_data_len)
+        {
+            break;
+        }
+        xprintf("address = %d\n", address);
+        write(address, bin_data, 256);
+        read_data(address, 256);
+    }
+    if((sizeof(bin_data) % 256) != 0)
+    {
+        xprintf("address = %d, +%d[%d]\n", address, bin_data_len - address-1, address + bin_data_len - address-1);
+        write(address, bin_data, bin_data_len - address);
+        read_data(address, bin_data_len - address);
+    }
+    
+    xprintf("end\n");
     while (1)
     {
         // read_data();

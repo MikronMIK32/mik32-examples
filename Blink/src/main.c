@@ -15,11 +15,11 @@ void initClock() {
 
 void ledBlink() {
 	GPIO_2->OUTPUT |= 1 << PIN_LED2;   //Установка значения вывода 7 порта 2 в высокий уровень
-	xprintf("вкл \n");
-	for (volatile int i = 0; i < 1000000; i++);
+	xprintf("ON \n");
+	for (volatile int i = 0; i < 100000; i++);
 	GPIO_2->OUTPUT &= ~(1 << PIN_LED2); //Установка значения вывода 7 порта  в низкий уровень   
-	xprintf("выкл \n");
-	for (volatile int i = 0; i < 1000000; i++);
+	xprintf("OFF \n");
+	for (volatile int i = 0; i < 100000; i++);
 }
 
 void ledButton() {
@@ -43,7 +43,7 @@ void main() {
 	GPIO_2->DIRECTION_IN = 1 << PIN_button; // Установка направления порта  в вход
 
 	while (1) {
-		//ledBlink();
-		ledButton();
+		ledBlink();
+		//ledButton();
 	}
 }

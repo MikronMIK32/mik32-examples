@@ -4,7 +4,7 @@
 /** \file
     Библиотека для работы с контроллером часов реального времени RTC.
 */
-
+#include <mcu32_memory_map.h>
 #include "inttypes.h"
 #include "stdbool.h"
 

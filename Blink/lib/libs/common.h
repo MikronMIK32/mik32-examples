@@ -16,7 +16,6 @@ extern volatile uint32_t* RealValueGenerator_p;
 extern volatile uint32_t* PowerGenerator_p;
 
 void xputc (char c);
-void WaitTransmissionEnd(void);
 void SystemInit();
 void exit();
 
@@ -45,11 +44,13 @@ void Port2_As_Func3 ();
             xprintf("\nTEST ERROR: "); \
             xprintf(__VA_ARGS__);      \
             xprintf("\n");\
+            GPIO_2->OUTPUT = 0xFF;  \
         } while(0)
 
     #define TEST_DONE()                     \
         do {                                \
             xprintf("\nTEST DONE\n");    \
+            GPIO_2->OUTPUT = 0xF0;  \
         } while(0)
 #else 
     #define TEST_ERROR(...)                 \
