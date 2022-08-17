@@ -1,10 +1,6 @@
 
 #include "common.h"
 #include "spifi.h"
-#include "epic.h"
-
-// #include "W25Q.h"
-// #include "SPIFI_W25Q_lib.h"
 #include "array.h"
 
 #define SREG1_BUSY                1
@@ -25,7 +21,6 @@
 #define READ_SREG_COMMAND         0x05
 
 #define PAGE_PROGRAM_COMMAND         0x02
-
 
 void InitSpifi()
 {
@@ -51,7 +46,8 @@ void InitSpifi()
     SPIFI_CONFIG->ADDR = 0x00;
     SPIFI_CONFIG->IDATA = 0x00;
     SPIFI_CONFIG->CLIMIT = 0x00000000;  
-    SPIFI_CONFIG -> CTRL |= SPIFI_CONFIG_CTRL_SCK_DIV(3); // должно быть 2Мгц
+    //SPIFI_CONFIG -> CTRL |= SPIFI_CONFIG_CTRL_SCK_DIV(3); // должно быть 2Мгц
+
     // SPIFI_CONFIG->CTRL |= SPIFI_CONFIG_CTRL_INTEN_M;
 
     for (int i = 0; i < 10000000; i++);
@@ -135,7 +131,7 @@ uint8_t read_sreg_1()
     SPIFI_CONFIG->CMD = (READ_SREG_COMMAND << SPIFI_CONFIG_CMD_OPCODE_S) |
                         (SPIFI_CONFIG_CMD_FRAMEFORM_OPCODE_NOADDR << SPIFI_CONFIG_CMD_FRAMEFORM_S)      |
                         (SPIFI_CONFIG_CMD_FIELDFORM_ALL_SERIAL << SPIFI_CONFIG_CMD_FIELDFORM_S)      |
-                        (1 << SPIFI_CONFIG_CMD_DATALEN_S);
+                        (READ_SREG << SPIFI_CONFIG_CMD_DATALEN_S);
     if(SPIFI_WaitIntrqTimeout(SPIFI_CONFIG, TIMEOUT) == 0)
     {
         TEST_ERROR("Timeout executing read sreg1 command");
@@ -227,8 +223,8 @@ void read_data(unsigned int address, int byte_count)
         }
         
     }
-
 }
+
 void page_program(unsigned int ByteAddress, char data[], int byte_count)  {
 
     if(byte_count > 256)
@@ -280,6 +276,7 @@ void write(int address, char data[], int data_len)
     write_enable();
     page_program(address, data, data_len);
     wait_busy();
+
     xprintf("written\n");
 }
 
@@ -320,6 +317,4 @@ int main()
         // read_data();
         // for (int i = 0; i < 10000000; i++);
     }
-    
-
 }
