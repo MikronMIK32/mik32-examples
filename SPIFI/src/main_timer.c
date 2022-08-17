@@ -31,7 +31,7 @@
 // #define FREQ_BY_MS (FREQ / 1000)
 // #define DELAY_TIMER (TIMER32_0)
 
-// void InitSpifi()
+// void spifi_init()
 // {
 //     xprintf("Start init SPIFI\n");
 //     /*
@@ -314,7 +314,7 @@
 //     TIMER32_0->IntClear = 0xFFFF;
 //     TIMER32_0->Top = 0xFFFFFFFF;
 
-//     InitSpifi();
+//     spifi_init();
 //     erase();
 //     int bin_data_len = sizeof(bin_data);
 //     xprintf("bin_data_len = %d\n", bin_data_len);

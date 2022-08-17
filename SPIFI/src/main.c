@@ -22,9 +22,10 @@
 
 #define PAGE_PROGRAM_COMMAND         0x02
 
-void InitSpifi()
+void spifi_init()
 {
-    xprintf("Start init SPIFI\n");
+    PM->CLK_AHB_SET |= PM_CLOCK_SPIFI_M;
+
     /*
     *
     * STAT - регистр статуса
@@ -283,16 +284,11 @@ void write(int address, char data[], int data_len)
 
 int main()
 {       
-    InitSpifi();
+    spifi_init();
     erase();
     int bin_data_len = sizeof(bin_data);
     xprintf("bin_data_len = %d\n", bin_data_len);
     int address = 0;
-    char datus[256];
-    for(int i = 0; i < sizeof(datus); i++)
-    {
-        datus[i] = i;
-    }
 
     for(address = 0; address < bin_data_len; address += 256)
     {
