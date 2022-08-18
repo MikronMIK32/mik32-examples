@@ -274,6 +274,12 @@ void erase()
 
 void write(int address, char data[], int data_len)
 {
+    if(data_len > 256)
+    {
+        xprintf("Количество байт больше 256\n");
+        return;
+    }
+    
     write_enable();
     page_program(address, data, data_len);
     wait_busy();
