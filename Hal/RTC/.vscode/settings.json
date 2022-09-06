@@ -1,0 +1,5 @@
+{
+    "files.associations": {
+        "mik32_hal_rtc.h": "c"
+    }
+}
