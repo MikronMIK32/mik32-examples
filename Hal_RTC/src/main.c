@@ -25,7 +25,7 @@ int main()
             counter = 1000000;
         }
 
-        if (RTC->CTRL & RTC_CTRL_ALRM_M)
+        if (hrtc.Instance->CTRL & RTC_CTRL_ALRM_M)
         {
             for (volatile int i = 0; i < 1000000; i++); 
             xprintf("\nAlarm!\n");
