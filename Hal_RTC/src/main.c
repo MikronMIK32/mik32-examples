@@ -37,31 +37,24 @@ int main()
 
 void SystemClock_Config(void)
 {
-    //Включаем тактирование необходимых блоков и модуля выбора режима GPIO 
-    //PM->CLK_APB_P_SET |= PM_CLOCK_GPIO_0_M | PM_CLOCK_WDT_M;
-    PM->CLK_APB_P_SET |= PM_CLOCK_WDT_M;
-    PM->CLK_APB_M_SET |= PM_CLOCK_PAD_CONFIG_M | PM_CLOCK_WU_M | PM_CLOCK_PM_M | PM_CLOCK_RTC_M;
-    for (volatile int i = 0; i < 10; i++);
+    RCC_OscInitTypeDef RCC_OscInit = {0};
+    RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
 
-    /*
-    * CLOCKS_BU - Регистр управления тактированием батарейного домена
-    * 
-    * OCS32K_en - Включение/отключение внешнего осцилятора на 32 KГц
-    * RC32K_en - Включение/отключение LSI32К
-    * Adj_RC32К - Поправочные коэффициенты LSI32К
-    * RTC_Clk_Mux - Выбор источника тактирования часов реального времени:
-    *               0 – внутренний LSI32К;
-    *               1 – внешний осциллятор OSC32K
-    * OSC32K_sm - Режим повышенного потребления, активный уровень “0” для OSC32K
-    */
-    WU->CLOCKS_BU = WU_CLOCKS_BU_RTC_CLK_MUX_OSC32K_M;
-    for (volatile int i = 0; i < 100; i++);
-    WU->CLOCKS_BU = (0<<WU_CLOCKS_BU_OSC32K_PD_S) | WU_CLOCKS_BU_RTC_CLK_MUX_OSC32K_M;
-    xprintf("Запуск с внешним осцилятором OSC32K\n");
+    RCC_OscInit.OscillatorEnable = RCC_OSCILLATORTYPE_OSC32K | RCC_OSCILLATORTYPE_OSC32M;   
+    RCC_OscInit.OscillatorSystem = RCC_OSCILLATORTYPE_OSC32M;                          
+    RCC_OscInit.AHBDivider = 0;                             
+    RCC_OscInit.APBMDivider = 0;                             
+    RCC_OscInit.APBPDivider = 0;                             
+    RCC_OscInit.HSI32MCalibrationValue = 0;                  
+    RCC_OscInit.LSI32KCalibrationValue = 0;
+    HAL_RCC_OscConfig(&RCC_OscInit);
 
-    // Сброс RTC
-    WU->RTC_CONRTOL = WU_RTC_RESET_CLEAR_M;
-
+    PeriphClkInit.PMClockAHB = PMCLOCKAHB_DEFAULT;    
+    PeriphClkInit.PMClockAPB_M = PMCLOCKAPB_M_DEFAULT | PM_CLOCK_WU_M | PM_CLOCK_RTC_M;     
+    PeriphClkInit.PMClockAPB_P = PMCLOCKAPB_P_DEFAULT | PM_CLOCK_UART_0_M;     
+    PeriphClkInit.RTCClockSelection = RCC_RTCCLKSOURCE_OSC32K;
+    PeriphClkInit.RTCClockCPUSelection = RCC_RTCCLKSOURCE_NO_CLK;
+    HAL_RCC_ClockConfig(&PeriphClkInit);
 }
 
 static void MX_RTC_Init(void)
@@ -88,9 +81,9 @@ static void MX_RTC_Init(void)
 
     /** Initialize RTC and set the Time and Date
      */
-    sTime.Dow = RTC_WEEKDAY_MONDAY;
-    sTime.Hours = 12;
-    sTime.Minutes = 50;
+    sTime.Dow = RTC_WEEKDAY_FRIDAY;
+    sTime.Hours = 15;
+    sTime.Minutes = 24;
     sTime.Seconds = 0;
 
     // Выключение RTC для записи даты и времени
@@ -99,8 +92,8 @@ static void MX_RTC_Init(void)
     HAL_RTC_SetTime(&hrtc, &sTime);
 
     sDate.Century = 21;
-    sDate.Day = 19;
-    sDate.Month = RTC_MONTH_JULY;
+    sDate.Day = 9;
+    sDate.Month = RTC_MONTH_SEPTEMBER;
     sDate.Year = 22;
 
     HAL_RTC_SetDate(&hrtc, &sDate);

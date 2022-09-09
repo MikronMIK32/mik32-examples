@@ -28,35 +28,6 @@ void HAL_RTC_Enable(RTC_HandleTypeDef *hrtc)
     HAL_RTC_WaitFlag(hrtc);
 }
 
-// void HAL_RTC_Init(RTC_HandleTypeDef *hrtc)
-// {
-//     //Включаем тактирование необходимых блоков и модуля выбора режима GPIO 
-//     PM->CLK_APB_P_SET |= PM_CLOCK_GPIO_0_M | PM_CLOCK_WDT_M;
-//     PM->CLK_APB_M_SET |= PM_CLOCK_PAD_CONFIG_M | PM_CLOCK_WU_M | PM_CLOCK_PM_M | PM_CLOCK_RTC_M;
-//     for (volatile int i = 0; i < 10; i++);
-
-//     /*
-//     * CLOCKS_BU - Регистр управления тактированием батарейного домена
-//     * 
-//     * OCS32K_en - Включение/отключение внешнего осцилятора на 32 KГц
-//     * RC32K_en - Включение/отключение LSI32К
-//     * Adj_RC32К - Поправочные коэффициенты LSI32К
-//     * RTC_Clk_Mux - Выбор источника тактирования часов реального времени:
-//     *               0 – внутренний LSI32К;
-//     *               1 – внешний осциллятор OSC32K
-//     * OSC32K_sm - Режим повышенного потребления, активный уровень “0” для OSC32K
-//     */
-//     WU->CLOCKS_BU = WU_CLOCKS_BU_RTC_CLK_MUX_OSC32K_M;
-//     for (volatile int i = 0; i < 100; i++);
-//     WU->CLOCKS_BU = (0<<WU_CLOCKS_BU_OSC32K_PD_S) | WU_CLOCKS_BU_RTC_CLK_MUX_OSC32K_M;
-//     xprintf("Запуск с внешним осцилятором OSC32K\n");
-
-//     // Сброс RTC
-//     WU->RTC_CONRTOL = WU_RTC_RESET_CLEAR_M;
-
-//     // Выключение RTC для записи даты и времени
-//     HAL_RTC_Disable(hrtc);
-// }
 
 /** Установка времени
  *

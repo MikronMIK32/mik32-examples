@@ -1,7 +1,6 @@
 #include "common.h"
+#include "mcu32_memory_map.h"
 #include "rtc.h"
-#include "wakeup.h"
-#include "power_manager.h"
 // #include "epic.h"
 
 typedef struct __RTC_HandleTypeDef
