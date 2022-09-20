@@ -97,7 +97,7 @@ typedef struct
     HAL_I2C_StateTypeDef  State;                /* Состояние связи i2C */  
     HAL_I2C_ModeTypeDef   Mode;                 /* Режим I2C */  
     uint32_t              ErrorCode;            /* Код ошибки i2C */  
-    uint32_t              SlaveAddress;         /* Адрес ведомого устройства */  
+    uint16_t              SlaveAddress;         /* Адрес ведомого устройства */  
     uint8_t               ShiftAddress;         /* Сдвиг адреса ведомого на 1 бит влево
                                                    Этот параметр может быть одним из значений I2C_address_shift */
 
@@ -120,9 +120,9 @@ void HAL_I2C_Master_Restart(I2C_HandleTypeDef *hi2c);
 
 void HAL_I2C_Master_Transfer_Init(I2C_HandleTypeDef *hi2c);
 
-void HAL_I2C_Master_Write(I2C_HandleTypeDef *hi2c, uint8_t slave_adr, uint8_t data[], uint8_t byte_count);
+void HAL_I2C_Master_Write(I2C_HandleTypeDef *hi2c, uint16_t slave_adr, uint8_t data[], uint8_t byte_count);
 
-void HAL_I2C_Master_Read(I2C_HandleTypeDef *hi2c, uint8_t slave_adr, uint8_t data[], uint8_t byte_count);
+void HAL_I2C_Master_Read(I2C_HandleTypeDef *hi2c, uint16_t slave_adr, uint8_t data[], uint8_t byte_count);
 
 /* Ведомый */
 void HAL_I2C_Slave_Restart(I2C_HandleTypeDef *hi2c);

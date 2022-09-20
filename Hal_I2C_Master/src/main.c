@@ -13,7 +13,7 @@ int main()
     MX_I2C0_Init();
 
     // Адрес ведомого
-    uint8_t slave_address = 0x36; 
+    uint16_t slave_address = 0x36; //0x36 0x3FF
 
     // Число для оптавки
     uint16_t to_send = 13; 

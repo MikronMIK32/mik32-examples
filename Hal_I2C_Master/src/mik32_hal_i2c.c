@@ -34,6 +34,7 @@ void HAL_I2C_SetClockSpeed(I2C_HandleTypeDef *hi2c)
 
 void HAL_I2C_MasterInit(I2C_HandleTypeDef *hi2c)
 {
+    /* Режим 10-битного адреса */
     xprintf("\nМастер. Старт\n");
 }
 
@@ -135,6 +136,18 @@ void HAL_I2C_Master_Transfer_Init(I2C_HandleTypeDef *hi2c)
 {
     /* Обнуление регистра CR2 перед его настройкой*/
     hi2c->Instance->CR2 = 0;
+
+    switch (hi2c->Init.AddressingMode)
+    {
+    case I2C_ADDRESSINGMODE_7BIT:
+        hi2c->Instance->CR2 &= ~I2C_CR2_ADD10_M;
+        break;
+    
+    case I2C_ADDRESSINGMODE_10BIT:
+        hi2c->Instance->CR2 |= I2C_CR2_ADD10_M;
+        hi2c->Instance->CR2 &= ~I2C_CR2_HEAD10R_M;
+        break;
+    }
     
     /*
     *
@@ -149,7 +162,7 @@ void HAL_I2C_Master_Transfer_Init(I2C_HandleTypeDef *hi2c)
     * AUTOEND - Управление режимом автоматического окончания: 0 – автоматическое окончание выкл; 1 – автоматическе окончание вкл
     * 
     */
-    hi2c->Instance->CR2 = I2C_CR2_SADD(hi2c->SlaveAddress) | I2C_CR2_WR_M;
+    hi2c->Instance->CR2 |= I2C_CR2_SADD(hi2c->SlaveAddress) | I2C_CR2_WR_M;
 
     switch (hi2c->TransferDirection)
     {
@@ -179,16 +192,16 @@ void HAL_I2C_Master_Transfer_Init(I2C_HandleTypeDef *hi2c)
     hi2c->Instance->CR2 |= I2C_CR2_START_M; // старт отправки адреса, а затем данных 
 }
 
-void HAL_I2C_Master_Write(I2C_HandleTypeDef *hi2c, uint8_t slave_adr, uint8_t data[], uint8_t byte_count)
+void HAL_I2C_Master_Write(I2C_HandleTypeDef *hi2c, uint16_t slave_adr, uint8_t data[], uint8_t byte_count)
 {
     xprintf("\nОтправка %d\n", data[0] << 8 | data[1]);
-    uint8_t slave_adr_print = slave_adr; // переменная используется для вывода адреса
+    uint16_t slave_adr_print = slave_adr; // переменная используется для вывода адреса
 
     // true когда адрес вводится без сдвига
     if(hi2c->ShiftAddress == SHIFT_ADDRESS_DISABLE)
     {
         slave_adr = slave_adr << 1;
-    }
+    } 
 
     hi2c->SlaveAddress = slave_adr;
     hi2c->pBuff = data;
@@ -229,15 +242,15 @@ void HAL_I2C_Master_Write(I2C_HandleTypeDef *hi2c, uint8_t slave_adr, uint8_t da
             break;
         }
  
-        xprintf("Отправка по адресу 0x%02x байта  0x%02x\n", slave_adr_print, data[i]);
+        xprintf("Отправка по адресу 0x%03x байта  0x%02x\n", slave_adr_print, data[i]);
         hi2c->Instance->TXDR = data[i];
     }
 
 }
 
-void HAL_I2C_Master_Read(I2C_HandleTypeDef *hi2c, uint8_t slave_adr, uint8_t data[], uint8_t byte_count)
+void HAL_I2C_Master_Read(I2C_HandleTypeDef *hi2c, uint16_t slave_adr, uint8_t data[], uint8_t byte_count)
 {
-    uint8_t slave_adr_print = slave_adr; // переменная используется для вывода адреса
+    uint16_t slave_adr_print = slave_adr; // переменная используется для вывода адреса
 
     // true когда адрес вводится без сдвига
     if(hi2c->ShiftAddress == SHIFT_ADDRESS_DISABLE)
@@ -291,7 +304,7 @@ void HAL_I2C_Master_Read(I2C_HandleTypeDef *hi2c, uint8_t slave_adr, uint8_t dat
 
 
         data[i] = hi2c->Instance->RXDR; // чтение байта и сброс RXNE
-        xprintf("Чтение по адресу 0x%02x байта  0x%02x\n", slave_adr_print, data[i]);
+        xprintf("Чтение по адресу 0x%03x байта  0x%02x\n", slave_adr_print, data[i]);
     }
 
     xprintf("Получено %d\n" , data[0] << 8 | data[1]);
@@ -378,11 +391,19 @@ void HAL_I2C_Slave_Read(I2C_HandleTypeDef *hi2c, uint8_t data[], uint8_t byte_co
         {
             
             counter++;
+
+            if(hi2c->Instance->ISR & I2C_ISR_DIR_M)
+            {
+                // Запрос на запись
+                break;
+            }
+
             if(counter == 1000000)
             {
                 // Ожидание превышено. Возможно механическое повреждение линии связи
                 break;
             }
+
 
             if((hi2c->Instance->ISR & I2C_ISR_NACKF_M))
             {
@@ -408,9 +429,17 @@ void HAL_I2C_Slave_Read(I2C_HandleTypeDef *hi2c, uint8_t data[], uint8_t byte_co
             break;
         }
 
-        data[i] = hi2c->Instance->RXDR; // Чтение байта и сброс флага RXNE
-        xprintf("Чтение байта  0x%02x\n", data[i]);
+        if(!(hi2c->Instance->ISR & I2C_ISR_DIR_M))
+        {
+            data[i] = hi2c->Instance->RXDR; // Чтение байта и сброс флага RXNE
+            xprintf("Чтение байта  0x%02x\n", data[i]);
+        }
+        
     }
 
-    xprintf("Прочитано  %d\n", data[0] << 8 | data[1]);
+    if(!(hi2c->Instance->ISR & I2C_ISR_DIR_M))
+    {
+        xprintf("Прочитано  %d\n", data[0] << 8 | data[1]);
+    }
+    
 }

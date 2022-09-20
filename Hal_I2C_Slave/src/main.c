@@ -15,7 +15,7 @@ int main()
     // Число для оптавки
     uint16_t to_send = 0; 
     // Массив с байтами для отправки / приема
-    uint8_t data[2];
+    uint8_t data[2] = {0,0};
     
     while (1)
     {
@@ -123,7 +123,7 @@ static void MX_I2C0_Init(void)
 
     hi2c0.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
     hi2c0.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
-    hi2c0.Init.OwnAddress1 = 0x36;
+    hi2c0.Init.OwnAddress1 = 0x36; //0x36 0x3FF
     hi2c0.Init.OwnAddress2 = 0;
 
     hi2c0.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
