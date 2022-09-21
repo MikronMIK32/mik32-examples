@@ -45,7 +45,7 @@ void HAL_I2C_SlaveInit(I2C_HandleTypeDef *hi2c)
     hi2c->Instance->OAR2 = 0;
     
     uint32_t slave_address1 = hi2c->Init.OwnAddress1;
-    uint32_t slave_address2 = hi2c->Init.OwnAddress2;
+    
     // true когда адрес вводится без сдвига
     if(hi2c->ShiftAddress == SHIFT_ADDRESS_DISABLE)
     {
@@ -98,7 +98,8 @@ void HAL_I2C_SlaveInit(I2C_HandleTypeDef *hi2c)
 
     if(hi2c->Init.DualAddressMode == I2C_DUALADDRESS_ENABLE)
     {
-        hi2c->Instance->OAR2 |= (slave_address2 << I2C_OAR2_OA2_S) | I2C_OAR2_OA2EN_M; // собственный адрес 2
+        hi2c->Instance->OAR2 |= (hi2c->Init.OwnAddress2 << I2C_OAR2_OA2_S) | 
+            (hi2c->Init.OwnAddress2Mask << I2C_OAR2_OA2MSK_S) | I2C_OAR2_OA2EN_M; // собственный адрес 2
     }
     
 }
@@ -137,6 +138,21 @@ void HAL_I2C_Master_Transfer_Init(I2C_HandleTypeDef *hi2c)
     /* Обнуление регистра CR2 перед его настройкой*/
     hi2c->Instance->CR2 = 0;
 
+    /* Изменение режима адресация в зависимости от типа адреса, 
+                        при активном режиме двойной адресации */
+    if(hi2c->Init.DualAddressMode == I2C_DUALADDRESS_ENABLE)
+    {
+        if(hi2c->SlaveAddress > (0x7f << 1))
+        {
+            hi2c->Init.AddressingMode = I2C_ADDRESSINGMODE_10BIT;
+        }
+        else
+        {
+            hi2c->Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+        }
+    }
+
+    /* Выбор режима адресации */
     switch (hi2c->Init.AddressingMode)
     {
     case I2C_ADDRESSINGMODE_7BIT:
@@ -217,7 +233,7 @@ void HAL_I2C_Master_Write(I2C_HandleTypeDef *hi2c, uint16_t slave_adr, uint8_t d
         while(!(hi2c->Instance->ISR & I2C_ISR_TXIS_M))// TXIS = 1 - предыдущий байт доставлен
         {
             counter++;
-            if(counter == 1000000)
+            if(counter == I2C_TIMEOUT)
             {
                 xprintf("Разрыв связи\n");
                 // Ожидание превышено. Возможно механическое повреждение линии связи
@@ -276,7 +292,7 @@ void HAL_I2C_Master_Read(I2C_HandleTypeDef *hi2c, uint16_t slave_adr, uint8_t da
         while(!(hi2c->Instance->ISR & I2C_ISR_RXNE_M)) // байт принят когда RXNE = 1
         {
             counter++;
-            if(counter == 1000000)
+            if(counter == I2C_TIMEOUT)
             {
                 xprintf("Разрыв связи\n");
                 // Ожидание превышено. Возможно механическое повреждение линии связи
@@ -332,7 +348,7 @@ void HAL_I2C_Slave_Write(I2C_HandleTypeDef *hi2c, uint8_t data[], uint8_t byte_c
         while(!(hi2c->Instance->ISR & I2C_ISR_TXIS_M)) // TXIS = 1 - регистр TXDR свободен
         {
             counter++;
-            if(counter == 1000000)
+            if(counter == I2C_TIMEOUT)
             {
                 // Ожидание превышено. Возможно механическое повреждение линии связи
                 break;
@@ -346,7 +362,7 @@ void HAL_I2C_Slave_Write(I2C_HandleTypeDef *hi2c, uint8_t data[], uint8_t byte_c
             }
         }
 
-        if(counter == 1000000)
+        if(counter == I2C_TIMEOUT)
         {
             xprintf("Разрыв связи\n");
 
@@ -398,7 +414,7 @@ void HAL_I2C_Slave_Read(I2C_HandleTypeDef *hi2c, uint8_t data[], uint8_t byte_co
                 break;
             }
 
-            if(counter == 1000000)
+            if(counter == I2C_TIMEOUT)
             {
                 // Ожидание превышено. Возможно механическое повреждение линии связи
                 break;
@@ -414,7 +430,7 @@ void HAL_I2C_Slave_Read(I2C_HandleTypeDef *hi2c, uint8_t data[], uint8_t byte_co
         } 
 
         // Ожидание превышено. Возможно механическое повреждение линии связи
-        if(counter == 1000000)
+        if(counter == I2C_TIMEOUT)
         {
             xprintf("Разрыв связи\n");
 

@@ -13,7 +13,7 @@ int main()
     MX_I2C0_Init();
     
     // Число для оптавки
-    uint16_t to_send = 0; 
+    uint16_t to_send = 1; 
     // Массив с байтами для отправки / приема
     uint8_t data[2] = {0,0};
     
@@ -21,7 +21,7 @@ int main()
     {
         xprintf("\nОжидание\n");
         int counter = 0;
-
+        
         // Ожидание запроса мастером адреса слейва
         while(!(hi2c0.Instance->ISR & I2C_ISR_ADDR_M))
         {
@@ -122,9 +122,10 @@ static void MX_I2C0_Init(void)
     hi2c0.Init.ClockSpeed = 165;
 
     hi2c0.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
-    hi2c0.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
+    hi2c0.Init.DualAddressMode = I2C_DUALADDRESS_ENABLE;
     hi2c0.Init.OwnAddress1 = 0x36; //0x36 0x3FF
-    hi2c0.Init.OwnAddress2 = 0;
+    hi2c0.Init.OwnAddress2 = 0b01010111; //0x57
+    hi2c0.Init.OwnAddress2Mask = I2C_OWNADDRESS2_MASK_1111xxx;
 
     hi2c0.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
     hi2c0.Init.SBCMode = I2C_SBC_DISABLE;

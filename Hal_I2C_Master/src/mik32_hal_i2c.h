@@ -3,6 +3,7 @@
 #include "i2c.h"
 #include "stdbool.h"
 
+#define I2C_TIMEOUT                    1000000
 
 /* I2C_addressing_mode - Режим адреса */
 #define I2C_ADDRESSINGMODE_7BIT        0
@@ -32,6 +33,16 @@
 #define I2C_TRANSFER_WRITE             0
 #define I2C_TRANSFER_READ              1
 
+/* I2C_OwnAddress2_mask - Маска второго собственного адреса */
+#define I2C_OWNADDRESS2_MASK_disable           0
+#define I2C_OWNADDRESS2_MASK_111111x           1
+#define I2C_OWNADDRESS2_MASK_11111xx           2
+#define I2C_OWNADDRESS2_MASK_1111xxx           3
+#define I2C_OWNADDRESS2_MASK_111xxxx           4
+#define I2C_OWNADDRESS2_MASK_11xxxxx           5
+#define I2C_OWNADDRESS2_MASK_1xxxxxx           6
+#define I2C_OWNADDRESS2_MASK_1111111           7
+
 typedef struct
 {
     uint32_t ClockSpeed;        /* Задает тактовую частоту.
@@ -48,6 +59,9 @@ typedef struct
  
     uint32_t OwnAddress2;       /* Задает второй собственный адрес, если выбран режим дополнительного адреса
                                    этот параметр должен быть 7-битным адресом. */
+
+    uint32_t OwnAddress2Mask;   /* Задает маску второго собственного адреса
+                                   этот параметр должен быть одним из значений I2C_OwnAddress2_mask. */
  
     uint32_t NoStretchMode;     /* Задает режим удержания SCL ведомого.
                                    Этот параметр может быть одним из значений I2C_nostretch_mode */
