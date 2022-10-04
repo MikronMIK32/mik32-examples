@@ -4,6 +4,16 @@
 #include "stdbool.h"
 
 #define I2C_TIMEOUT                    1000000
+#define I2C_NBYTE_MAX                  255
+#define I2C_DATA_BYTES                 510
+
+/* I2C_error - номера ошибок I2C*/
+#define I2C_ERROR_NONE                 0
+#define I2C_ERROR_TIMEOUT              1
+#define I2C_ERROR_NACK                 2
+#define I2C_ERROR_BERR                 3
+#define I2C_ERROR_ARLO                 4
+#define I2C_ERROR_OVR                  5
 
 /* I2C_addressing_mode - Режим адреса */
 #define I2C_ADDRESSINGMODE_7BIT        0
@@ -17,15 +27,19 @@
 #define I2C_NOSTRETCH_DISABLE          0
 #define I2C_NOSTRETCH_ENABLE           1
 
-/* I2C_SBC_mode - Режим аппаратного контроля байта ведомым */
+/* I2C_sbc_mode - Режим аппаратного контроля байта ведомым */
 #define I2C_SBC_DISABLE                0
 #define I2C_SBC_ENABLE                 1
+
+/* I2C_reload_mode - Режим аппаратного контроля байта ведомым */
+#define I2C_RELOAD_DISABLE             0
+#define I2C_RELOAD_ENABLE              1
 
 /* I2C_address_shift - Сдвиг адреса ведомого на 1 бит влево */
 #define SHIFT_ADDRESS_DISABLE          0
 #define SHIFT_ADDRESS_ENABLE           1
 
-/* I2C_autoend - Режим автоматического окончания */
+/* I2C_autoend_mode - Режим автоматического окончания */
 #define SHIFT_AUTOEND_DISABLE          0
 #define SHIFT_AUTOEND_ENABLE           1
 
@@ -34,7 +48,7 @@
 #define I2C_TRANSFER_READ              1
 
 /* I2C_OwnAddress2_mask - Маска второго собственного адреса */
-#define I2C_OWNADDRESS2_MASK_disable           0
+#define I2C_OWNADDRESS2_MASK_DISABLE           0
 #define I2C_OWNADDRESS2_MASK_111111x           1
 #define I2C_OWNADDRESS2_MASK_11111xx           2
 #define I2C_OWNADDRESS2_MASK_1111xxx           3
@@ -68,9 +82,12 @@ typedef struct
 
     uint32_t SBCMode;           /* Задает режим аппаратного контроля байта ведомым.
                                    Этот параметр может быть одним из значений I2C_SBC_mode */
+
+    uint32_t ReloadMode;        /* Задает режим перезагрузки.
+                                   Этот параметр может быть одним из значений I2C_Reload_mode */
     
     uint32_t AutoEnd;           /* Задает режим аппаратного контроля байта ведомым.
-                                Этот параметр может быть одним из значений I2C_SBC_mode */
+                                Этот параметр может быть одним из значений I2C_autoend_mode */
 
 } I2C_InitTypeDef;
 
@@ -105,7 +122,7 @@ typedef struct
     
     I2C_InitTypeDef       Init;                 /* Параметры I2C */
     uint8_t               *pBuff;               /* Указатель на буфер передачи */
-    uint16_t              TransferSize;         /* Количество байт при передаче данных */
+    uint32_t              TransferSize;         /* Количество байт при передаче данных */
     uint8_t               TransferDirection;    /* Направление передачи */
     
     HAL_I2C_StateTypeDef  State;                /* Состояние связи i2C */  
@@ -118,29 +135,25 @@ typedef struct
 } I2C_HandleTypeDef;
 
 void HAL_I2C_Disable(I2C_HandleTypeDef *hi2c);
-
 void HAL_I2C_Enable(I2C_HandleTypeDef *hi2c);
-
+void HAL_I2C_ReloadDisable(I2C_HandleTypeDef *hi2c);
+void HAL_I2C_ReloadEnable(I2C_HandleTypeDef *hi2c);
 void HAL_I2C_SetClockSpeed(I2C_HandleTypeDef *hi2c);
-
 void HAL_I2C_MasterInit(I2C_HandleTypeDef *hi2c);
-
 void HAL_I2C_SlaveInit(I2C_HandleTypeDef *hi2c);
-
 void HAL_I2C_Init(I2C_HandleTypeDef *hi2c);
+void HAL_I2C_CheckError(I2C_HandleTypeDef *hi2c);
 
 /* Ведущий */
 void HAL_I2C_Master_Restart(I2C_HandleTypeDef *hi2c);
-
+void HAL_I2C_Master_CheckError(I2C_HandleTypeDef *hi2c);
 void HAL_I2C_Master_Transfer_Init(I2C_HandleTypeDef *hi2c);
-
-void HAL_I2C_Master_Write(I2C_HandleTypeDef *hi2c, uint16_t slave_adr, uint8_t data[], uint8_t byte_count);
-
-void HAL_I2C_Master_Read(I2C_HandleTypeDef *hi2c, uint16_t slave_adr, uint8_t data[], uint8_t byte_count);
+void HAL_I2C_Master_Write(I2C_HandleTypeDef *hi2c, uint16_t slave_adr, uint8_t data[], uint32_t byte_count);
+void HAL_I2C_Master_Read(I2C_HandleTypeDef *hi2c, uint16_t slave_adr, uint8_t data[], uint32_t byte_count);
 
 /* Ведомый */
+void HAL_i2C_Slave_CleanFlag(I2C_HandleTypeDef *hi2c);
 void HAL_I2C_Slave_Restart(I2C_HandleTypeDef *hi2c);
-
-void HAL_I2C_Slave_Write(I2C_HandleTypeDef *hi2c, uint8_t data[], uint8_t byte_count);
-
-void HAL_I2C_Slave_Read(I2C_HandleTypeDef *hi2c, uint8_t data[], uint8_t byte_count);
+void HAL_I2C_Slave_CheckError(I2C_HandleTypeDef *hi2c);
+void HAL_I2C_Slave_Write(I2C_HandleTypeDef *hi2c, uint8_t data[], uint32_t byte_count);
+void HAL_I2C_Slave_Read(I2C_HandleTypeDef *hi2c, uint8_t data[], uint32_t byte_count);

@@ -13,29 +13,32 @@ int main()
     MX_I2C0_Init();
 
     // Адрес ведомого
-    uint16_t slave_address = 0b01010111; //0x36 0x3FF 0x7F
+    uint16_t slave_address = 0x3FF; //0x36 0x3FF 0x7F
 
     // Число для оптавки
     uint16_t to_send = 13; 
     
     // Массив с байтами для отправки / приема
-    uint8_t data[2] = {to_send >> 8, to_send & 0b0000000011111111}; // массив заполняется байтами числа to_send
+    //uint8_t data[3] = {to_send >> 8, to_send & 0b0000000011111111}; // массив заполняется байтами числа to_send
+    uint8_t data[I2C_DATA_BYTES];
 
-    // // Инициализация блока i2c в режиме мастер (ведущий)
-    // HAL_I2C_MasterInit(I2C_0); 
-    
-
-    while (1)
+    for(int i = 0; i < sizeof(data); i++)
     {
-        
+        data[i] = (uint8_t)i;
+        xprintf("data[%d] = %d\n", i, data[i]);
+    }
+     
+    while (1)
+    {    
         // Запись данных по адресу slave_adr = 0x36 без сдвига адреса
         HAL_I2C_Master_Write(&hi2c0, slave_address, data, sizeof(data)); 
+        HAL_I2C_CheckError(&hi2c0);
         for (volatile int i = 0; i < 1000000; i++); 
 
         // Чтение данных по адресу slave_adr = 0x36 без сдвига адреса
         HAL_I2C_Master_Read(&hi2c0, slave_address, data, sizeof(data)); 
+        HAL_I2C_CheckError(&hi2c0);
         for (volatile int i = 0; i < 1000000; i++); 
-
     }
     
     
@@ -79,11 +82,11 @@ static void MX_I2C0_Init(void)
 
     hi2c0.Init.ClockSpeed = 165;
 
-    hi2c0.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
-    hi2c0.Init.DualAddressMode = I2C_DUALADDRESS_ENABLE; // При ENABLE значение AddressingMode не влияет на тип адресации (Только в режиме мастера)
+    hi2c0.Init.AddressingMode = I2C_ADDRESSINGMODE_10BIT;
+    hi2c0.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE; // При ENABLE значение AddressingMode не влияет на тип адресации (Только в режиме мастера)
     hi2c0.Init.OwnAddress1 = 0;
     hi2c0.Init.OwnAddress2 = 0;
-    hi2c0.Init.OwnAddress2Mask = I2C_OWNADDRESS2_MASK_disable;
+    hi2c0.Init.OwnAddress2Mask = I2C_OWNADDRESS2_MASK_DISABLE;
 
     hi2c0.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
     hi2c0.Init.SBCMode = I2C_SBC_DISABLE;
