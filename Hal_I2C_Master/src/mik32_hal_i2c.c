@@ -47,7 +47,9 @@ void HAL_I2C_SetClockSpeed(I2C_HandleTypeDef *hi2c)
 void HAL_I2C_MasterInit(I2C_HandleTypeDef *hi2c)
 {
     /* Режим 10-битного адреса */
+    #ifdef MIK32_I2C_DEBUG
     xprintf("\nМастер. Старт\n");
+    #endif
 }
 
 void HAL_I2C_SlaveInit(I2C_HandleTypeDef *hi2c)
@@ -143,22 +145,9 @@ void HAL_I2C_Init(I2C_HandleTypeDef *hi2c)
 
 void HAL_I2C_CheckError(I2C_HandleTypeDef *hi2c)
 {
+    #ifdef MIK32_I2C_DEBUG
     xprintf("Ошибка №%d\n", hi2c->ErrorCode);
-
-    // xprintf("TXE = %d\n", (hi2c->Instance->ISR & I2C_ISR_TXE_M)>>I2C_ISR_TXE_S);
-    // xprintf("TXIS = %d\n", (hi2c->Instance->ISR & I2C_ISR_TXIS_M)>>I2C_ISR_TXIS_S);
-    // xprintf("RXNE = %d\n", (hi2c->Instance->ISR & I2C_ISR_RXNE_M)>>I2C_ISR_RXNE_S);
-    // xprintf("ADDR = %d\n", (hi2c->Instance->ISR & I2C_ISR_ADDR_M)>>I2C_ISR_ADDR_S);
-    // xprintf("NACKF = %d\n", (hi2c->Instance->ISR & I2C_ISR_NACKF_M)>>I2C_ISR_NACKF_S);
-    // xprintf("STOPF = %d\n", (hi2c->Instance->ISR & I2C_ISR_STOPF_M)>>I2C_ISR_STOPF_S);
-    // xprintf("TC = %d\n", (hi2c->Instance->ISR & I2C_ISR_TC_M)>>I2C_ISR_TC_S);
-    // xprintf("TCR = %d\n", (hi2c->Instance->ISR & I2C_ISR_TCR_M)>>I2C_ISR_TCR_S);
-    // xprintf("BERR = %d\n", (hi2c->Instance->ISR & I2C_ISR_BERR_M)>>I2C_ISR_BERR_S);
-    // xprintf("ARLO = %d\n", (hi2c->Instance->ISR & I2C_ISR_ARLO_M)>>I2C_ISR_ARLO_S);
-    // xprintf("OVR = %d\n", (hi2c->Instance->ISR & I2C_ISR_OVR_M)>>I2C_ISR_OVR_S);
-    // xprintf("BUSY = %d\n", (hi2c->Instance->ISR & I2C_ISR_BUSY_M)>>I2C_ISR_BUSY_S);
-    // xprintf("DIR = %d\n", (hi2c->Instance->ISR & I2C_ISR_DIR_M)>>I2C_ISR_DIR_S);
-    // xprintf("ADDCODE = %d\n\n", (hi2c->Instance->ISR & I2C_ISR_ADDCODE_M)>>I2C_ISR_ADDCODE_S);
+    #endif
 
     switch (hi2c->Mode)
     {
@@ -188,12 +177,18 @@ void HAL_I2C_Master_CheckError(I2C_HandleTypeDef *hi2c)
     switch (hi2c->ErrorCode)
     {
     case I2C_ERROR_TIMEOUT:
+        #ifdef MIK32_I2C_DEBUG
         xprintf("Ожидание превышено\n");
+        #endif
+
         HAL_I2C_Slave_Restart(hi2c);// Программный сброс модуля i2c и его повторная инициалиизация 
         break;
     case I2C_ERROR_NACK:
+        #ifdef MIK32_I2C_DEBUG
         xprintf("Ошибка при передаче\n");
         xprintf("NACKF = %d\n", (hi2c->Instance->ISR & I2C_ISR_NACKF_M) >> I2C_ISR_NACKF_S);
+        #endif
+
         hi2c->Instance->ICR |= I2C_ICR_STOPCF_M | I2C_ICR_NACKCF_M; // сброс флага STOPF и NACKF
         break;
     }
@@ -283,7 +278,10 @@ void HAL_I2C_Master_Transfer_Init(I2C_HandleTypeDef *hi2c)
 
 void HAL_I2C_Master_Write(I2C_HandleTypeDef *hi2c, uint16_t slave_adr, uint8_t data[], uint32_t byte_count)
 {
+    #ifdef MIK32_I2C_DEBUG
     xprintf("\nОтправка %d\n", data[0] << 8 | data[1]);
+    #endif
+
     uint16_t slave_adr_print = slave_adr; // переменная используется для вывода адреса
 
     // true когда адрес вводится без сдвига
@@ -321,8 +319,12 @@ void HAL_I2C_Master_Write(I2C_HandleTypeDef *hi2c, uint16_t slave_adr, uint8_t d
                 return;
             }
         }
-         
+
+        #ifdef MIK32_I2C_DEBUG 
         xprintf("Отправка по адресу 0x%03x байта №%d  0x%02x\n", slave_adr_print, i+1, data[i]);
+        #endif
+        //for (volatile int i = 0; i < 100000; i++);
+        
         hi2c->Instance->TXDR = data[i];
 
         byte_limit--;
@@ -361,7 +363,13 @@ void HAL_I2C_Master_Write(I2C_HandleTypeDef *hi2c, uint16_t slave_adr, uint8_t d
     // }
 
     hi2c->ErrorCode = I2C_ERROR_NONE;
+
+    #ifdef MIK32_I2C_DEBUG
     xprintf("Конец передачи\n");
+    #endif
+    //for (volatile int i = 0; i < 1000; i++);
+    while(hi2c->Instance->ISR & I2C_ISR_BUSY_M);
+    
     //hi2c->Instance->ICR |= I2C_ICR_STOPCF_M | I2C_ICR_NACKCF_M; // сброс флага STOPF и NACKF
 
 }
@@ -381,7 +389,9 @@ void HAL_I2C_Master_Read(I2C_HandleTypeDef *hi2c, uint16_t slave_adr, uint8_t da
     hi2c->TransferSize = byte_count;
     hi2c->TransferDirection = I2C_TRANSFER_READ;
 
+    #ifdef MIK32_I2C_DEBUG
     xprintf("\nЧтение\n");
+    #endif
 
     /* Настройка CR2 */
     HAL_I2C_Master_Transfer_Init(hi2c);
@@ -405,8 +415,10 @@ void HAL_I2C_Master_Read(I2C_HandleTypeDef *hi2c, uint16_t slave_adr, uint8_t da
             // Ошибка. Во время чтения мастер прислал NACK или STOP
             if((hi2c->Instance->ISR & I2C_ISR_STOPF_M) && (hi2c->Instance->ISR & I2C_ISR_NACKF_M))
             {
+                #ifdef MIK32_I2C_DEBUG
                 xprintf("Чтение. STOPF = %d, NACKF = %d\n", (hi2c->Instance->ISR & I2C_ISR_STOPF_M) >> I2C_ISR_STOPF_S, 
                                                             (hi2c->Instance->ISR & I2C_ISR_NACKF_M) >> I2C_ISR_NACKF_S);
+                #endif
                 hi2c->ErrorCode = I2C_ERROR_NACK;
                 return;
             }
@@ -414,7 +426,9 @@ void HAL_I2C_Master_Read(I2C_HandleTypeDef *hi2c, uint16_t slave_adr, uint8_t da
         }
 
         data[i] = hi2c->Instance->RXDR; // чтение байта и сброс RXNE
+        #ifdef MIK32_I2C_DEBUG
         xprintf("Чтение по адресу 0x%03x байта №%d 0x%02x\n", slave_adr_print, i+1, data[i]);
+        #endif
 
         byte_limit--;
 
@@ -446,8 +460,11 @@ void HAL_I2C_Master_Read(I2C_HandleTypeDef *hi2c, uint16_t slave_adr, uint8_t da
     }
 
     hi2c->ErrorCode = I2C_ERROR_NONE;
+
+    #ifdef MIK32_I2C_DEBUG
     xprintf("Получено %d\n" , data[0] << 8 | data[1]);
     xprintf("Конец передачи\n");
+    #endif
     //hi2c->Instance->ICR |= I2C_ICR_STOPCF_M | I2C_ICR_NACKCF_M; // сброс флага STOPF и NACKF
     
 
@@ -458,7 +475,10 @@ void HAL_i2C_Slave_CleanFlag(I2C_HandleTypeDef *hi2c)
 {
     hi2c->Instance->ICR |= I2C_ICR_STOPCF_M | I2C_ICR_NACKCF_M; // сброс флага STOPF и NACKF
     while(hi2c->Instance->ISR & I2C_ISR_NACKF_M); // ожидание сброса флага NACKF
+
+    #ifdef MIK32_I2C_DEBUG
     xprintf("сброшено. NACKF = %d\n", (hi2c->Instance->ISR & I2C_ISR_NACKF_M) >> I2C_ISR_NACKF_S);
+    #endif
 }
 
 void HAL_I2C_Slave_Restart(I2C_HandleTypeDef *hi2c)
@@ -471,12 +491,18 @@ void HAL_I2C_Slave_CheckError(I2C_HandleTypeDef *hi2c)
     switch (hi2c->ErrorCode)
     {
     case I2C_ERROR_TIMEOUT:
+        #ifdef MIK32_I2C_DEBUG
         xprintf("Ожидание превышено\n");
+        #endif
+
         HAL_I2C_Slave_Restart(hi2c);// Программный сброс модуля i2c и его повторная инициалиизация 
         break;
     case I2C_ERROR_NACK:
+        #ifdef MIK32_I2C_DEBUG
         xprintf("Ошибка при передаче\n");
         xprintf("NACKF = %d\n", (hi2c->Instance->ISR & I2C_ISR_NACKF_M) >> I2C_ISR_NACKF_S);
+        #endif
+
         HAL_i2C_Slave_CleanFlag(hi2c);
         break;
     }
@@ -484,8 +510,9 @@ void HAL_I2C_Slave_CheckError(I2C_HandleTypeDef *hi2c)
 
 void HAL_I2C_Slave_Write(I2C_HandleTypeDef *hi2c, uint8_t data[], uint32_t byte_count)
 {
-
+    #ifdef MIK32_I2C_DEBUG
     xprintf("\nОтправка %d\n", data[0]<<8 | data[1]);
+    #endif
 
     // HAL_i2C_Slave_CleanFlag(hi2c);
 
@@ -515,19 +542,27 @@ void HAL_I2C_Slave_Write(I2C_HandleTypeDef *hi2c, uint8_t data[], uint32_t byte_
         }
 
         hi2c->Instance->TXDR = data[i]; // Загрузка передаваемого байта в регистр TXDR
+
+        #ifdef MIK32_I2C_DEBUG
         xprintf("Отправлен байт №%d 0x%02x [%d]\n", i+1, data[i], data[i]);
+        #endif
 
         
     }
+    
+    #ifdef MIK32_I2C_DEBUG
     xprintf("Конец передачи\n");
+    #endif
+
     HAL_i2C_Slave_CleanFlag(hi2c);
 
 }
 
 void HAL_I2C_Slave_Read(I2C_HandleTypeDef *hi2c, uint8_t data[], uint32_t byte_count)
 {
-
+    #ifdef MIK32_I2C_DEBUG
     xprintf("\nЧтение\n");
+    #endif
 
     //HAL_i2C_Slave_CleanFlag(hi2c);
 
@@ -571,14 +606,20 @@ void HAL_I2C_Slave_Read(I2C_HandleTypeDef *hi2c, uint8_t data[], uint32_t byte_c
         if(!(hi2c->Instance->ISR & I2C_ISR_DIR_M))
         {
             data[i] = hi2c->Instance->RXDR; // Чтение байта и сброс флага RXNE
+
+            #ifdef MIK32_I2C_DEBUG
             xprintf("Чтение байта №%d  0x%02x [%d]\n", i+1, data[i], data[i]);
+            #endif
         }
         
     }
 
     if(!(hi2c->Instance->ISR & I2C_ISR_DIR_M))
     {
+        #ifdef MIK32_I2C_DEBUG
         xprintf("Прочитано  %d\n", data[0] << 8 | data[1]);
+        #endif
+        
         HAL_i2C_Slave_CleanFlag(hi2c);
     }
     

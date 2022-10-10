@@ -1,7 +1,16 @@
-#include "common.h"
+#ifndef MIK32_HAL_I2C
+#define MIK32_HAL_I2C
+
+
+
 #include "mcu32_memory_map.h"
 #include "i2c.h"
 #include "stdbool.h"
+#include "def_list.h"
+
+#ifdef MIK32_I2C_DEBUG
+#include "common.h"
+#endif
 
 #define I2C_TIMEOUT                    1000000
 #define I2C_NBYTE_MAX                  255
@@ -157,3 +166,6 @@ void HAL_I2C_Slave_Restart(I2C_HandleTypeDef *hi2c);
 void HAL_I2C_Slave_CheckError(I2C_HandleTypeDef *hi2c);
 void HAL_I2C_Slave_Write(I2C_HandleTypeDef *hi2c, uint8_t data[], uint32_t byte_count);
 void HAL_I2C_Slave_Read(I2C_HandleTypeDef *hi2c, uint8_t data[], uint32_t byte_count);
+
+
+#endif
