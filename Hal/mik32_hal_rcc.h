@@ -1,3 +1,6 @@
+#ifndef MIK32_HAL_RCC
+#define MIK32_HAL_RCC
+
 #include "mcu32_memory_map.h"
 #include "wakeup.h"
 #include "power_manager.h"
@@ -69,3 +72,6 @@ typedef struct
 
 void HAL_RCC_OscConfig(RCC_OscInitTypeDef *RCC_OscInit);
 void HAL_RCC_ClockConfig(RCC_PeriphCLKInitTypeDef *PeriphClkInit);
+
+
+#endif
