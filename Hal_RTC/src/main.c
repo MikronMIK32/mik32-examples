@@ -53,7 +53,7 @@ void SystemClock_Config(void)
     PeriphClkInit.PMClockAPB_M = PMCLOCKAPB_M_DEFAULT | PM_CLOCK_WU_M | PM_CLOCK_RTC_M;     
     PeriphClkInit.PMClockAPB_P = PMCLOCKAPB_P_DEFAULT | PM_CLOCK_UART_0_M;     
     PeriphClkInit.RTCClockSelection = RCC_RTCCLKSOURCE_OSC32K;
-    PeriphClkInit.RTCClockCPUSelection = RCC_RTCCLKSOURCE_NO_CLK;
+    PeriphClkInit.RTCClockCPUSelection = RCC_RTCCLKCPUSOURCE_NO_CLK;
     HAL_RCC_ClockConfig(&PeriphClkInit);
 }
 
@@ -82,8 +82,8 @@ static void MX_RTC_Init(void)
     /** Initialize RTC and set the Time and Date
      */
     sTime.Dow = RTC_WEEKDAY_FRIDAY;
-    sTime.Hours = 15;
-    sTime.Minutes = 24;
+    sTime.Hours = 23;
+    sTime.Minutes = 54;
     sTime.Seconds = 0;
 
     // Выключение RTC для записи даты и времени
@@ -93,7 +93,7 @@ static void MX_RTC_Init(void)
 
     sDate.Century = 21;
     sDate.Day = 9;
-    sDate.Month = RTC_MONTH_SEPTEMBER;
+    sDate.Month = RTC_MONTH_OCTOBER;
     sDate.Year = 22;
 
     HAL_RTC_SetDate(&hrtc, &sDate);

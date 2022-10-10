@@ -11,7 +11,9 @@ void HAL_RTC_WaitFlag(RTC_HandleTypeDef *hrtc)
         }
     }
     
+    #ifdef MIK32_RTC_DEBUG
     xprintf("Ожидание установки CTRL.FLAG в 0 превышено\n");
+    #endif
 }
 
 void HAL_RTC_Disable(RTC_HandleTypeDef *hrtc)
@@ -56,8 +58,11 @@ void HAL_RTC_SetTime(RTC_HandleTypeDef *hrtc, RTC_TimeTypeDef *sTime)
                         (TS << RTC_TIME_TS_S)   | // Десятки секунд
                         (S << RTC_TIME_S_S)     | // Единицы секунд
                         (0 << RTC_TIME_TOS_S);    // Десятые секунды
-
+    
+    #ifdef MIK32_RTC_DEBUG
     xprintf("Установка времени RTC\n");
+    #endif
+
     hrtc->Instance->TIME = RTC_time;
     HAL_RTC_WaitFlag(hrtc);
 }
@@ -91,7 +96,10 @@ void HAL_RTC_SetDate(RTC_HandleTypeDef *hrtc, RTC_DateTypeDef *sDate)
                         (TD << RTC_DATE_TD_S)  | // Десятки числа
                         (D << RTC_DATE_D_S);    // Единицы числа
 
+    #ifdef MIK32_RTC_DEBUG
     xprintf("Установка даты RTC\n");
+    #endif
+
     hrtc->Instance->DATE = RTC_data;
     HAL_RTC_WaitFlag(hrtc);
 }
@@ -125,7 +133,10 @@ void HAL_RTC_Alarm_SetTime(RTC_HandleTypeDef *hrtc, RTC_AlarmTypeDef *sAlarm)
                               (S << RTC_TIME_S_S)     | // Единицы секунд
                               (0 << RTC_TIME_TOS_S);    // Десятые секунды
 
+    #ifdef MIK32_RTC_DEBUG
     xprintf("Установка времени будильника\n");
+    #endif
+
     hrtc->Instance->TALRM = RTC_alarm_time | sAlarm->MaskAlarmTime;
     HAL_RTC_WaitFlag(hrtc);
 }
@@ -160,7 +171,10 @@ void HAL_RTC_Alarm_SetDate(RTC_HandleTypeDef *hrtc, RTC_AlarmTypeDef *sAlarm)
                               (TD << RTC_DATE_TD_S)  | // Десятки числа
                               (D << RTC_DATE_D_S);    // Единицы числа
 
+    #ifdef MIK32_RTC_DEBUG
     xprintf("Установка даты будильника\n");
+    #endif
+
     hrtc->Instance->DALRM = RTC_alarm_data | sAlarm->MaskAlarmDate;
     HAL_RTC_WaitFlag(hrtc);
 }
@@ -170,6 +184,8 @@ void HAL_RTC_SetAlarm(RTC_HandleTypeDef *hrtc, RTC_AlarmTypeDef *sAlarm)
     HAL_RTC_Alarm_SetTime(hrtc, sAlarm);
     HAL_RTC_Alarm_SetDate(hrtc, sAlarm);
 }
+
+#ifdef MIK32_RTC_DEBUG
 
 void HAL_RTC_CheckDate(RTC_HandleTypeDef *hrtc)
 {
@@ -224,3 +240,5 @@ void HAL_RTC_Check(RTC_HandleTypeDef *hrtc)
     HAL_RTC_CheckDate(hrtc);
     HAL_RTC_CheckTime(hrtc);
 }
+
+#endif

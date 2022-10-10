@@ -1,7 +1,15 @@
-#include "common.h"
+#ifndef MIK32_HAL_RTC
+#define MIK32_HAL_RTC
+
+
+#include "def_list.h"
 #include "mcu32_memory_map.h"
 #include "rtc.h"
 // #include "epic.h"
+
+#ifdef MIK32_RTC_DEBUG
+#include "common.h"
+#endif
 
 typedef struct __RTC_HandleTypeDef
 {
@@ -90,6 +98,11 @@ void HAL_RTC_SetDate(RTC_HandleTypeDef *hrtc, RTC_DateTypeDef *sDate);
 void HAL_RTC_Alarm_SetTime(RTC_HandleTypeDef *hrtc, RTC_AlarmTypeDef *sAlarm);
 void HAL_RTC_Alarm_SetDate(RTC_HandleTypeDef *hrtc, RTC_AlarmTypeDef *sAlarm);
 void HAL_RTC_SetAlarm(RTC_HandleTypeDef *hrtc, RTC_AlarmTypeDef *sAlarm);
+
+#ifdef MIK32_RTC_DEBUG
 void HAL_RTC_CheckDate(RTC_HandleTypeDef *hrtc);
 void HAL_RTC_CheckTime(RTC_HandleTypeDef *hrtc);
 void HAL_RTC_Check(RTC_HandleTypeDef *hrtc);
+#endif
+
+#endif
