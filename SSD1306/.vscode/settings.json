@@ -1,0 +1,15 @@
+{
+    "files.associations": {
+        "mik32_hal_i2c.h": "c",
+        "ssd1306_conf_template.h": "c",
+        "main.h": "c",
+        "common.h": "c",
+        "gpio.h": "c",
+        "inttypes.h": "c",
+        "stdint.h": "c",
+        "mik32_hal_ssd1306.h": "c",
+        "mcu32_memory_map.h": "c",
+        "stdbool.h": "c",
+        "def_list.h": "c"
+    }
+}
