@@ -7,62 +7,61 @@ static void MX_I2C0_Init(void);
 
 int main()
 {
-
+   
     SystemClock_Config();
 
     MX_I2C0_Init();
     
-    // Число для оптавки
-    uint16_t to_send = 1; 
     // Массив с байтами для отправки / приема
     uint8_t data[I2C_DATA_BYTES];
+
     for(int i = 0; i < sizeof(data); i++)
     {
-        data[i] = (uint8_t)i;
-        //xprintf("data[%d] = %d\n", i, data[i]);
+        data[i] = (uint8_t)i; 
     }
     
     
     while (1)
     {
+        #ifdef MIK32_I2C_DEBUG
         xprintf("\nОжидание\n");
+        #endif
+ 
         int counter = 0;
         
-        // Ожидание запроса мастером адреса слейва
+        /*Ожидание запроса мастером адреса слейва*/ 
         while(!(hi2c0.Instance->ISR & I2C_ISR_ADDR_M))
         {
             counter++;
             if(counter==10000000)
             {
+                #ifdef MIK32_I2C_DEBUG
                 xprintf("\nОжидание\n");
+                #endif
+
                 counter = 0;
             }
             
         } 
         
-        //I2C_0 -> ISR |=  I2C_ISR_TXE_M;
 
-        // срос флага ADDR для подверждения принятия адреса
-        hi2c0.Instance->ICR |= I2C_ICR_ADDRCF_M; 
         /*
-        * I2C_ISR - Регистр прерываний и статуса
-        *   
-        * ADDR - Флаг соответствия адреса в ре-жиме ведомого
-        *   
+        * Сброс флага ADDR для подверждения принятия адреса
+        * ADDR - Флаг соответствия адреса в режиме ведомого
+        */
+        hi2c0.Instance->ICR |= I2C_ICR_ADDRCF_M; 
+        
+        /*
+        * I2C_ISR - Регистр прерываний и статуса 
         * DIR - Тип передачи. Обновляется в режиме ведомого при получении адреса:
         *       0 – передача типа запись, ведомый переходит в режим приемника;
         *       1 – передача типа чтения, ведомый переходит в режим передатчика
-        * 
         */
-
         if(hi2c0.Instance->ISR & I2C_ISR_DIR_M) // DIR = 1. Режим ведомого - передатчик
         {
+            #ifdef MIK32_I2C_DEBUG
             xprintf("\nЗапрос на запись\n");
-
-            // // Отправляется число to_send, состоящее из двух байт
-            // // Заполняется массив data байтами, которые нужно отправить
-            // data[0] = to_send >> 8;
-            // data[1] = to_send & 0b0000000011111111;
+            #endif
 
             // Отправка
             HAL_I2C_Slave_Write(&hi2c0, data, sizeof(data));
@@ -70,19 +69,14 @@ int main()
         } 
         else // DIR = 0. Режим ведомого - приемник
         {
+            #ifdef MIK32_I2C_DEBUG
             xprintf("\nЗапрос на чтение\n");
+            #endif
             
             // Чтение двух байт от мастера и запись их в массив data 
             HAL_I2C_Slave_Read(&hi2c0, data, sizeof(data));
             HAL_I2C_CheckError(&hi2c0);
             
-            // // Формирование принятого числа
-            // to_send = data[0] << 8 | data[1];
-            // to_send++; 
-            // if(to_send > 65530)
-            // {
-            //     to_send = 0;
-            // }
         }
 
     }
@@ -128,9 +122,9 @@ static void MX_I2C0_Init(void)
 
     hi2c0.Init.ClockSpeed = 165;
 
-    hi2c0.Init.AddressingMode = I2C_ADDRESSINGMODE_10BIT;
+    hi2c0.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
     hi2c0.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
-    hi2c0.Init.OwnAddress1 = 0x3FF; //0x36 0x3FF
+    hi2c0.Init.OwnAddress1 = 0x36; //0x36 0x3FF
     hi2c0.Init.OwnAddress2 = 0b01010111; //0x57
     hi2c0.Init.OwnAddress2Mask = I2C_OWNADDRESS2_MASK_DISABLE;
 

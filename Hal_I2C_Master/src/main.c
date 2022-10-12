@@ -13,24 +13,23 @@ int main()
     MX_I2C0_Init();
 
     // Адрес ведомого
-    uint16_t slave_address = 0x3FF; //0x36 0x3FF 0x7F
+    uint16_t slave_address = 0x36; //0x36 0x3FF 0x7F
 
-    // Число для оптавки
-    uint16_t to_send = 13; 
-    
-    // Массив с байтами для отправки / приема
-    //uint8_t data[3] = {to_send >> 8, to_send & 0b0000000011111111}; // массив заполняется байтами числа to_send
     uint8_t data[I2C_DATA_BYTES];
 
     for(int i = 0; i < sizeof(data); i++)
     {
         data[i] = (uint8_t)i;
+
+        #ifdef MIK32_I2C_DEBUG
         xprintf("data[%d] = %d\n", i, data[i]);
+        #endif
     }
      
     while (1)
     {    
-        // Запись данных по адресу slave_adr = 0x36 без сдвига адреса
+
+        // // Запись данных по адресу slave_adr = 0x36 без сдвига адреса
         HAL_I2C_Master_Write(&hi2c0, slave_address, data, sizeof(data)); 
         HAL_I2C_CheckError(&hi2c0);
         for (volatile int i = 0; i < 1000000; i++); 
@@ -39,6 +38,7 @@ int main()
         HAL_I2C_Master_Read(&hi2c0, slave_address, data, sizeof(data)); 
         HAL_I2C_CheckError(&hi2c0);
         for (volatile int i = 0; i < 1000000; i++); 
+
     }
     
     
@@ -82,7 +82,7 @@ static void MX_I2C0_Init(void)
 
     hi2c0.Init.ClockSpeed = 165;
 
-    hi2c0.Init.AddressingMode = I2C_ADDRESSINGMODE_10BIT;
+    hi2c0.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
     hi2c0.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE; // При ENABLE значение AddressingMode не влияет на тип адресации (Только в режиме мастера)
     hi2c0.Init.OwnAddress1 = 0;
     hi2c0.Init.OwnAddress2 = 0;

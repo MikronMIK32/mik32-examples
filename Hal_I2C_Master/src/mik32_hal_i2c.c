@@ -146,7 +146,10 @@ void HAL_I2C_Init(I2C_HandleTypeDef *hi2c)
 void HAL_I2C_CheckError(I2C_HandleTypeDef *hi2c)
 {
     #ifdef MIK32_I2C_DEBUG
-    xprintf("Ошибка №%d\n", hi2c->ErrorCode);
+        if(hi2c->ErrorCode != 0)
+        {
+            xprintf("Ошибка №%d\n", hi2c->ErrorCode);
+        }
     #endif
 
     switch (hi2c->Mode)
@@ -171,8 +174,8 @@ void HAL_I2C_Master_Restart(I2C_HandleTypeDef *hi2c)
 
 void HAL_I2C_Master_CheckError(I2C_HandleTypeDef *hi2c)
 {
-    HAL_I2C_ReloadDisable(hi2c);
-    hi2c->Instance->CR2 |= I2C_ICR_STOPCF_M | I2C_ICR_NACKCF_M; // Отправка NACK и STOP
+    // HAL_I2C_ReloadDisable(hi2c);
+    // hi2c->Instance->CR2 |= I2C_ICR_STOPCF_M | I2C_ICR_NACKCF_M; // Отправка NACK и STOP
 
     switch (hi2c->ErrorCode)
     {
@@ -279,10 +282,9 @@ void HAL_I2C_Master_Transfer_Init(I2C_HandleTypeDef *hi2c)
 void HAL_I2C_Master_Write(I2C_HandleTypeDef *hi2c, uint16_t slave_adr, uint8_t data[], uint32_t byte_count)
 {
     #ifdef MIK32_I2C_DEBUG
-    xprintf("\nОтправка %d\n", data[0] << 8 | data[1]);
-    #endif
-
+    xprintf("\nОтправка %d\n");
     uint16_t slave_adr_print = slave_adr; // переменная используется для вывода адреса
+    #endif
 
     // true когда адрес вводится без сдвига
     if(hi2c->ShiftAddress == SHIFT_ADDRESS_DISABLE)
@@ -376,7 +378,11 @@ void HAL_I2C_Master_Write(I2C_HandleTypeDef *hi2c, uint16_t slave_adr, uint8_t d
 
 void HAL_I2C_Master_Read(I2C_HandleTypeDef *hi2c, uint16_t slave_adr, uint8_t data[], uint32_t byte_count)
 {
+    
+    #ifdef MIK32_I2C_DEBUG
+    xprintf("\nЧтение%d\n");
     uint16_t slave_adr_print = slave_adr; // переменная используется для вывода адреса
+    #endif
 
     // true когда адрес вводится без сдвига
     if(hi2c->ShiftAddress == SHIFT_ADDRESS_DISABLE)
@@ -388,10 +394,6 @@ void HAL_I2C_Master_Read(I2C_HandleTypeDef *hi2c, uint16_t slave_adr, uint8_t da
     hi2c->pBuff = data;
     hi2c->TransferSize = byte_count;
     hi2c->TransferDirection = I2C_TRANSFER_READ;
-
-    #ifdef MIK32_I2C_DEBUG
-    xprintf("\nЧтение\n");
-    #endif
 
     /* Настройка CR2 */
     HAL_I2C_Master_Transfer_Init(hi2c);
@@ -462,9 +464,11 @@ void HAL_I2C_Master_Read(I2C_HandleTypeDef *hi2c, uint16_t slave_adr, uint8_t da
     hi2c->ErrorCode = I2C_ERROR_NONE;
 
     #ifdef MIK32_I2C_DEBUG
-    xprintf("Получено %d\n" , data[0] << 8 | data[1]);
     xprintf("Конец передачи\n");
     #endif
+
+    while(hi2c->Instance->ISR & I2C_ISR_BUSY_M);
+
     //hi2c->Instance->ICR |= I2C_ICR_STOPCF_M | I2C_ICR_NACKCF_M; // сброс флага STOPF и NACKF
     
 
@@ -488,6 +492,7 @@ void HAL_I2C_Slave_Restart(I2C_HandleTypeDef *hi2c)
 
 void HAL_I2C_Slave_CheckError(I2C_HandleTypeDef *hi2c)
 { 
+
     switch (hi2c->ErrorCode)
     {
     case I2C_ERROR_TIMEOUT:
@@ -511,10 +516,10 @@ void HAL_I2C_Slave_CheckError(I2C_HandleTypeDef *hi2c)
 void HAL_I2C_Slave_Write(I2C_HandleTypeDef *hi2c, uint8_t data[], uint32_t byte_count)
 {
     #ifdef MIK32_I2C_DEBUG
-    xprintf("\nОтправка %d\n", data[0]<<8 | data[1]);
+    xprintf("\nОтправка\n");
     #endif
 
-    // HAL_i2C_Slave_CleanFlag(hi2c);
+    HAL_i2C_Slave_CleanFlag(hi2c);
 
     hi2c->pBuff = data;
     hi2c->TransferSize = byte_count;
@@ -547,14 +552,16 @@ void HAL_I2C_Slave_Write(I2C_HandleTypeDef *hi2c, uint8_t data[], uint32_t byte_
         xprintf("Отправлен байт №%d 0x%02x [%d]\n", i+1, data[i], data[i]);
         #endif
 
+        HAL_i2C_Slave_CleanFlag(hi2c);
         
     }
     
     #ifdef MIK32_I2C_DEBUG
     xprintf("Конец передачи\n");
-    #endif
+    #endif 
 
-    HAL_i2C_Slave_CleanFlag(hi2c);
+    while(hi2c->Instance->ISR & I2C_ISR_BUSY_M);
+    
 
 }
 
@@ -564,7 +571,7 @@ void HAL_I2C_Slave_Read(I2C_HandleTypeDef *hi2c, uint8_t data[], uint32_t byte_c
     xprintf("\nЧтение\n");
     #endif
 
-    //HAL_i2C_Slave_CleanFlag(hi2c);
+    HAL_i2C_Slave_CleanFlag(hi2c);
 
     hi2c->pBuff = data;
     hi2c->TransferSize = byte_count;
@@ -617,10 +624,12 @@ void HAL_I2C_Slave_Read(I2C_HandleTypeDef *hi2c, uint8_t data[], uint32_t byte_c
     if(!(hi2c->Instance->ISR & I2C_ISR_DIR_M))
     {
         #ifdef MIK32_I2C_DEBUG
-        xprintf("Прочитано  %d\n", data[0] << 8 | data[1]);
+        xprintf("Прочитано\n");
         #endif
         
         HAL_i2C_Slave_CleanFlag(hi2c);
+
+        while(hi2c->Instance->ISR & I2C_ISR_BUSY_M);
     }
     
 }
