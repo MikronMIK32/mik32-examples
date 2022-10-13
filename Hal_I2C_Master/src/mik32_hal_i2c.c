@@ -167,6 +167,12 @@ void HAL_I2C_CheckError(I2C_HandleTypeDef *hi2c)
 }
 
 /* Ведущий */
+void HAL_I2C_Master_Stop(I2C_HandleTypeDef *hi2c)
+{
+    hi2c->Instance->CR2 |= I2C_CR2_STOP_M;
+    while(hi2c->Instance->ISR & I2C_ISR_BUSY_M);
+}
+
 void HAL_I2C_Master_Restart(I2C_HandleTypeDef *hi2c)
 {
     HAL_I2C_Init(hi2c);
@@ -271,9 +277,13 @@ void HAL_I2C_Master_Transfer_Init(I2C_HandleTypeDef *hi2c)
     
 
     /* Бит AutoEnd не действует при режиме Reload */
-    if(hi2c->Init.AutoEnd == SHIFT_AUTOEND_ENABLE)
+    if(hi2c->Init.AutoEnd == AUTOEND_ENABLE)
     {
         hi2c->Instance->CR2 |= I2C_CR2_AUTOEND_M;
+    }
+    else
+    {
+        hi2c->Instance->CR2 &= ~I2C_CR2_AUTOEND_M;
     }
 
     hi2c->Instance->CR2 |= I2C_CR2_START_M; // старт отправки адреса, а затем данных 
@@ -282,7 +292,7 @@ void HAL_I2C_Master_Transfer_Init(I2C_HandleTypeDef *hi2c)
 void HAL_I2C_Master_Write(I2C_HandleTypeDef *hi2c, uint16_t slave_adr, uint8_t data[], uint32_t byte_count)
 {
     #ifdef MIK32_I2C_DEBUG
-    xprintf("\nОтправка %d\n");
+    xprintf("\nОтправка\n");
     uint16_t slave_adr_print = slave_adr; // переменная используется для вывода адреса
     #endif
 
@@ -357,22 +367,24 @@ void HAL_I2C_Master_Write(I2C_HandleTypeDef *hi2c, uint16_t slave_adr, uint8_t d
         }
 
     }
-    
-    // if(hi2c->Init.ReloadMode == I2C_RELOAD_ENABLE)
-    // {
-    //     HAL_I2C_ReloadDisable(hi2c);
-    //     hi2c->Instance->CR2 |= I2C_CR2_STOP_M; 
-    // }
 
     hi2c->ErrorCode = I2C_ERROR_NONE;
 
     #ifdef MIK32_I2C_DEBUG
     xprintf("Конец передачи\n");
     #endif
-    //for (volatile int i = 0; i < 1000; i++);
+
+    if(hi2c->Init.AutoEnd == AUTOEND_DISABLE)
+    {
+        /*
+        * Флаг окончания передачи в режиме ведущего. 
+        * Устанавливается при RELOAD=0, AUTOEND=0 и передачи NBYTES байт
+        */
+        while(!(hi2c->Instance->ISR & I2C_ISR_TC_M));
+        return; 
+    }
+
     while(hi2c->Instance->ISR & I2C_ISR_BUSY_M);
-    
-    //hi2c->Instance->ICR |= I2C_ICR_STOPCF_M | I2C_ICR_NACKCF_M; // сброс флага STOPF и NACKF
 
 }
 
@@ -380,7 +392,7 @@ void HAL_I2C_Master_Read(I2C_HandleTypeDef *hi2c, uint16_t slave_adr, uint8_t da
 {
     
     #ifdef MIK32_I2C_DEBUG
-    xprintf("\nЧтение%d\n");
+    xprintf("\nЧтение\n");
     uint16_t slave_adr_print = slave_adr; // переменная используется для вывода адреса
     #endif
 
@@ -467,6 +479,16 @@ void HAL_I2C_Master_Read(I2C_HandleTypeDef *hi2c, uint16_t slave_adr, uint8_t da
     xprintf("Конец передачи\n");
     #endif
 
+    if(hi2c->Init.AutoEnd == AUTOEND_DISABLE)
+    {
+        /*
+        * Флаг окончания передачи в режиме ведущего. 
+        * Устанавливается при RELOAD=0, AUTOEND=0 и передачи NBYTES байт
+        */
+        while(!(hi2c->Instance->ISR & I2C_ISR_TC_M));
+        return; 
+    }
+
     while(hi2c->Instance->ISR & I2C_ISR_BUSY_M);
 
     //hi2c->Instance->ICR |= I2C_ICR_STOPCF_M | I2C_ICR_NACKCF_M; // сброс флага STOPF и NACKF
@@ -552,13 +574,18 @@ void HAL_I2C_Slave_Write(I2C_HandleTypeDef *hi2c, uint8_t data[], uint32_t byte_
         xprintf("Отправлен байт №%d 0x%02x [%d]\n", i+1, data[i], data[i]);
         #endif
 
-        HAL_i2C_Slave_CleanFlag(hi2c);
+        //HAL_i2C_Slave_CleanFlag(hi2c);
         
     }
     
     #ifdef MIK32_I2C_DEBUG
     xprintf("Конец передачи\n");
     #endif 
+
+    if(hi2c->Init.AutoEnd == AUTOEND_DISABLE)
+    {
+        return;
+    }
 
     while(hi2c->Instance->ISR & I2C_ISR_BUSY_M);
     
@@ -627,7 +654,12 @@ void HAL_I2C_Slave_Read(I2C_HandleTypeDef *hi2c, uint8_t data[], uint32_t byte_c
         xprintf("Прочитано\n");
         #endif
         
-        HAL_i2C_Slave_CleanFlag(hi2c);
+        //HAL_i2C_Slave_CleanFlag(hi2c);
+
+        if(hi2c->Init.AutoEnd == AUTOEND_DISABLE)
+        {
+            return;
+        }
 
         while(hi2c->Instance->ISR & I2C_ISR_BUSY_M);
     }

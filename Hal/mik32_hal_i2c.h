@@ -14,7 +14,7 @@
 
 #define I2C_TIMEOUT                    1000000
 #define I2C_NBYTE_MAX                  255
-#define I2C_DATA_BYTES                 300
+#define I2C_DATA_BYTES                 5
 
 /* I2C_error - номера ошибок I2C*/
 #define I2C_ERROR_NONE                 0
@@ -49,8 +49,8 @@
 #define SHIFT_ADDRESS_ENABLE           1
 
 /* I2C_autoend_mode - Режим автоматического окончания */
-#define SHIFT_AUTOEND_DISABLE          0
-#define SHIFT_AUTOEND_ENABLE           1
+#define AUTOEND_DISABLE          0
+#define AUTOEND_ENABLE           1
 
 /* I2C_transfer_direction - Направление передачи */
 #define I2C_TRANSFER_WRITE             0
@@ -154,6 +154,7 @@ void HAL_I2C_Init(I2C_HandleTypeDef *hi2c);
 void HAL_I2C_CheckError(I2C_HandleTypeDef *hi2c);
 
 /* Ведущий */
+void HAL_I2C_Master_Stop(I2C_HandleTypeDef *hi2c);
 void HAL_I2C_Master_Restart(I2C_HandleTypeDef *hi2c);
 void HAL_I2C_Master_CheckError(I2C_HandleTypeDef *hi2c);
 void HAL_I2C_Master_Transfer_Init(I2C_HandleTypeDef *hi2c);

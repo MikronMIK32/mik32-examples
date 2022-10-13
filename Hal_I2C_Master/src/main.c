@@ -29,13 +29,24 @@ int main()
     while (1)
     {    
 
-        // // Запись данных по адресу slave_adr = 0x36 без сдвига адреса
+        // Запись данных по адресу slave_adr = 0x36 без сдвига адреса
         HAL_I2C_Master_Write(&hi2c0, slave_address, data, sizeof(data)); 
-        HAL_I2C_CheckError(&hi2c0);
+        if(hi2c0.Init.AutoEnd == AUTOEND_DISABLE)
+        {
+            /*Формирование события STOP*/
+            HAL_I2C_Master_Stop(&hi2c0);
+        }
         for (volatile int i = 0; i < 1000000; i++); 
+        HAL_I2C_CheckError(&hi2c0);
+
 
         // Чтение данных по адресу slave_adr = 0x36 без сдвига адреса
         HAL_I2C_Master_Read(&hi2c0, slave_address, data, sizeof(data)); 
+        if(hi2c0.Init.AutoEnd == AUTOEND_DISABLE)
+        {
+            /*Формирование события STOP*/
+            HAL_I2C_Master_Stop(&hi2c0);
+        }
         HAL_I2C_CheckError(&hi2c0);
         for (volatile int i = 0; i < 1000000; i++); 
 
@@ -90,7 +101,7 @@ static void MX_I2C0_Init(void)
 
     hi2c0.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
     hi2c0.Init.SBCMode = I2C_SBC_DISABLE;
-    hi2c0.Init.AutoEnd = SHIFT_AUTOEND_ENABLE;
+    hi2c0.Init.AutoEnd = AUTOEND_DISABLE;
 
 
 

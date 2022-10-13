@@ -130,7 +130,7 @@ static void MX_I2C0_Init(void)
 
     hi2c0.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
     hi2c0.Init.SBCMode = I2C_SBC_DISABLE;
-    hi2c0.Init.AutoEnd = SHIFT_AUTOEND_ENABLE;
+    hi2c0.Init.AutoEnd = AUTOEND_DISABLE;
 
 
 
