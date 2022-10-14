@@ -14,7 +14,7 @@
 
 #define I2C_TIMEOUT                    1000000
 #define I2C_NBYTE_MAX                  255
-#define I2C_DATA_BYTES                 5
+#define I2C_DATA_BYTES                 260
 
 /* I2C_error - номера ошибок I2C*/
 #define I2C_ERROR_NONE                 0

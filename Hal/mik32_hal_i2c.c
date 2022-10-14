@@ -582,12 +582,15 @@ void HAL_I2C_Slave_Write(I2C_HandleTypeDef *hi2c, uint8_t data[], uint32_t byte_
     xprintf("Конец передачи\n");
     #endif 
 
-    if(hi2c->Init.AutoEnd == AUTOEND_DISABLE)
+    /*Ожидание освобождения шины*/
+    while(hi2c->Instance->ISR & I2C_ISR_BUSY_M)
     {
-        return;
+        /*Флаг соответствия адреса в режиме ведомого установлен - был рестарт*/
+        if(hi2c->Instance->ISR & I2C_ISR_ADDR_M)
+        {
+            return;
+        }
     }
-
-    while(hi2c->Instance->ISR & I2C_ISR_BUSY_M);
     
 
 }
@@ -656,12 +659,15 @@ void HAL_I2C_Slave_Read(I2C_HandleTypeDef *hi2c, uint8_t data[], uint32_t byte_c
         
         //HAL_i2C_Slave_CleanFlag(hi2c);
 
-        if(hi2c->Init.AutoEnd == AUTOEND_DISABLE)
+        /*Ожидание освобождения шины*/
+        while(hi2c->Instance->ISR & I2C_ISR_BUSY_M)
         {
-            return;
+            /*Флаг соответствия адреса в режиме ведомого установлен - был рестарт*/
+            if(hi2c->Instance->ISR & I2C_ISR_ADDR_M)
+            {
+                return;
+            }
         }
-
-        while(hi2c->Instance->ISR & I2C_ISR_BUSY_M);
     }
     
 }
