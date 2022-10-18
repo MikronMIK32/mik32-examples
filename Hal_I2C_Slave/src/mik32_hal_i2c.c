@@ -80,23 +80,15 @@ void HAL_I2C_SlaveInit(I2C_HandleTypeDef *hi2c)
     if(hi2c->Init.SBCMode == I2C_SBC_ENABLE)
     {
         hi2c->Instance->CR1 |= I2C_CR1_SBC_M; // Контроль включен
+        hi2c->Instance->CR2 |= I2C_CR2_RELOAD_M; 
     }
     else
     {
         hi2c->Instance->CR1 &= ~I2C_CR1_SBC_M; // Контроль выключен
+        hi2c->Instance->CR2 &= ~I2C_CR2_RELOAD_M;
     }
 
-    /*
-    *
-    * I2C_OAR1 - регистр собственного адреса
-    * 
-    * OA1 - собственный адрес 1
-    * 
-    * OA1MODE - режим 7/10 бит адреса OA1. 0 - 7 бит
-    * 
-    * OA1EN - использование собствевнного адреса OA1. 1 - при получении адреса OA1 - ACK 
-    * 
-    */
+    /*Режим адресации 7/10 бит*/
     switch (hi2c->Init.AddressingMode)
     {
     case I2C_ADDRESSINGMODE_7BIT:
@@ -110,6 +102,7 @@ void HAL_I2C_SlaveInit(I2C_HandleTypeDef *hi2c)
 
     hi2c->Instance->OAR1 |= (slave_address1 << I2C_OAR1_OA1_S) | I2C_OAR1_OA1EN_M; // собственный адрес 1
 
+    /*Режим дополнительного 7 битного адреса. Установка маски для дополнительного адреса*/
     if(hi2c->Init.DualAddressMode == I2C_DUALADDRESS_ENABLE)
     {
         hi2c->Instance->OAR2 |= (hi2c->Init.OwnAddress2 << I2C_OAR2_OA2_S) | 
@@ -497,7 +490,26 @@ void HAL_I2C_Master_Read(I2C_HandleTypeDef *hi2c, uint16_t slave_adr, uint8_t da
 }
 
 /* Ведомый */
-void HAL_i2C_Slave_CleanFlag(I2C_HandleTypeDef *hi2c)
+void __attribute__((weak)) HAL_I2C_Slave_SBC(I2C_HandleTypeDef *hi2c, uint32_t byte_count)
+{
+    /*Формирование ACK*/
+    HAL_I2C_Slave_ACK(hi2c);
+}
+
+void HAL_I2C_Slave_ACK(I2C_HandleTypeDef *hi2c)
+{
+    /*Формирование сигнала ACK*/
+    hi2c->Instance->CR2 &= ~I2C_CR2_NACK_M;
+}
+
+void HAL_I2C_Slave_NACK(I2C_HandleTypeDef *hi2c)
+{
+    /*Формирование сигнала NACK*/
+    hi2c->Instance->CR2 |= I2C_CR2_NACK_M;
+    hi2c->ErrorCode = I2C_ERROR_NACK;
+}
+
+void HAL_I2C_Slave_CleanFlag(I2C_HandleTypeDef *hi2c)
 {
     hi2c->Instance->ICR |= I2C_ICR_STOPCF_M | I2C_ICR_NACKCF_M; // сброс флага STOPF и NACKF
     while(hi2c->Instance->ISR & I2C_ISR_NACKF_M); // ожидание сброса флага NACKF
@@ -530,7 +542,7 @@ void HAL_I2C_Slave_CheckError(I2C_HandleTypeDef *hi2c)
         xprintf("NACKF = %d\n", (hi2c->Instance->ISR & I2C_ISR_NACKF_M) >> I2C_ISR_NACKF_S);
         #endif
 
-        HAL_i2C_Slave_CleanFlag(hi2c);
+        HAL_I2C_Slave_CleanFlag(hi2c);
         break;
     }
 }
@@ -541,7 +553,7 @@ void HAL_I2C_Slave_Write(I2C_HandleTypeDef *hi2c, uint8_t data[], uint32_t byte_
     xprintf("\nОтправка\n");
     #endif
 
-    HAL_i2C_Slave_CleanFlag(hi2c);
+    HAL_I2C_Slave_CleanFlag(hi2c);
 
     hi2c->pBuff = data;
     hi2c->TransferSize = byte_count;
@@ -574,7 +586,7 @@ void HAL_I2C_Slave_Write(I2C_HandleTypeDef *hi2c, uint8_t data[], uint32_t byte_
         xprintf("Отправлен байт №%d 0x%02x [%d]\n", i+1, data[i], data[i]);
         #endif
 
-        //HAL_i2C_Slave_CleanFlag(hi2c);
+        //HAL_I2C_Slave_CleanFlag(hi2c);
         
     }
     
@@ -601,7 +613,7 @@ void HAL_I2C_Slave_Read(I2C_HandleTypeDef *hi2c, uint8_t data[], uint32_t byte_c
     xprintf("\nЧтение\n");
     #endif
 
-    HAL_i2C_Slave_CleanFlag(hi2c);
+    HAL_I2C_Slave_CleanFlag(hi2c);
 
     hi2c->pBuff = data;
     hi2c->TransferSize = byte_count;
@@ -616,7 +628,7 @@ void HAL_I2C_Slave_Read(I2C_HandleTypeDef *hi2c, uint8_t data[], uint32_t byte_c
         while(!(hi2c->Instance->ISR & I2C_ISR_RXNE_M))
         {
             
-            timeout_counter++;
+            //timeout_counter++;
 
             if(hi2c->Instance->ISR & I2C_ISR_DIR_M)
             {
@@ -647,6 +659,18 @@ void HAL_I2C_Slave_Read(I2C_HandleTypeDef *hi2c, uint8_t data[], uint32_t byte_c
             #ifdef MIK32_I2C_DEBUG
             xprintf("Чтение байта №%d  0x%02x [%d]\n", i+1, data[i], data[i]);
             #endif
+
+            if(hi2c->Init.SBCMode == I2C_SBC_ENABLE)
+            {
+                HAL_I2C_Slave_SBC(hi2c, i);
+                hi2c->Instance->CR2 |= I2C_CR2_NBYTES(0x1);
+                if(hi2c->ErrorCode == I2C_ERROR_NACK)
+                {
+                    // Ведомый отправил NACK. Ошибка чтения
+                    hi2c->ErrorCode = I2C_ERROR_NACK;
+                    return;
+                }
+            }
         }
         
     }
@@ -657,7 +681,7 @@ void HAL_I2C_Slave_Read(I2C_HandleTypeDef *hi2c, uint8_t data[], uint32_t byte_c
         xprintf("Прочитано\n");
         #endif
         
-        //HAL_i2C_Slave_CleanFlag(hi2c);
+        //HAL_I2C_Slave_CleanFlag(hi2c);
 
         /*Ожидание освобождения шины*/
         while(hi2c->Instance->ISR & I2C_ISR_BUSY_M)

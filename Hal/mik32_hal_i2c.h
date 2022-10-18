@@ -14,7 +14,7 @@
 
 #define I2C_TIMEOUT                    1000000
 #define I2C_NBYTE_MAX                  255
-#define I2C_DATA_BYTES                 260
+#define I2C_DATA_BYTES                 5
 
 /* I2C_error - номера ошибок I2C*/
 #define I2C_ERROR_NONE                 0
@@ -162,7 +162,10 @@ void HAL_I2C_Master_Write(I2C_HandleTypeDef *hi2c, uint16_t slave_adr, uint8_t d
 void HAL_I2C_Master_Read(I2C_HandleTypeDef *hi2c, uint16_t slave_adr, uint8_t data[], uint32_t byte_count);
 
 /* Ведомый */
-void HAL_i2C_Slave_CleanFlag(I2C_HandleTypeDef *hi2c);
+extern void HAL_I2C_Slave_SBC(I2C_HandleTypeDef *hi2c, uint32_t byte_count);
+void HAL_I2C_Slave_ACK(I2C_HandleTypeDef *hi2c);
+void HAL_I2C_Slave_NACK(I2C_HandleTypeDef *hi2c);
+void HAL_I2C_Slave_CleanFlag(I2C_HandleTypeDef *hi2c);
 void HAL_I2C_Slave_Restart(I2C_HandleTypeDef *hi2c);
 void HAL_I2C_Slave_CheckError(I2C_HandleTypeDef *hi2c);
 void HAL_I2C_Slave_Write(I2C_HandleTypeDef *hi2c, uint8_t data[], uint32_t byte_count);
