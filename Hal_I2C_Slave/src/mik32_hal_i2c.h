@@ -158,16 +158,21 @@ void HAL_I2C_Master_Stop(I2C_HandleTypeDef *hi2c);
 void HAL_I2C_Master_Restart(I2C_HandleTypeDef *hi2c);
 void HAL_I2C_Master_CheckError(I2C_HandleTypeDef *hi2c);
 void HAL_I2C_Master_Transfer_Init(I2C_HandleTypeDef *hi2c);
+void HAL_I2C_Master_WriteNBYTE(I2C_HandleTypeDef *hi2c, uint16_t slave_adr, uint8_t data[], uint32_t byte_count);
+void HAL_I2C_Master_ReadNBYTE(I2C_HandleTypeDef *hi2c, uint16_t slave_adr, uint8_t data[], uint32_t byte_count);
 void HAL_I2C_Master_Write(I2C_HandleTypeDef *hi2c, uint16_t slave_adr, uint8_t data[], uint32_t byte_count);
 void HAL_I2C_Master_Read(I2C_HandleTypeDef *hi2c, uint16_t slave_adr, uint8_t data[], uint32_t byte_count);
 
 /* Ведомый */
 extern void HAL_I2C_Slave_SBC(I2C_HandleTypeDef *hi2c, uint32_t byte_count);
+void HAL_I2C_Slave_WaitADDR(I2C_HandleTypeDef *hi2c);
 void HAL_I2C_Slave_ACK(I2C_HandleTypeDef *hi2c);
 void HAL_I2C_Slave_NACK(I2C_HandleTypeDef *hi2c);
 void HAL_I2C_Slave_CleanFlag(I2C_HandleTypeDef *hi2c);
 void HAL_I2C_Slave_Restart(I2C_HandleTypeDef *hi2c);
 void HAL_I2C_Slave_CheckError(I2C_HandleTypeDef *hi2c);
+void HAL_I2C_Slave_WriteNBYTE(I2C_HandleTypeDef *hi2c, uint8_t data[], uint32_t byte_count);
+void HAL_I2C_Slave_ReadNBYTE(I2C_HandleTypeDef *hi2c, uint8_t data[], uint32_t byte_count);
 void HAL_I2C_Slave_Write(I2C_HandleTypeDef *hi2c, uint8_t data[], uint32_t byte_count);
 void HAL_I2C_Slave_Read(I2C_HandleTypeDef *hi2c, uint8_t data[], uint32_t byte_count);
 

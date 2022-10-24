@@ -145,6 +145,11 @@ void HAL_I2C_CheckError(I2C_HandleTypeDef *hi2c)
         }
     #endif
 
+    if(hi2c->ErrorCode == I2C_ERROR_NONE)
+    {
+        return;
+    }
+
     switch (hi2c->Mode)
     {
     case HAL_I2C_MODE_SLAVE:
@@ -282,7 +287,7 @@ void HAL_I2C_Master_Transfer_Init(I2C_HandleTypeDef *hi2c)
     hi2c->Instance->CR2 |= I2C_CR2_START_M; // старт отправки адреса, а затем данных 
 }
 
-void HAL_I2C_Master_Write(I2C_HandleTypeDef *hi2c, uint16_t slave_adr, uint8_t data[], uint32_t byte_count)
+void HAL_I2C_Master_WriteNBYTE(I2C_HandleTypeDef *hi2c, uint16_t slave_adr, uint8_t data[], uint32_t byte_count)
 {
     #ifdef MIK32_I2C_DEBUG
     xprintf("\nОтправка\n");
@@ -381,7 +386,7 @@ void HAL_I2C_Master_Write(I2C_HandleTypeDef *hi2c, uint16_t slave_adr, uint8_t d
 
 }
 
-void HAL_I2C_Master_Read(I2C_HandleTypeDef *hi2c, uint16_t slave_adr, uint8_t data[], uint32_t byte_count)
+void HAL_I2C_Master_ReadNBYTE(I2C_HandleTypeDef *hi2c, uint16_t slave_adr, uint8_t data[], uint32_t byte_count)
 {
     
     #ifdef MIK32_I2C_DEBUG
@@ -489,11 +494,54 @@ void HAL_I2C_Master_Read(I2C_HandleTypeDef *hi2c, uint16_t slave_adr, uint8_t da
 
 }
 
+void HAL_I2C_Master_Write(I2C_HandleTypeDef *hi2c, uint16_t slave_adr, uint8_t data[], uint32_t byte_count)
+{
+    /*Запись данных по адресу slave_adr без сдвига адреса*/
+    HAL_I2C_Master_WriteNBYTE(hi2c, slave_adr, data, byte_count); 
+    HAL_I2C_CheckError(hi2c);
+}
+
+void HAL_I2C_Master_Read(I2C_HandleTypeDef *hi2c, uint16_t slave_adr, uint8_t data[], uint32_t byte_count)
+{
+    /*Чтение данных по адресу slave_adr без сдвига адреса*/
+    HAL_I2C_Master_ReadNBYTE(hi2c, slave_adr, data, byte_count);  
+    HAL_I2C_CheckError(hi2c);
+}
+
 /* Ведомый */
 void __attribute__((weak)) HAL_I2C_Slave_SBC(I2C_HandleTypeDef *hi2c, uint32_t byte_count)
 {
     /*Формирование ACK*/
     HAL_I2C_Slave_ACK(hi2c);
+}
+
+void HAL_I2C_Slave_WaitADDR(I2C_HandleTypeDef *hi2c)
+{
+    #ifdef MIK32_I2C_DEBUG
+    xprintf("\nОжидание\n");
+    #endif
+
+    int counter = 0;
+    
+    /*Ожидание запроса мастером адреса слейва*/ 
+    while(!(hi2c->Instance->ISR & I2C_ISR_ADDR_M))
+    {
+        counter++;
+        if(counter==10000000)
+        {
+            #ifdef MIK32_I2C_DEBUG
+            xprintf("\nОжидание\n");
+            #endif
+            counter = 0;
+        }
+        
+    } 
+    
+    /*
+    * Сброс флага ADDR для подверждения принятия адреса
+    * ADDR - Флаг соответствия адреса в режиме ведомого
+    */
+    hi2c->Instance->ICR |= I2C_ICR_ADDRCF_M;
 }
 
 void HAL_I2C_Slave_ACK(I2C_HandleTypeDef *hi2c)
@@ -511,8 +559,10 @@ void HAL_I2C_Slave_NACK(I2C_HandleTypeDef *hi2c)
 
 void HAL_I2C_Slave_CleanFlag(I2C_HandleTypeDef *hi2c)
 {
-    hi2c->Instance->ICR |= I2C_ICR_STOPCF_M | I2C_ICR_NACKCF_M; // сброс флага STOPF и NACKF
+    hi2c->Instance->ICR |= I2C_ICR_STOPCF_M | I2C_ICR_NACKCF_M | I2C_ICR_OVRCF_M; // сброс флагов
+    while(hi2c->Instance->ISR & I2C_ISR_OVR_M); // ожидание сброса флага OVR
     while(hi2c->Instance->ISR & I2C_ISR_NACKF_M); // ожидание сброса флага NACKF
+    while(hi2c->Instance->ISR & I2C_ISR_STOPF_M); // ожидание сброса флага STOPF
 
     #ifdef MIK32_I2C_DEBUG
     xprintf("сброшено. NACKF = %d\n", (hi2c->Instance->ISR & I2C_ISR_NACKF_M) >> I2C_ISR_NACKF_S);
@@ -538,8 +588,14 @@ void HAL_I2C_Slave_CheckError(I2C_HandleTypeDef *hi2c)
         break;
     case I2C_ERROR_NACK:
         #ifdef MIK32_I2C_DEBUG
-        xprintf("Ошибка при передаче\n");
-        xprintf("NACKF = %d\n", (hi2c->Instance->ISR & I2C_ISR_NACKF_M) >> I2C_ISR_NACKF_S);
+        xprintf("Ошибка. NACKF = %d\n", (hi2c->Instance->ISR & I2C_ISR_NACKF_M) >> I2C_ISR_NACKF_S);
+        #endif
+
+        HAL_I2C_Slave_CleanFlag(hi2c);
+        break;
+    case I2C_ERROR_OVR:
+        #ifdef MIK32_I2C_DEBUG
+        xprintf("Ошибка перебор/недобор. OVR = %d\n", (hi2c->Instance->ISR & I2C_ISR_OVR_M) >> I2C_ISR_OVR_S);
         #endif
 
         HAL_I2C_Slave_CleanFlag(hi2c);
@@ -547,67 +603,65 @@ void HAL_I2C_Slave_CheckError(I2C_HandleTypeDef *hi2c)
     }
 }
 
-void HAL_I2C_Slave_Write(I2C_HandleTypeDef *hi2c, uint8_t data[], uint32_t byte_count)
+void HAL_I2C_Slave_WriteNBYTE(I2C_HandleTypeDef *hi2c, uint8_t data[], uint32_t byte_count)
 {
     #ifdef MIK32_I2C_DEBUG
     xprintf("\nОтправка\n");
     #endif
-
+       
     HAL_I2C_Slave_CleanFlag(hi2c);
-
+    
     hi2c->pBuff = data;
     hi2c->TransferSize = byte_count;
     hi2c->TransferDirection = I2C_TRANSFER_WRITE;
-
     for (uint32_t i = 0; i < byte_count; i++)
     {
+        
         int timeout_counter = 0; // Счетчик для ожидания
-        while(!(hi2c->Instance->ISR & I2C_ISR_TXIS_M)) // TXIS = 1 - регистр TXDR свободен
+        while(!(hi2c->Instance->ISR & I2C_ISR_TXE_M)) // TXE = 1 - Данные заиисываются в сдвиговый регистр
         {
             timeout_counter++;
             if(timeout_counter == I2C_TIMEOUT)
             {
-                // Ожидание превышено. Возможно механическое повреждение линии связи
+                /*Ожидание превышено. Возможно механическое повреждение линии связи*/
                 hi2c->ErrorCode = I2C_ERROR_TIMEOUT;
                 return;
             }
 
-            // При записи байта мастер прислал NACK. Возникла ошибка при передаче
+            /*При записи байта мастер прислал NACK. Возникла ошибка при передаче*/
             if(hi2c->Instance->ISR & I2C_ISR_NACKF_M)
             {
                 hi2c->ErrorCode = I2C_ERROR_NACK;
                 return;
             }
+
+        }
+        hi2c->Instance->TXDR = data[i]; // Загрузка передаваемого байта в регистр TXDR
+        
+        if(hi2c->Init.NoStretchMode == I2C_NOSTRETCH_ENABLE)
+        {
+            /*В TXDR долго не записываются данные. Перед передачей не был сброшен STOPF*/
+            if(hi2c->Instance->ISR & I2C_ISR_OVR_M)
+            {
+                hi2c->ErrorCode = I2C_ERROR_OVR;
+                return;
+            }
         }
 
-        hi2c->Instance->TXDR = data[i]; // Загрузка передаваемого байта в регистр TXDR
 
         #ifdef MIK32_I2C_DEBUG
         xprintf("Отправлен байт №%d 0x%02x [%d]\n", i+1, data[i], data[i]);
         #endif
 
-        //HAL_I2C_Slave_CleanFlag(hi2c);
         
     }
-    
+    //HAL_I2C_Slave_CleanFlag(hi2c);
     #ifdef MIK32_I2C_DEBUG
     xprintf("Конец передачи\n");
     #endif 
-
-    /*Ожидание освобождения шины*/
-    while(hi2c->Instance->ISR & I2C_ISR_BUSY_M)
-    {
-        /*Флаг соответствия адреса в режиме ведомого установлен - был рестарт*/
-        if(hi2c->Instance->ISR & I2C_ISR_ADDR_M)
-        {
-            return;
-        }
-    }
-    
-
 }
 
-void HAL_I2C_Slave_Read(I2C_HandleTypeDef *hi2c, uint8_t data[], uint32_t byte_count)
+void HAL_I2C_Slave_ReadNBYTE(I2C_HandleTypeDef *hi2c, uint8_t data[], uint32_t byte_count)
 {
     #ifdef MIK32_I2C_DEBUG
     xprintf("\nЧтение\n");
@@ -621,31 +675,40 @@ void HAL_I2C_Slave_Read(I2C_HandleTypeDef *hi2c, uint8_t data[], uint32_t byte_c
 
     for (uint32_t i = 0; i < byte_count; i++)
     {
-        // Счетчик для ожидания
+       
+        /*Счетчик для ожидания*/
         int timeout_counter = 0;
 
-        // Байт нужно прочитать когда RXNE = 1
-        while(!(hi2c->Instance->ISR & I2C_ISR_RXNE_M))
+        /*Байт нужно прочитать когда RXNE = 1*/
+        while(!(hi2c->Instance->ISR & I2C_ISR_RXNE_M)) 
         {
             
-            //timeout_counter++;
+            timeout_counter++;
 
-            if(hi2c->Instance->ISR & I2C_ISR_DIR_M)
-            {
-                // Смена направления. Запрос на запись
-                break;
-            }
+            // /*Флаг соответствия адреса в режиме ведомого установлен - был рестарт*/
+            // if(hi2c->Instance->ISR & I2C_ISR_ADDR_M)
+            // {
+            //     hi2c->ErrorCode = I2C_ERROR_NONE;
+            //     return;
+            // }
 
             if(timeout_counter == I2C_TIMEOUT)
             {
-                // Ожидание превышено. Возможно механическое повреждение линии связи
+                /*Ожидание превышено. Возможно механическое повреждение линии связи*/
                 hi2c->ErrorCode = I2C_ERROR_TIMEOUT;
+                return;
+            }
+
+            /*Данные не вычитаны из RXDR до ACK следующего байта*/
+            if(hi2c->Instance->ISR & I2C_ISR_OVR_M)
+            {
+                hi2c->ErrorCode = I2C_ERROR_OVR;
                 return;
             }
 
             if((hi2c->Instance->ISR & I2C_ISR_NACKF_M))
             {
-                // Ведомый отправил NACK. Ошибка чтения
+                /*Ведомый отправил NACK. Ошибка чтения*/
                 hi2c->ErrorCode = I2C_ERROR_NACK;
                 return;
             }
@@ -664,9 +727,10 @@ void HAL_I2C_Slave_Read(I2C_HandleTypeDef *hi2c, uint8_t data[], uint32_t byte_c
             {
                 HAL_I2C_Slave_SBC(hi2c, i);
                 hi2c->Instance->CR2 |= I2C_CR2_NBYTES(0x1);
+                
                 if(hi2c->ErrorCode == I2C_ERROR_NACK)
                 {
-                    // Ведомый отправил NACK. Ошибка чтения
+                    /*Ведомый отправил NACK. Ошибка чтения*/
                     hi2c->ErrorCode = I2C_ERROR_NACK;
                     return;
                 }
@@ -680,18 +744,52 @@ void HAL_I2C_Slave_Read(I2C_HandleTypeDef *hi2c, uint8_t data[], uint32_t byte_c
         #ifdef MIK32_I2C_DEBUG
         xprintf("Прочитано\n");
         #endif
-        
-        //HAL_I2C_Slave_CleanFlag(hi2c);
-
-        /*Ожидание освобождения шины*/
-        while(hi2c->Instance->ISR & I2C_ISR_BUSY_M)
-        {
-            /*Флаг соответствия адреса в режиме ведомого установлен - был рестарт*/
-            if(hi2c->Instance->ISR & I2C_ISR_ADDR_M)
-            {
-                return;
-            }
-        }
     }
     
+}
+
+void HAL_I2C_Slave_Write(I2C_HandleTypeDef *hi2c, uint8_t data[], uint32_t byte_count)
+{
+    HAL_I2C_Slave_WaitADDR(hi2c);
+
+    /*Ожидание DIR = 1*/
+    while(!(hi2c->Instance->ISR & I2C_ISR_DIR_M));
+    /*
+    * I2C_ISR - Регистр прерываний и статуса 
+    * DIR = 1 – передача типа чтения, ведомый переходит в режим передатчика
+    */
+    if(hi2c->Instance->ISR & I2C_ISR_DIR_M) 
+    {
+        #ifdef MIK32_I2C_DEBUG
+        xprintf("\nЗапрос на запись\n");
+        #endif
+
+        // Отправка
+        HAL_I2C_Slave_WriteNBYTE(hi2c, data, byte_count);
+        HAL_I2C_CheckError(hi2c);
+        
+    } 
+}
+
+void HAL_I2C_Slave_Read(I2C_HandleTypeDef *hi2c, uint8_t data[], uint32_t byte_count)
+{
+    HAL_I2C_Slave_WaitADDR(hi2c);
+    
+    /*Ожидание DIR = 0*/
+    while(hi2c->Instance->ISR & I2C_ISR_DIR_M);
+    /*
+    * I2C_ISR - Регистр прерываний и статуса 
+    * DIR = 0 – передача типа запись, ведомый переходит в режим приемника;
+    */
+    if(!(hi2c->Instance->ISR & I2C_ISR_DIR_M))
+    {
+        #ifdef MIK32_I2C_DEBUG
+        xprintf("\nЗапрос на чтение\n");
+        #endif
+
+        // Чтение двух байт от мастера и запись их в массив data 
+        HAL_I2C_Slave_ReadNBYTE(hi2c, data, byte_count);
+        HAL_I2C_CheckError(hi2c);
+        
+    } 
 }

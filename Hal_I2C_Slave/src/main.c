@@ -21,63 +21,13 @@ int main()
         data[i] = (uint8_t)i; 
     }
     
-    
     while (1)
     {
-        #ifdef MIK32_I2C_DEBUG
-        xprintf("\nОжидание\n");
-        #endif
- 
-        int counter = 0;
-        
-        /*Ожидание запроса мастером адреса слейва*/ 
-        while(!(hi2c0.Instance->ISR & I2C_ISR_ADDR_M))
-        {
-            counter++;
-            if(counter==10000000)
-            {
-                #ifdef MIK32_I2C_DEBUG
-                xprintf("\nОжидание\n");
-                #endif
-                counter = 0;
-            }
-            
-        } 
-        
+        /*Ведущий отправляет - ведомый принимает*/
+        HAL_I2C_Slave_Read(&hi2c0, data, sizeof(data));
 
-        /*
-        * Сброс флага ADDR для подверждения принятия адреса
-        * ADDR - Флаг соответствия адреса в режиме ведомого
-        */
-        hi2c0.Instance->ICR |= I2C_ICR_ADDRCF_M; 
-        
-        /*
-        * I2C_ISR - Регистр прерываний и статуса 
-        * DIR - Тип передачи. Обновляется в режиме ведомого при получении адреса:
-        *       0 – передача типа запись, ведомый переходит в режим приемника;
-        *       1 – передача типа чтения, ведомый переходит в режим передатчика
-        */
-        if(hi2c0.Instance->ISR & I2C_ISR_DIR_M) // DIR = 1. Режим ведомого - передатчик
-        {
-            #ifdef MIK32_I2C_DEBUG
-            xprintf("\nЗапрос на запись\n");
-            #endif
-
-            // Отправка
-            HAL_I2C_Slave_Write(&hi2c0, data, sizeof(data));
-            HAL_I2C_CheckError(&hi2c0);
-        } 
-        else // DIR = 0. Режим ведомого - приемник
-        {
-            #ifdef MIK32_I2C_DEBUG
-            xprintf("\nЗапрос на чтение\n");
-            #endif
-            
-            // Чтение двух байт от мастера и запись их в массив data 
-            HAL_I2C_Slave_Read(&hi2c0, data, sizeof(data));
-            HAL_I2C_CheckError(&hi2c0);
-            
-        }
+        /*Ведущий принимает - ведомый отправляет*/
+        HAL_I2C_Slave_Write(&hi2c0, data, sizeof(data));
 
     }
     
@@ -113,19 +63,18 @@ static void MX_I2C0_Init(void)
     hi2c0.Mode = HAL_I2C_MODE_SLAVE;
     hi2c0.ShiftAddress = SHIFT_ADDRESS_DISABLE;
     hi2c0.Init.ClockSpeed = 165;
-    hi2c0.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
-    hi2c0.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE; // При ENABLE значение AddressingMode не влияет на тип адресации (Только в режиме мастера)
+    hi2c0.Init.AddressingMode = I2C_ADDRESSINGMODE_10BIT;
+    hi2c0.Init.DualAddressMode = I2C_DUALADDRESS_ENABLE; // При ENABLE в режиме ведущего значение AddressingMode не влияет
 
     /*Настройки ведомого*/
-    hi2c0.Init.OwnAddress1 = 0x36; //0x36 0x3FF
-    hi2c0.Init.OwnAddress2 = 0b01010111; //0x57
+    hi2c0.Init.OwnAddress1 = 0x3FF; //0x36 0x3FF
+    hi2c0.Init.OwnAddress2 = 0x36; //0x57
     hi2c0.Init.OwnAddress2Mask = I2C_OWNADDRESS2_MASK_DISABLE;
-    hi2c0.Init.SBCMode = I2C_SBC_ENABLE;
+    hi2c0.Init.SBCMode = I2C_SBC_DISABLE;
+    hi2c0.Init.NoStretchMode = I2C_NOSTRETCH_ENABLE; // Не совместим с режимом SBC
 
     /*Нстройки ведущего*/
-    hi2c0.Init.AutoEnd = AUTOEND_DISABLE;
-
-    hi2c0.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
+    hi2c0.Init.AutoEnd = AUTOEND_ENABLE;
 
     HAL_I2C_Init(&hi2c0);
 
@@ -134,7 +83,7 @@ static void MX_I2C0_Init(void)
 void HAL_I2C_Slave_SBC(I2C_HandleTypeDef *hi2c, uint32_t byte_count)
 {
 
-    if(byte_count == 3)
+    if(byte_count == 2)
     {
         HAL_I2C_Slave_NACK(hi2c);
     }

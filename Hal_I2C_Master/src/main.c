@@ -13,7 +13,7 @@ int main()
     MX_I2C0_Init();
 
     // Адрес ведомого
-    uint16_t slave_address = 0x36; //0x36 0x3FF 0x7F
+    uint16_t slave_address = 0x3FF; //0x36 0x3FF 0x7F
 
     uint8_t data[I2C_DATA_BYTES];
 
@@ -30,7 +30,7 @@ int main()
     while (1)
     {    
 
-        // Запись данных по адресу slave_adr = 0x36 без сдвига адреса
+        /*Запись данных по адресу slave_address = 0x36 без сдвига адреса*/
         HAL_I2C_Master_Write(&hi2c0, slave_address, data, sizeof(data)); 
         if(hi2c0.Init.AutoEnd == AUTOEND_DISABLE)
         {
@@ -38,22 +38,19 @@ int main()
             HAL_I2C_Master_Stop(&hi2c0);
         }
         for (volatile int i = 0; i < 1000000; i++); 
-        HAL_I2C_CheckError(&hi2c0);
 
 
-        // Чтение данных по адресу slave_adr = 0x36 без сдвига адреса
+        /*Чтение данных по адресу slave_address = 0x36 без сдвига адреса*/
         HAL_I2C_Master_Read(&hi2c0, slave_address, data, sizeof(data)); 
         if(hi2c0.Init.AutoEnd == AUTOEND_DISABLE)
         {
             /*Формирование события STOP*/
             HAL_I2C_Master_Stop(&hi2c0);
         }
-        HAL_I2C_CheckError(&hi2c0);
         for (volatile int i = 0; i < 1000000; i++);
 
     }
-    
-    
+       
 }
 
 void SystemClock_Config(void)
@@ -83,22 +80,21 @@ static void MX_I2C0_Init(void)
 
     /*Общие настройки*/
     hi2c0.Instance = I2C_0;
-    hi2c0.Mode = HAL_I2C_MODE_SLAVE;
+    hi2c0.Mode = HAL_I2C_MODE_MASTER;
     hi2c0.ShiftAddress = SHIFT_ADDRESS_DISABLE;
     hi2c0.Init.ClockSpeed = 165;
-    hi2c0.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
-    hi2c0.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE; // При ENABLE значение AddressingMode не влияет на тип адресации (Только в режиме мастера)
+    hi2c0.Init.AddressingMode = I2C_ADDRESSINGMODE_10BIT;
+    hi2c0.Init.DualAddressMode = I2C_DUALADDRESS_ENABLE; // При ENABLE в режиме ведущего значение AddressingMode не влияет
 
     /*Настройки ведомого*/
     hi2c0.Init.OwnAddress1 = 0;
     hi2c0.Init.OwnAddress2 = 0;
     hi2c0.Init.OwnAddress2Mask = I2C_OWNADDRESS2_MASK_DISABLE;
-    hi2c0.Init.SBCMode = I2C_SBC_ENABLE;
+    hi2c0.Init.SBCMode = I2C_SBC_DISABLE;
+    hi2c0.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
 
     /*Нстройки ведущего*/
     hi2c0.Init.AutoEnd = AUTOEND_DISABLE;
-
-    hi2c0.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
 
     HAL_I2C_Init(&hi2c0);
 
