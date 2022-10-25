@@ -1,4 +1,5 @@
 #include "mik32_hal_i2c.h"
+#include "common.h"
 
 void HAL_I2C_Disable(I2C_HandleTypeDef *hi2c)
 {
@@ -542,6 +543,7 @@ void HAL_I2C_Slave_WaitADDR(I2C_HandleTypeDef *hi2c)
     * ADDR - Флаг соответствия адреса в режиме ведомого
     */
     hi2c->Instance->ICR |= I2C_ICR_ADDRCF_M;
+    while(hi2c->Instance->ISR & I2C_ISR_ADDR_M);
 }
 
 void HAL_I2C_Slave_ACK(I2C_HandleTypeDef *hi2c)
@@ -644,6 +646,7 @@ void HAL_I2C_Slave_WriteNBYTE(I2C_HandleTypeDef *hi2c, uint8_t data[], uint32_t 
             if(hi2c->Instance->ISR & I2C_ISR_OVR_M)
             {
                 hi2c->ErrorCode = I2C_ERROR_OVR;
+                //xprintf("ovr[%d]\n", i);
                 return;
             }
         }
@@ -751,9 +754,16 @@ void HAL_I2C_Slave_ReadNBYTE(I2C_HandleTypeDef *hi2c, uint8_t data[], uint32_t b
 void HAL_I2C_Slave_Write(I2C_HandleTypeDef *hi2c, uint8_t data[], uint32_t byte_count)
 {
     HAL_I2C_Slave_WaitADDR(hi2c);
-
+    uint32_t test1 = (hi2c->Instance->ISR & I2C_ISR_DIR_M)>>I2C_ISR_DIR_S;
+    if((hi2c->Init.AddressingMode == I2C_ADDRESSINGMODE_10BIT) && (hi2c->Init.NoStretchMode == I2C_NOSTRETCH_DISABLE))
+    {
+        HAL_I2C_Slave_WaitADDR(hi2c); 
+    }
+    uint32_t test2 = (hi2c->Instance->ISR & I2C_ISR_DIR_M)>>I2C_ISR_DIR_S;
+    
     /*Ожидание DIR = 1*/
     while(!(hi2c->Instance->ISR & I2C_ISR_DIR_M));
+    uint32_t test3 = (hi2c->Instance->ISR & I2C_ISR_DIR_M)>>I2C_ISR_DIR_S;
     /*
     * I2C_ISR - Регистр прерываний и статуса 
     * DIR = 1 – передача типа чтения, ведомый переходит в режим передатчика
@@ -763,12 +773,20 @@ void HAL_I2C_Slave_Write(I2C_HandleTypeDef *hi2c, uint8_t data[], uint32_t byte_
         #ifdef MIK32_I2C_DEBUG
         xprintf("\nЗапрос на запись\n");
         #endif
-
         // Отправка
         HAL_I2C_Slave_WriteNBYTE(hi2c, data, byte_count);
+        //xprintf("err=%d\n", hi2c->ErrorCode);
         HAL_I2C_CheckError(hi2c);
+        //xprintf("end\n");
         
     } 
+    else
+    {
+        //xprintf("end_er\n");
+    }
+    //xprintf("DIR1=%d\n",test1);
+    //xprintf("DIR2=%d\n",test2);
+    //xprintf("DIR3=%d\n\n",test3);
 }
 
 void HAL_I2C_Slave_Read(I2C_HandleTypeDef *hi2c, uint8_t data[], uint32_t byte_count)

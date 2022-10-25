@@ -30,7 +30,7 @@ int main()
     while (1)
     {    
 
-        /*Запись данных по адресу slave_address = 0x36 без сдвига адреса*/
+        // /*Запись данных по адресу slave_address = 0x36 без сдвига адреса*/
         HAL_I2C_Master_Write(&hi2c0, slave_address, data, sizeof(data)); 
         if(hi2c0.Init.AutoEnd == AUTOEND_DISABLE)
         {

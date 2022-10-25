@@ -20,12 +20,12 @@ int main()
     {
         data[i] = (uint8_t)i; 
     }
-    
+    int counter = 0;
     while (1)
     {
-        /*Ведущий отправляет - ведомый принимает*/
+        // /*Ведущий отправляет - ведомый принимает*/
         HAL_I2C_Slave_Read(&hi2c0, data, sizeof(data));
-
+        //xprintf("counter = %d\n", counter++);
         /*Ведущий принимает - ведомый отправляет*/
         HAL_I2C_Slave_Write(&hi2c0, data, sizeof(data));
 
