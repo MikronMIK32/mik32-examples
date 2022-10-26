@@ -25,13 +25,12 @@ int main()
         xprintf("data[%d] = %d\n", i, data[i]);
         #endif
     }
-
-     
+ 
     while (1)
     {    
 
-        // /*Запись данных по адресу slave_address = 0x36 без сдвига адреса*/
-        HAL_I2C_Master_Write(&hi2c0, slave_address, data, sizeof(data)); 
+        /*Запись данных по адресу slave_address = 0x36 без сдвига адреса*/
+        HAL_I2C_Master_Write(&hi2c0, 0x36, data, sizeof(data)); 
         if(hi2c0.Init.AutoEnd == AUTOEND_DISABLE)
         {
             /*Формирование события STOP*/

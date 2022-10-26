@@ -20,15 +20,14 @@ int main()
     {
         data[i] = (uint8_t)i; 
     }
-    int counter = 0;
+
     while (1)
     {
-        // /*Ведущий отправляет - ведомый принимает*/
+        /*Ведущий отправляет - ведомый принимает*/
         HAL_I2C_Slave_Read(&hi2c0, data, sizeof(data));
-        //xprintf("counter = %d\n", counter++);
+        
         /*Ведущий принимает - ведомый отправляет*/
         HAL_I2C_Slave_Write(&hi2c0, data, sizeof(data));
-
     }
     
 }
@@ -71,7 +70,7 @@ static void MX_I2C0_Init(void)
     hi2c0.Init.OwnAddress2 = 0x36; //0x57
     hi2c0.Init.OwnAddress2Mask = I2C_OWNADDRESS2_MASK_DISABLE;
     hi2c0.Init.SBCMode = I2C_SBC_DISABLE;
-    hi2c0.Init.NoStretchMode = I2C_NOSTRETCH_ENABLE; // Не совместим с режимом SBC
+    hi2c0.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE; // Не совместим с режимом SBC
 
     /*Нстройки ведущего*/
     hi2c0.Init.AutoEnd = AUTOEND_ENABLE;
