@@ -1,5 +1,6 @@
 #include "mik32_hal_i2c.h"
 
+
 void HAL_I2C_Disable(I2C_HandleTypeDef *hi2c)
 {
     hi2c->Instance->CR1 &= ~I2C_CR1_PE_M;
@@ -22,26 +23,31 @@ void HAL_I2C_ReloadEnable(I2C_HandleTypeDef *hi2c)
     hi2c->Instance->CR2 |= I2C_CR2_RELOAD_M;
 }
 
+void HAL_I2C_SetFilter(I2C_HandleTypeDef *hi2c)
+{
+    hi2c->Instance->CR1 |= I2C_CR1_DNF(hi2c->Init.Filter);
+}
+
 void HAL_I2C_SetClockSpeed(I2C_HandleTypeDef *hi2c)
 {
     /*
     * Инициализация i2c
     * TIMING - регистр таймингов
     * 
-    * SCLDEL - Задержка между изменением SDA и фронтом SCL в режиме ведущего и ведомого при NOSTRETCH = 0
+    * SCLDEL(0-15) - Задержка между изменением SDA и фронтом SCL в режиме ведущего и ведомого при NOSTRETCH = 0
     * 
-    * SDADEL - Задержка между спадом SCL и изменением SDA в режиме ведущего и ведомого при NOSTRETCH = 0
+    * SDADEL(0-15) - Задержка между спадом SCL и изменением SDA в режиме ведущего и ведомого при NOSTRETCH = 0
     * 
-    * SCLL - Время удержания SCL в состоянии логического «0» в режиме веедущего
+    * SCLL(0-255) - Время удержания SCL в состоянии логического «0» в режиме ведущего
     * 
-    * SCLH - Время удержания SCL в состоянии логической «1» в режиме веедущего
+    * SCLH(0-255) - Время удержания SCL в состоянии логической «1» в режиме ведущего
     * 
-    * PRESC - Делитель частоты I2CCLK. Используется для вычесления периода сигнала TPRESC для счетчиков предустановки, 
+    * PRESC(0-15) - Делитель частоты I2CCLK. Используется для вычесления периода сигнала TPRESC для счетчиков предустановки, 
     * удержания, уровня «0» и «1»
     * 
     */
-    hi2c->Instance->TIMINGR = I2C_TIMINGR_SCLDEL(1) | I2C_TIMINGR_SDADEL(1) |
-        I2C_TIMINGR_SCLL(20) | I2C_TIMINGR_SCLH(20) | I2C_TIMINGR_PRESC(3); //частота 164,7 кГц tsync1 + tsync2 = 10^(-6)
+    hi2c->Instance->TIMINGR = I2C_TIMINGR_SCLDEL(hi2c->Clock.SCLDEL) | I2C_TIMINGR_SDADEL(hi2c->Clock.SDADEL) |
+        I2C_TIMINGR_SCLL(hi2c->Clock.SCLL) | I2C_TIMINGR_SCLH(hi2c->Clock.SCLH) | I2C_TIMINGR_PRESC(hi2c->Clock.PRESC); //частота 164,7 кГц tsync1 + tsync2 = 10^(-6)
 }
 
 void HAL_I2C_MasterInit(I2C_HandleTypeDef *hi2c)
@@ -118,6 +124,8 @@ void HAL_I2C_Init(I2C_HandleTypeDef *hi2c)
     /* Обнуление регистра управления CR1 перед его настройкой */
     hi2c->Instance->CR1 = 0;
 
+    /* Настройка цифрового фильтра */
+    HAL_I2C_SetFilter(hi2c);
     /* Настройка требуемой частоты SCL */
     HAL_I2C_SetClockSpeed(hi2c);
 

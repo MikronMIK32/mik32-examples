@@ -61,16 +61,24 @@ static void MX_I2C0_Init(void)
     hi2c0.Instance = I2C_0;
     hi2c0.Mode = HAL_I2C_MODE_SLAVE;
     hi2c0.ShiftAddress = SHIFT_ADDRESS_DISABLE;
-    hi2c0.Init.ClockSpeed = 165;
     hi2c0.Init.AddressingMode = I2C_ADDRESSINGMODE_10BIT;
     hi2c0.Init.DualAddressMode = I2C_DUALADDRESS_ENABLE; // При ENABLE в режиме ведущего значение AddressingMode не влияет
+    hi2c0.Init.Filter = I2C_FILTER_OFF;
+
+    /*Настройка частоты*/
+    hi2c0.Clock.PRESC = 5;
+    hi2c0.Clock.SCLDEL = 10;
+    hi2c0.Clock.SDADEL = 10;
+    hi2c0.Clock.SCLH = 16;
+    hi2c0.Clock.SCLL = 16;
+    //hi2c0.Init.ClockSpeed = 175;
 
     /*Настройки ведомого*/
     hi2c0.Init.OwnAddress1 = 0x3FF; //0x36 0x3FF
     hi2c0.Init.OwnAddress2 = 0x36; //0x57
     hi2c0.Init.OwnAddress2Mask = I2C_OWNADDRESS2_MASK_DISABLE;
     hi2c0.Init.SBCMode = I2C_SBC_DISABLE;
-    hi2c0.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE; // Не совместим с режимом SBC
+    hi2c0.Init.NoStretchMode = I2C_NOSTRETCH_ENABLE; // Не совместим с режимом SBC
 
     /*Нстройки ведущего*/
     hi2c0.Init.AutoEnd = AUTOEND_ENABLE;
