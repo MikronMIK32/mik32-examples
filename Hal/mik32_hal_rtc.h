@@ -5,21 +5,32 @@
 #include "def_list.h"
 #include "mcu32_memory_map.h"
 #include "rtc.h"
-// #include "epic.h"
+
+#ifdef MIK32_RTC_IRQn
+#include "mik32_hal_irq.h"
+#endif
 
 #ifdef MIK32_RTC_DEBUG
 #include "common.h"
 #endif
 
+typedef struct
+{
+  uint8_t Alarm; /* Разрешение прерывания при наличии установленного бита ALRM */
+
+} RTC_IRQnTypeDef;
+
 typedef struct __RTC_HandleTypeDef
 {
-  RTC_TypeDef                 *Instance;  /*!< Register base address    */
+  RTC_TypeDef                 *Instance;  /* Базоый адрес регистров RTC */
+
+  RTC_IRQnTypeDef             Interrupts; /* Прерывания RTC */
 
 } RTC_HandleTypeDef;
 
 typedef struct
 {
-  uint8_t Dow;            /*  Параметр RTC. День недели.
+  uint8_t Dow;             /* Параметр RTC. День недели.
                               Этот параметр должен быть числом между Min = 1 и Max = 7 */
 
   uint8_t Hours;           /*  Параметр RTC. Часы.
@@ -86,18 +97,28 @@ typedef struct
 #define RTC_WEEKDAY_SATURDAY           ((uint8_t)0x06)
 #define RTC_WEEKDAY_SUNDAY             ((uint8_t)0x07)
 
+/* Прерывание будильника Alarm */
+#define RTC_ALARM_IRQn_DISABLE         0
+#define RTC_ALARM_IRQn_ENABLE          1
+
 
 
 
 void HAL_RTC_WaitFlag(RTC_HandleTypeDef *hrtc);
 void HAL_RTC_Disable(RTC_HandleTypeDef *hrtc);
 void HAL_RTC_Enable(RTC_HandleTypeDef *hrtc);
-//void HAL_RTC_Init(RTC_HandleTypeDef *hrtc);
 void HAL_RTC_SetTime(RTC_HandleTypeDef *hrtc, RTC_TimeTypeDef *sTime);
 void HAL_RTC_SetDate(RTC_HandleTypeDef *hrtc, RTC_DateTypeDef *sDate);
 void HAL_RTC_Alarm_SetTime(RTC_HandleTypeDef *hrtc, RTC_AlarmTypeDef *sAlarm);
 void HAL_RTC_Alarm_SetDate(RTC_HandleTypeDef *hrtc, RTC_AlarmTypeDef *sAlarm);
 void HAL_RTC_SetAlarm(RTC_HandleTypeDef *hrtc, RTC_AlarmTypeDef *sAlarm);
+void HAL_RTC_AlarmDisable(RTC_HandleTypeDef *hrtc);
+void HAL_RTC_AlrmClear(RTC_HandleTypeDef *hrtc);
+
+#ifdef MIK32_RTC_IRQn
+void HAL_RTC_IRQnEnable(RTC_HandleTypeDef *hrtc);
+void HAL_RTC_IRQnDisable(RTC_HandleTypeDef *hrtc);
+#endif
 
 #ifdef MIK32_RTC_DEBUG
 void HAL_RTC_CheckDate(RTC_HandleTypeDef *hrtc);
