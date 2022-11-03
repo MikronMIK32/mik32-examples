@@ -30,7 +30,6 @@ void HAL_RTC_Enable(RTC_HandleTypeDef *hrtc)
     HAL_RTC_WaitFlag(hrtc);
 }
 
-
 /** Установка времени
  *
  * \param dow День недели: 1 - Пн; 2 - Вт; 3 - Ср; 4 - Чт; 5 - Пт; 6 - Сб; 7 - Вс
@@ -184,6 +183,51 @@ void HAL_RTC_SetAlarm(RTC_HandleTypeDef *hrtc, RTC_AlarmTypeDef *sAlarm)
     HAL_RTC_Alarm_SetTime(hrtc, sAlarm);
     HAL_RTC_Alarm_SetDate(hrtc, sAlarm);
 }
+
+void HAL_RTC_AlarmDisable(RTC_HandleTypeDef *hrtc)
+{
+    hrtc->Instance->TALRM &= ~(RTC_TALRM_CS_M | RTC_TALRM_CM_M | RTC_TALRM_CH_M | RTC_TALRM_CDOW_M);
+    HAL_RTC_WaitFlag(hrtc);
+    
+    hrtc->Instance->DALRM &= ~(RTC_DALRM_CD_M | RTC_DALRM_CM_M | RTC_DALRM_CY_M | RTC_DALRM_CC_M);
+    HAL_RTC_WaitFlag(hrtc);
+}
+
+void HAL_RTC_AlrmClear(RTC_HandleTypeDef *hrtc)
+{
+    /* Сброс флага ALRM в RTC */
+    hrtc->Instance->CTRL &= ~RTC_CTRL_ALRM_M; 
+	HAL_RTC_WaitFlag(hrtc);
+}
+
+#ifdef MIK32_RTC_IRQn
+void HAL_RTC_IRQnEnable(RTC_HandleTypeDef *hrtc)
+{
+
+    if(hrtc->Interrupts.Alarm == RTC_ALARM_IRQn_ENABLE)
+    {
+        HAL_EPIC_MaskLevelSet(EPIC_RTC_INDEX); // Прерывание по уровню
+        xprintf("Прерывание по уровню\n");
+        hrtc->Instance->CTRL |= RTC_CTRL_INTE_M; // Разрешение прерывания в RTC
+        HAL_RTC_WaitFlag(hrtc);
+        xprintf("Разрешить прерывание по Alrm\n");
+    }
+    
+    /* Включение глобальных прерываний */
+    HAL_IRQ_EnableInterrupts(); 
+    xprintf("Глобальные прерывания включены\n");
+
+}
+
+void HAL_RTC_IRQnDisable(RTC_HandleTypeDef *hrtc)
+{
+
+    HAL_EPIC_MaskLevelClear(EPIC_RTC_INDEX); // Выключение прерывания по уровню
+    hrtc->Instance->CTRL &= ~RTC_CTRL_INTE_M; // Запрет прерывания в RTC
+    HAL_RTC_WaitFlag(hrtc);
+
+}
+#endif
 
 #ifdef MIK32_RTC_DEBUG
 

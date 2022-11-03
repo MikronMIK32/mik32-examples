@@ -1,4 +1,5 @@
 #include "main.h"
+#include "common.h"
 
 /* Private variables ---------------------------------------------------------*/
 RTC_HandleTypeDef hrtc;
@@ -21,17 +22,24 @@ int main()
     {
         if (--counter < 0)
         {
+            #ifdef MIK32_RTC_DEBUG
             HAL_RTC_Check(&hrtc);
+            #endif
+            
             counter = 1000000;
         }
 
-        if (hrtc.Instance->CTRL & RTC_CTRL_ALRM_M)
-        {
-            for (volatile int i = 0; i < 1000000; i++); 
-            xprintf("\nAlarm!\n");
-            hrtc.Instance->CTRL &= ~RTC_CTRL_ALRM_M;
-            HAL_RTC_WaitFlag(&hrtc);
-        }
+        // if (hrtc.Instance->CTRL & RTC_CTRL_ALRM_M)
+        // {
+        //     for (volatile int i = 0; i < 1000000; i++); 
+
+        //     #ifdef MIK32_RTC_DEBUG
+        //     xprintf("\nAlarm!\n");
+        //     #endif
+            
+        //     hrtc.Instance->CTRL &= ~RTC_CTRL_ALRM_M;
+        //     HAL_RTC_WaitFlag(&hrtc);
+        // }
     }
 }
 
@@ -50,7 +58,7 @@ void SystemClock_Config(void)
     HAL_RCC_OscConfig(&RCC_OscInit);
 
     PeriphClkInit.PMClockAHB = PMCLOCKAHB_DEFAULT;    
-    PeriphClkInit.PMClockAPB_M = PMCLOCKAPB_M_DEFAULT | PM_CLOCK_WU_M | PM_CLOCK_RTC_M;     
+    PeriphClkInit.PMClockAPB_M = PMCLOCKAPB_M_DEFAULT | PM_CLOCK_WU_M | PM_CLOCK_RTC_M | PM_CLOCK_EPIC_M;     
     PeriphClkInit.PMClockAPB_P = PMCLOCKAPB_P_DEFAULT | PM_CLOCK_UART_0_M;     
     PeriphClkInit.RTCClockSelection = RCC_RTCCLKSOURCE_OSC32K;
     PeriphClkInit.RTCClockCPUSelection = RCC_RTCCLKCPUSOURCE_NO_CLK;
@@ -59,34 +67,20 @@ void SystemClock_Config(void)
 
 static void MX_RTC_Init(void)
 {
-
-    /* USER CODE BEGIN RTC_Init 0 */
-
-    /* USER CODE END RTC_Init 0 */
-
+    
     RTC_TimeTypeDef sTime = {0};
     RTC_DateTypeDef sDate = {0};
     RTC_AlarmTypeDef sAlarm = {0};
 
-    /* USER CODE BEGIN RTC_Init 1 */
-
-    /* USER CODE END RTC_Init 1 */
-    /** Initialize RTC Only
-     */
     hrtc.Instance = RTC;
 
-    /* USER CODE BEGIN Check_RTC_BKUP */
-
-    /* USER CODE END Check_RTC_BKUP */
-
-    /** Initialize RTC and set the Time and Date
-     */
+    /* Установка даты и времени RTC */
     sTime.Dow = RTC_WEEKDAY_FRIDAY;
     sTime.Hours = 23;
     sTime.Minutes = 54;
     sTime.Seconds = 0;
 
-    // Выключение RTC для записи даты и времени
+    /* Выключение RTC для записи даты и времени */
     HAL_RTC_Disable(&hrtc);
 
     HAL_RTC_SetTime(&hrtc, &sTime);
@@ -98,7 +92,7 @@ static void MX_RTC_Init(void)
 
     HAL_RTC_SetDate(&hrtc, &sDate);
 
-    /* Enable the Alarm */
+    /* Включение будильника. Настройка даты и времени будильника */
     sAlarm.AlarmTime.Dow = sTime.Dow;
     sAlarm.AlarmTime.Hours = sTime.Hours;
     sAlarm.AlarmTime.Minutes = sTime.Minutes;
@@ -115,10 +109,37 @@ static void MX_RTC_Init(void)
 
     HAL_RTC_SetAlarm(&hrtc, &sAlarm);
 
+    /* Настройка прерываний RTC */
+    hrtc.Interrupts.Alarm = RTC_ALARM_IRQn_ENABLE;
+    HAL_RTC_IRQnEnable(&hrtc);
+
     HAL_RTC_Enable(&hrtc);
 
-    /* USER CODE BEGIN RTC_Init 2 */
 
-    /* USER CODE END RTC_Init 2 */
+}
 
+void trap_handler() 
+{
+    HAL_IRQ_DisableInterrupts();
+
+    uint32_t epic_mask = (1 << EPIC_RTC_INDEX);
+
+    if ((EPIC->RAW_STATUS & epic_mask) == 0)
+    {
+        xprintf("Флаг прерывнаия в EPIC равный 0 не ожидалось\n");
+    } 
+    
+    //HAL_RTC_Disable(&hrtc);
+    HAL_RTC_AlarmDisable(&hrtc);
+    //HAL_RTC_Enable(&hrtc);
+
+    HAL_RTC_AlrmClear(&hrtc);
+
+    if ((EPIC->RAW_STATUS & epic_mask) != 0)
+    {
+        xprintf("Флаг прерывнаия в EPIC не был сброшен\n");
+    } 
+
+    xprintf("\nAlarm!\n");
+    HAL_IRQ_EnableInterrupts();
 }
