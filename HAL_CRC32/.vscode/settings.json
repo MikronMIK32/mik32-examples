@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "crc.h": "c",
+        "mik32_hal_crc32.h": "c",
+        "i2c.h": "c"
+    }
+}
