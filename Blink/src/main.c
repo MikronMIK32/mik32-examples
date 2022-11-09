@@ -33,7 +33,7 @@ void ledButton() {
 	}
 }
 
-void main() {
+int main() {
 	initClock(); //включние тактирования GPIO2
 
 	PAD_CONFIG->PORT_2_CFG |= (1 << (2 * PIN_LED2)); // Установка порта 2 в режим GPIO
