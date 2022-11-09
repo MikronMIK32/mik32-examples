@@ -11,7 +11,26 @@ int main()
     SystemClock_Config();
 
     CRC_Init();
- 
+
+    uint8_t  message[] ={'1', '2', '3', '4', '5', '6', '7', '8', '9'};
+    uint32_t data[] = {0xABCDABCD, 0xA1B2C3D4};
+    uint32_t CRCValue = 0;
+    
+    /* Запись по байтам */
+    HAL_RTC_WriteData(&hcrc, message, sizeof(message));
+    CRCValue = HAL_RTC_ReadCRC(&hcrc);
+    #ifdef MIK32_CRC_DEBUG
+    xprintf("CRC32 = 0x%08x, ожидалось 0x3010BF7F\n", CRCValue);
+    #endif
+    
+    /* Запись по словам */
+    HAL_RTC_WriteData32(&hcrc, data, sizeof(data)/sizeof(*data));
+    CRCValue = HAL_RTC_ReadCRC(&hcrc);
+    #ifdef MIK32_CRC_DEBUG
+    xprintf("CRC32 = 0x%08x, ожидалось 0x6311BC18\n", CRCValue);
+    #endif
+    
+
     while (1)
     {    
 
@@ -45,11 +64,14 @@ static void CRC_Init(void)
 {
 
     hcrc.Instance = CRC;
-    hcrc.Poly = 0x00;                             
-    hcrc.Init = 0x00;                                 
-    hcrc.InputReverse = CRC_REVERSE_OFF;                          
-    hcrc.OutputReverse = CRC_REVERSE_OFF;                        
-    hcrc.OutputInversion = I2C_OUTPUTINVERSION_OFF;
+    
+    /* Настройки вычисления CRC */                    
+    /*******************************************CRC-32Q*******************************************/
+    hcrc.Poly = 0x814141AB;                             
+    hcrc.Init = 0x00000000;                                 
+    hcrc.InputReverse = CRC_REFIN_FALSE;                 
+    hcrc.OutputReverse = CRC_REFOUT_FALSE;                          
+    hcrc.OutputInversion = CRC_OUTPUTINVERSION_OFF;
 
     HAL_CRC_Init(&hcrc);
 
