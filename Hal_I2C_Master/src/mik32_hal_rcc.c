@@ -107,3 +107,43 @@ void HAL_RCC_ClockConfig(RCC_PeriphCLKInitTypeDef *PeriphClkInit)
     }
 
 }
+
+void HAL_RCC_ClockEnable(uint32_t periphery)
+{
+    uint32_t mask = 0b11 << 30;
+    switch (periphery & mask)
+    {
+    case HAL_CLOCK_AHB_MASK:
+        periphery &= ~mask;
+        PM->CLK_AHB_SET |= periphery; // включение тактирования необходимых блоков
+        break;
+    case HAL_CLOCK_APB_M_MASK:
+        periphery &= ~mask;
+        PM->CLK_APB_M_SET |= periphery; // включение тактирования необходимых блоков
+        break;
+    case HAL_CLOCK_APB_P_MASK:
+        periphery &= ~mask;
+        PM->CLK_APB_P_SET |= periphery; // включение тактирования необходимых блоков
+        break;
+    }
+}
+
+void HAL_RCC_ClockDisable(uint32_t periphery)
+{
+    uint32_t mask = 0b11 << 30;
+    switch (periphery & mask)
+    {
+    case HAL_CLOCK_AHB_MASK:
+        periphery &= ~mask;
+        PM->CLK_AHB_CLEAR |= periphery; // включение тактирования необходимых блоков
+        break;
+    case HAL_CLOCK_APB_M_MASK:
+        periphery &= ~mask;
+        PM->CLK_APB_M_CLEAR |= periphery; // включение тактирования необходимых блоков
+        break;
+    case HAL_CLOCK_APB_P_MASK:
+        periphery &= ~mask;
+        PM->CLK_APB_P_CLEAR |= periphery; // включение тактирования необходимых блоков
+        break;
+    }
+}
