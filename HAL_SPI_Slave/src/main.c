@@ -14,14 +14,22 @@ int main()
 
     uint8_t slave_output[] = {0xB0, 0xB1, 0xB2, 0xB3, 0xB4, 0xB5, 0xB6, 0xB7, 0xB8, 0xB9, 0xC0, 0xC1};
     uint8_t slave_input[sizeof(slave_output)]; 
+    for (uint32_t i = 0; i < sizeof(slave_input); i++)
+    {
+        slave_input[i] = 0;
+    }
 
     while (1)
     {    
-        HAL_SPI_Exchange(&hspi0, slave_output, slave_input, sizeof(slave_output));      
+        /* Передача и прием данных */
+        HAL_SPI_Exchange(&hspi0, slave_output, slave_input, sizeof(slave_output));
+              
         xprintf("Status = 0x%x\n", (uint8_t)hspi0.Instance->IntStatus); 
+        /* Вывод принятый данных и обнуление массива slave_input */
         for(uint32_t i = 0; i < sizeof(slave_input); i++)
         {
             xprintf("slave_input[%d] = %02x\n", i, slave_input[i]);
+            slave_input[i] = 0;
         }
     }
        
@@ -62,10 +70,6 @@ static void MX_SPI0_Init(void)
     hspi0.Init.CLKPolarity = SPI_POLARITY_LOW;         
     hspi0.Init.Decoder = SPI_DECODER_NONE;
     hspi0.Init.DataSize = SPI_DATASIZE_8BITS;  
-
-    /* Натсройки для ведущего */
-    hspi0.Init.ManualCS = SPI_MANUALCS_OFF;     /* Настройки ручного режима управления сигналом CS */
-    hspi0.ChipSelect = SPI_CS_0;                /* Выбор ведомого устройства в атоматическом режиме управления CS */
 
     HAL_SPI_Init(&hspi0);
 

@@ -17,6 +17,7 @@ void HAL_SPI_ClearRxBuffer(SPI_HandleTypeDef *hspi)
     {
         dummy = hspi->Instance->RxData;
     }
+    
 }
 
 void HAL_SPI_IntEnable(SPI_HandleTypeDef *hspi, uint32_t int_en)
@@ -77,6 +78,7 @@ void HAL_SPI_Init(SPI_HandleTypeDef *hspi)
         break;
     case HAL_SPI_MODE_SLAVE:
         SPI_config = SPI_CONFIG_SLAVE_M;
+        hspi->Init.ManualCS = SPI_MANUALCS_OFF;
         break;
     }
     
@@ -117,45 +119,70 @@ void HAL_SPI_Init(SPI_HandleTypeDef *hspi)
 
 }
 
+void HAL_SPI_ClearTXFIFO(SPI_HandleTypeDef *hspi)
+{
+    hspi->Instance->Enable |= SPI_ENABLE_CLEAR_TX_FIFO_M;
+    xprintf("TX_Clear\n");
+}
+
+void HAL_SPI_ClearRXFIFO(SPI_HandleTypeDef *hspi)
+{
+    hspi->Instance->Enable |= SPI_ENABLE_CLEAR_RX_FIFO_M;
+    xprintf("RX_Clear\n");
+}
+
+void HAL_SPI_ClearError(SPI_HandleTypeDef *hspi)
+{
+    hspi->Error.RXOVR = SPI_ERROR_RXOVR_OFF;
+    hspi->Error.ModeFail = SPI_ERROR_ModeFail_OFF;
+}
+
+void HAL_SPI_CheckError(SPI_HandleTypeDef *hspi)
+{
+    if(hspi->Error.RXOVR || hspi->Error.ModeFail)
+    {
+        HAL_SPI_ClearRxBuffer(hspi);
+        HAL_SPI_ClearRXFIFO(hspi);
+        HAL_SPI_ClearTXFIFO(hspi);
+        xprintf("OVR = %d; FAIL = %d\n", hspi->Error.RXOVR, hspi->Error.ModeFail);
+        HAL_SPI_ClearError(hspi);
+    } 
+}
+
 void HAL_SPI_WaitTxNotFull(SPI_HandleTypeDef *hspi)
 {
-    while ((hspi->Instance->IntStatus & SPI_TX_FIFO_not_full_M) == 0) ;
+    uint32_t status;
+    while (((status = hspi->Instance->IntStatus) & SPI_TX_FIFO_not_full_M) == 0)
+    {
+        if(status & SPI_RX_OVERFLOW_M)
+        {
+            hspi->Error.RXOVR = SPI_ERROR_RXOVR_ON;
+        }
+        if((status & SPI_MODE_FAIL_M) || (!hspi->Instance->Enable))
+        {
+            hspi->Error.ModeFail = SPI_ERROR_ModeFail_ON;
+            xprintf("TX_FAIL\n");
+            break;
+        }
+    }
 }
 
 void HAL_SPI_WaitRxNotEmpty(SPI_HandleTypeDef *hspi)
 {
-
-    while ((hspi->Instance->IntStatus & SPI_RX_FIFO_not_empty_M) == 0)
+    uint32_t status;
+    while (((status = hspi->Instance->IntStatus) & SPI_RX_FIFO_not_empty_M) == 0)
     {
-
+        if(status & SPI_RX_OVERFLOW_M)
+        {
+            hspi->Error.RXOVR = SPI_ERROR_RXOVR_ON;
+        }
+        if((status & SPI_MODE_FAIL_M) || (!hspi->Instance->Enable))
+        {
+            hspi->Error.ModeFail = SPI_ERROR_ModeFail_ON;
+            xprintf("RX_FAIL\n");
+            break;
+        }
     }
-}
-
-bool HAL_SPI_CheckOverflow(SPI_HandleTypeDef *hspi)
-{
-    if(hspi->Instance->IntStatus & SPI_RX_OVERFLOW_M)
-    {
-        HAL_SPI_Disable(hspi);
-        xprintf("OVERFLOW\n");
-        HAL_SPI_ClearRxBuffer(hspi);
-        /* Сброс флага RX_OVERFLOW */
-        hspi->Instance->IntStatus |= SPI_RX_OVERFLOW_M;
-        xprintf("OVR_STATUS = 0x%x\n", (uint8_t)hspi->Instance->IntStatus);
-        return true;
-    }
-    return false;
-}
-
-bool HAL_SPI_CheckModeFail(SPI_HandleTypeDef *hspi)
-{
-    if(hspi->Instance->IntStatus & SPI_MODE_FAIL_M)
-    {
-        //xprintf("MODE_FAIL\n");
-        HAL_SPI_Disable(hspi);
-        HAL_SPI_ClearRxBuffer(hspi);
-        return true;
-    }
-    return false;
 }
 
 void HAL_SPI_CS_Enable(SPI_HandleTypeDef *hspi, uint32_t CS_M)  
@@ -169,53 +196,32 @@ void HAL_SPI_CS_Disable(SPI_HandleTypeDef *hspi)
 	hspi->Instance->Config = (hspi->Instance->Config & ~SPI_CONFIG_CS_M) | SPI_CONFIG_CS_NONE_M;
 }
 
-void HAL_SPI_Exchange_Fail(SPI_HandleTypeDef *hspi, uint8_t transmit_bytes[], uint8_t receive_bytes[], uint32_t count)
-{
-
-    HAL_SPI_Enable(hspi);
-    HAL_SPI_CS_Enable(hspi, SPI_CS_0);
-
-    for(uint32_t i = 0; i < count; i++)
-    {    
-        /* Ожидание когда TX_FIFO будет не заполнен - регистр заполнен меньше чем THRESHOLD */
-        HAL_SPI_WaitTxNotFull(hspi);
-        for (uint8_t offset = 0; offset < hspi->Init.DataSize + 1; offset++)
-        {
-            /* Загрузка байта */
-            hspi->Instance->TxData = transmit_bytes[i + offset];
-        }
-        
-  
-        for (uint8_t offset = 0; offset < hspi->Init.DataSize + 1; offset++)
-        {
-            /* Ожидание когда в RX_FIFO появится хотябы один байт */
-            HAL_SPI_WaitRxNotEmpty(hspi);
-            /* Чтение байта */
-            receive_bytes[i + offset] = hspi->Instance->RxData;
-        }
-        
-        i = i + hspi->Init.DataSize;
-    }
-
-    HAL_SPI_CS_Disable(hspi);
-    HAL_SPI_Disable(hspi);
-}
-
 void HAL_SPI_Exchange(SPI_HandleTypeDef *hspi, uint8_t transmit_bytes[], uint8_t receive_bytes[], uint32_t count)
 {
-    HAL_SPI_Enable(hspi);
+    /* Не включатать SPI в ручном режиме */
+    if(hspi->Init.ManualCS == SPI_MANUALCS_OFF)
+    {
+        HAL_SPI_Enable(hspi);
+    }
+    /* Очищение флагов ошибок hspi */
+    HAL_SPI_ClearError(hspi);
 
     for(uint32_t i = 0; i < count; i++)
     {    
         /* Ожидание когда TX_FIFO будет не заполнен - регистр заполнен меньше чем THRESHOLD */
         HAL_SPI_WaitTxNotFull(hspi);
+        if(hspi->Error.ModeFail)
+        {
+            break;
+        }
+        /* Загрузка слова в TX_FIFO */
         for (uint8_t offset = 0; offset < hspi->Init.DataSize + 1; offset++)
         {
             /* Загрузка байта */
             hspi->Instance->TxData = transmit_bytes[i + offset];
         }
         
-  
+        /* Чтение слова */
         for (uint8_t offset = 0; offset < hspi->Init.DataSize + 1; offset++)
         {
             /* Ожидание когда в RX_FIFO появится хотябы один байт */
@@ -223,9 +229,20 @@ void HAL_SPI_Exchange(SPI_HandleTypeDef *hspi, uint8_t transmit_bytes[], uint8_t
             /* Чтение байта */
             receive_bytes[i + offset] = hspi->Instance->RxData;
         }
+        if(hspi->Error.ModeFail)
+        {
+            break;
+        }
 
         i = i + hspi->Init.DataSize;
     }
 
-    HAL_SPI_Disable(hspi);
+    /* Не выключатать SPI в ручном режиме */
+    if(hspi->Init.ManualCS == SPI_MANUALCS_OFF)
+    {
+        HAL_SPI_Disable(hspi);
+    }
+    /* Обработка ошибок */
+    HAL_SPI_CheckError(hspi);
+    
 }

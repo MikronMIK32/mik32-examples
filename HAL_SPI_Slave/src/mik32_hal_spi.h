@@ -10,9 +10,6 @@
 #include "common.h"
 #endif
 
-#define I2C_CR1_DNF_S                   8
-#define I2C_CR1_DNF_M                   (0xF << I2C_CR1_DNF_S)
-#define I2C_CR1_DNF(v)                  (((v) << I2C_CR1_DNF_S) & I2C_CR1_DNF_M)
 
 /* Регистры SPI */
 #define SPI_CONFIG_DATA_SZ_S		6
@@ -28,6 +25,12 @@
 #define SPI_DELAY_INIT_S            0
 #define SPI_DELAY_INIT_M            (0xFF << SPI_DELAY_INIT_S)
 #define SPI_DELAY_INIT(v)           (((v) << SPI_DELAY_INIT_S) & SPI_DELAY_INIT_M)
+
+#define SPI_ENABLE_CLEAR_TX_FIFO_S      2
+#define SPI_ENABLE_CLEAR_TX_FIFO_M      (1 << SPI_ENABLE_CLEAR_TX_FIFO_S)
+
+#define SPI_ENABLE_CLEAR_RX_FIFO_S      3
+#define SPI_ENABLE_CLEAR_RX_FIFO_M      (1 << SPI_ENABLE_CLEAR_RX_FIFO_S)
 
 /* SPI_CS - Выбор ведомых устройств */
 #define SPI_CS_NONE   0xF      /* Ведомое устройство не выбрано */
@@ -46,8 +49,8 @@
 #define SPI_BAUDRATE_DIV256     0b111   /* Деление на 256 */
 
 /* SPI_ManualCS - Режимм управления сигналом выбора ведомого - CS */
-#define SPI_MANUALCS_OFF      0   /* Ручной режим */
-#define SPI_MANUALCS_ON       1   /* Автоматический режим */
+#define SPI_MANUALCS_OFF      0   /* Автоматический режим */
+#define SPI_MANUALCS_ON       1   /* Ручной режим */
 
 /* SPI_CLKPhase - Настройки фазы тактового сигнала */
 #define SPI_PHASE_OFF   0  /* Тактовая частота SPI активна   вне слова */
@@ -67,6 +70,13 @@
 #define SPI_DATASIZE_24BITS     2   /* Длина передаваемой посылки - 24 бит */
 #define SPI_DATASIZE_32BITS     3   /* Длина передаваемой посылки - 32 бит */
 
+/* SPI_Error - Ошибки SPI */
+#define SPI_ERROR_RXOVR_OFF         (uint8_t)0
+#define SPI_ERROR_RXOVR_ON          (uint8_t)1
+#define SPI_ERROR_ModeFail_OFF      (uint8_t)0
+#define SPI_ERROR_ModeFail_ON       (uint8_t)1
+
+/* Значения по умолчанию */
 #define SPI_THRESHOLD_DEFAULT   1   /* Значение Threshold_of_TX_FIFO по умолчанию*/
 
 typedef enum 
@@ -75,6 +85,13 @@ typedef enum
     HAL_SPI_MODE_MASTER = 1,    /* Режим ведущего */
 
 } HAL_SPI_ModeTypeDef;
+
+typedef struct 
+{
+    uint8_t RXOVR;              /* Переполнение RX_FIFO */
+    uint8_t ModeFail;           /* Напряжение на выводе n_ss_in не соответствую режиму работы SPI */
+
+} HAL_SPI_ErrorTypeDef;
 
 typedef struct
 {
@@ -100,8 +117,10 @@ typedef struct
 
     SPI_InitTypeDef Init;           /* Параметры SPI */
 
+    HAL_SPI_ErrorTypeDef Error;     /* Ошибки при работе SPI */
+
     uint8_t ChipSelect;             /* Выбранное ведомое устройство */
- 
+    
 } SPI_HandleTypeDef;
 
 void HAL_SPI_Enable(SPI_HandleTypeDef *hspi);
@@ -116,13 +135,14 @@ void HAL_SPI_SetSlaveIdleCounter(SPI_HandleTypeDef *hspi, uint8_t slave_idle_cou
 void HAL_SPI_SetThresholdTX(SPI_HandleTypeDef *hspi, uint32_t threshold);
 uint32_t HAL_SPI_ReadModuleID(SPI_HandleTypeDef *hspi);
 void HAL_SPI_Init(SPI_HandleTypeDef *hspi);
+void HAL_SPI_ClearTXFIFO(SPI_HandleTypeDef *hspi);
+void HAL_SPI_ClearRXFIFO(SPI_HandleTypeDef *hspi);
+void HAL_SPI_ClearError(SPI_HandleTypeDef *hspi);
+void HAL_SPI_CheckError(SPI_HandleTypeDef *hspi);
 void HAL_SPI_WaitTxNotFull(SPI_HandleTypeDef *hspi);
 void HAL_SPI_WaitRxNotEmpty(SPI_HandleTypeDef *hspi);
-bool HAL_SPI_CheckOverflow(SPI_HandleTypeDef *hspi);
-bool HAL_SPI_CheckModeFail(SPI_HandleTypeDef *hspi);
-void HAL_SPI_CS_Enable(SPI_HandleTypeDef *hspi, uint32_t CS_M)  ;
-void HAL_SPI_CS_Disable(SPI_HandleTypeDef *hspi)  ;
-void HAL_SPI_Exchange_Fail(SPI_HandleTypeDef *hspi, uint8_t transmit_bytes[], uint8_t receive_bytes[], uint32_t count);
+void HAL_SPI_CS_Enable(SPI_HandleTypeDef *hspi, uint32_t CS_M);
+void HAL_SPI_CS_Disable(SPI_HandleTypeDef *hspi);
 void HAL_SPI_Exchange(SPI_HandleTypeDef *hspi, uint8_t transmit_bytes[], uint8_t receive_bytes[], uint32_t count);
 
 #endif
