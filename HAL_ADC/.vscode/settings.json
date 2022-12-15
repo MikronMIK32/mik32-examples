@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "mik32_hal_adc.h": "c",
+        "float.h": "c"
+    }
+}
