@@ -114,8 +114,8 @@ void HAL_SPI_Init(SPI_HandleTypeDef *hspi)
 
     xprintf("SPI_Init\n");
 
-    /* Включение модуля SPI */
-    HAL_SPI_Enable(hspi);
+    // /* Включение модуля SPI */
+    // HAL_SPI_Enable(hspi);
 
 }
 
