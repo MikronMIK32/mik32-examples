@@ -4,17 +4,17 @@ I2C_HandleTypeDef hi2c0;
 RTC_HandleTypeDef hrtc;
 
 void SystemClock_Config(void);
-static void MX_I2C0_Init(void);
-static void MX_RTC_Init(void);
+static void I2C0_Init(void);
+static void RTC_Init(void);
 
 int main()
 {    
 
     SystemClock_Config();
     
-    MX_I2C0_Init();
+    I2C0_Init();
 
-    MX_RTC_Init();
+    RTC_Init();
 
     //xprintf("\nИнициализация\n");
     HAL_SSD1306_Init(&hi2c0, BRIGHTNESS_FULL);
@@ -79,67 +79,50 @@ void SystemClock_Config(void)
     HAL_RCC_ClockConfig(&PeriphClkInit);
 }
 
-static void MX_I2C0_Init(void)
+static void I2C0_Init(void)
 {
-
-    /* USER CODE BEGIN I2C1_Init 0 */
-
-    /* USER CODE END I2C1_Init 0 */
-
-    /* USER CODE BEGIN I2C1_Init 1 */
-
-    /* USER CODE END I2C1_Init 1 */
+    //hi2c0.Init.ClockSpeed = 165;
+    
+    /*Общие настройки*/
     hi2c0.Instance = I2C_0;
     hi2c0.Mode = HAL_I2C_MODE_MASTER;
     hi2c0.ShiftAddress = SHIFT_ADDRESS_DISABLE;
-
-    hi2c0.Init.ClockSpeed = 165;
-
     hi2c0.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
-    hi2c0.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE; // При ENABLE значение AddressingMode не влияет на тип адресации (Только в режиме мастера)
+    hi2c0.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE; // При ENABLE в режиме ведущего значение AddressingMode не влияет
+    hi2c0.Init.Filter = I2C_FILTER_OFF;
+
+    /*Настройка частоты*/
+    hi2c0.Clock.PRESC = 5;
+    hi2c0.Clock.SCLDEL = 10;
+    hi2c0.Clock.SDADEL = 10;
+    hi2c0.Clock.SCLH = 16;
+    hi2c0.Clock.SCLL = 16;
+    //hi2c0.Init.ClockSpeed = 175;
+
+    /*Настройки ведомого*/
     hi2c0.Init.OwnAddress1 = 0;
     hi2c0.Init.OwnAddress2 = 0;
     hi2c0.Init.OwnAddress2Mask = I2C_OWNADDRESS2_MASK_DISABLE;
-
-    hi2c0.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
     hi2c0.Init.SBCMode = I2C_SBC_DISABLE;
-    hi2c0.Init.AutoEnd = SHIFT_AUTOEND_ENABLE;
+    hi2c0.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
 
-
+    /*Нстройки ведущего*/
+    hi2c0.Init.AutoEnd = AUTOEND_DISABLE;
 
     HAL_I2C_Init(&hi2c0);
-    /* USER CODE BEGIN I2C1_Init 2 */
-
-    /* USER CODE END I2C1_Init 2 */
 
 }
 
-static void MX_RTC_Init(void)
+static void RTC_Init(void)
 {
-
-    /* USER CODE BEGIN RTC_Init 0 */
-
-    /* USER CODE END RTC_Init 0 */
-
     RTC_TimeTypeDef sTime = {0};
     RTC_DateTypeDef sDate = {0};
 
-    /* USER CODE BEGIN RTC_Init 1 */
-
-    /* USER CODE END RTC_Init 1 */
-    /** Initialize RTC Only
-     */
     hrtc.Instance = RTC;
 
-    /* USER CODE BEGIN Check_RTC_BKUP */
-
-    /* USER CODE END Check_RTC_BKUP */
-
-    /** Initialize RTC and set the Time and Date
-     */
-    sTime.Dow = RTC_WEEKDAY_SUNDAY;
-    sTime.Hours = 0;
-    sTime.Minutes = 6;
+    sTime.Dow = RTC_WEEKDAY_MONDAY;
+    sTime.Hours = 20;
+    sTime.Minutes = 26;
     sTime.Seconds = 0;
 
     // Выключение RTC для записи даты и времени
@@ -148,16 +131,12 @@ static void MX_RTC_Init(void)
     HAL_RTC_SetTime(&hrtc, &sTime);
 
     sDate.Century = 21;
-    sDate.Day = 10;
-    sDate.Month = RTC_MONTH_OCTOBER;
+    sDate.Day = 26;
+    sDate.Month = RTC_MONTH_DECEMBER;
     sDate.Year = 22;
 
     HAL_RTC_SetDate(&hrtc, &sDate);
 
     HAL_RTC_Enable(&hrtc);
-
-    /* USER CODE BEGIN RTC_Init 2 */
-
-    /* USER CODE END RTC_Init 2 */
 
 }
