@@ -304,7 +304,7 @@ void HAL_I2C_Master_WriteNBYTE(I2C_HandleTypeDef *hi2c, uint16_t slave_adr, uint
     #endif
 
     // true когда адрес вводится без сдвига
-    if(hi2c->ShiftAddress == SHIFT_ADDRESS_DISABLE)
+    if((hi2c->ShiftAddress == SHIFT_ADDRESS_DISABLE) && (slave_adr <= 0x7F))
     {
         slave_adr = slave_adr << 1;
     } 
@@ -404,7 +404,7 @@ void HAL_I2C_Master_ReadNBYTE(I2C_HandleTypeDef *hi2c, uint16_t slave_adr, uint8
     #endif
 
     // true когда адрес вводится без сдвига
-    if(hi2c->ShiftAddress == SHIFT_ADDRESS_DISABLE)
+    if((hi2c->ShiftAddress == SHIFT_ADDRESS_DISABLE) && (slave_adr <= 0x7F))
     {
         slave_adr = slave_adr << 1;
     }
@@ -754,11 +754,15 @@ void HAL_I2C_Slave_ReadNBYTE(I2C_HandleTypeDef *hi2c, uint8_t data[], uint32_t b
 void HAL_I2C_Slave_Write(I2C_HandleTypeDef *hi2c, uint8_t data[], uint32_t byte_count)
 {
     HAL_I2C_Slave_WaitADDR(hi2c);
-    if((hi2c->Init.AddressingMode == I2C_ADDRESSINGMODE_10BIT) && (hi2c->Init.NoStretchMode == I2C_NOSTRETCH_DISABLE))
+    // if((hi2c->Init.AddressingMode == I2C_ADDRESSINGMODE_10BIT) && (hi2c->Init.NoStretchMode == I2C_NOSTRETCH_DISABLE))
+    // {
+    //     HAL_I2C_Slave_WaitADDR(hi2c); 
+    // }
+    if(hi2c->Init.AddressingMode == I2C_ADDRESSINGMODE_10BIT)
     {
         HAL_I2C_Slave_WaitADDR(hi2c); 
     }
-    
+
     /*Ожидание DIR = 1*/
     while(!(hi2c->Instance->ISR & I2C_ISR_DIR_M));
     /*
