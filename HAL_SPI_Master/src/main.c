@@ -84,7 +84,7 @@ static void MX_SPI0_Init(void)
     hspi0.Init.DataSize = SPI_DATASIZE_8BITS;  
 
     /* Натсройки для ведущего */
-    hspi0.Init.ManualCS = SPI_MANUALCS_ON;     /* Настройки ручного режима управления сигналом CS */
+    hspi0.Init.ManualCS = SPI_MANUALCS_OFF;     /* Настройки ручного режима управления сигналом CS */
     hspi0.ChipSelect = SPI_CS_0;                /* Выбор ведомого устройства в атоматическом режиме управления CS */
 
     HAL_SPI_Init(&hspi0);
