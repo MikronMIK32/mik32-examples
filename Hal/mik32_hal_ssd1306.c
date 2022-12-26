@@ -144,8 +144,9 @@ void HAL_SSD1306_Init(I2C_HandleTypeDef *hi2c, uint8_t brightness)
     };
 
     /* Oled_init - инициализация экрана в стандартном режиме */
+    // HAL_I2C_Master_Write(hi2c, slave_address, data_init, sizeof(data_init));
+    // HAL_I2C_CheckError(hi2c);
     HAL_I2C_Master_Write(hi2c, slave_address, data_init, sizeof(data_init));
-    HAL_I2C_CheckError(hi2c);
 }
 
 void HAL_SSD1306_CLR_SCR(I2C_HandleTypeDef *hi2c)
@@ -165,8 +166,9 @@ void HAL_SSD1306_CLR_SCR(I2C_HandleTypeDef *hi2c)
     }
 
     /* CLR_SCR - очищение всего экрана в горизонтальном режиме*/
+    // HAL_I2C_Master_Write(hi2c, slave_address, data_CLR_SCR, sizeof(data_CLR_SCR));
+    // HAL_I2C_CheckError(hi2c);
     HAL_I2C_Master_Write(hi2c, slave_address, data_CLR_SCR, sizeof(data_CLR_SCR));
-    HAL_I2C_CheckError(hi2c);
 }
 
 void HAL_SSD1306_SetBorder(I2C_HandleTypeDef *hi2c, uint8_t start_col, uint8_t end_col, uint8_t start_page, uint8_t end_page)
@@ -182,8 +184,9 @@ void HAL_SSD1306_SetBorder(I2C_HandleTypeDef *hi2c, uint8_t start_col, uint8_t e
     };
 
     /* set_border - установка границ вывода на дисплей */
+    // HAL_I2C_Master_Write(hi2c, slave_address, data_SetBorder, sizeof(data_SetBorder));
+    // HAL_I2C_CheckError(hi2c);
     HAL_I2C_Master_Write(hi2c, slave_address, data_SetBorder, sizeof(data_SetBorder));
-    HAL_I2C_CheckError(hi2c);
 }
 
 void HAL_SSD1306_Write(I2C_HandleTypeDef *hi2c, uint8_t symbol)
@@ -191,37 +194,37 @@ void HAL_SSD1306_Write(I2C_HandleTypeDef *hi2c, uint8_t symbol)
     switch (symbol)
     {
     case 0:
-        HAL_I2C_Master_Write(hi2c, slave_address, data_symbol_null, sizeof(data_symbol_null));
+        HAL_I2C_Master_WriteNBYTE(hi2c, slave_address, data_symbol_null, sizeof(data_symbol_null));
         break;
     case 1:
-        HAL_I2C_Master_Write(hi2c, slave_address, data_symbol_one, sizeof(data_symbol_one));
+        HAL_I2C_Master_WriteNBYTE(hi2c, slave_address, data_symbol_one, sizeof(data_symbol_one));
         break;
     case 2:
-        HAL_I2C_Master_Write(hi2c, slave_address, data_symbol_two, sizeof(data_symbol_two));
+        HAL_I2C_Master_WriteNBYTE(hi2c, slave_address, data_symbol_two, sizeof(data_symbol_two));
         break;
     case 3:
-        HAL_I2C_Master_Write(hi2c, slave_address, data_symbol_three, sizeof(data_symbol_three));
+        HAL_I2C_Master_WriteNBYTE(hi2c, slave_address, data_symbol_three, sizeof(data_symbol_three));
         break;
     case 4:
-        HAL_I2C_Master_Write(hi2c, slave_address, data_symbol_four, sizeof(data_symbol_four));
+        HAL_I2C_Master_WriteNBYTE(hi2c, slave_address, data_symbol_four, sizeof(data_symbol_four));
         break;
     case 5:
-        HAL_I2C_Master_Write(hi2c, slave_address, data_symbol_five, sizeof(data_symbol_five));
+        HAL_I2C_Master_WriteNBYTE(hi2c, slave_address, data_symbol_five, sizeof(data_symbol_five));
         break;
     case 6:
-        HAL_I2C_Master_Write(hi2c, slave_address, data_symbol_six, sizeof(data_symbol_six));
+        HAL_I2C_Master_WriteNBYTE(hi2c, slave_address, data_symbol_six, sizeof(data_symbol_six));
         break;
     case 7:
-        HAL_I2C_Master_Write(hi2c, slave_address, data_symbol_seven, sizeof(data_symbol_seven));
+        HAL_I2C_Master_WriteNBYTE(hi2c, slave_address, data_symbol_seven, sizeof(data_symbol_seven));
         break;
     case 8:
-        HAL_I2C_Master_Write(hi2c, slave_address, data_symbol_eight, sizeof(data_symbol_eight));
+        HAL_I2C_Master_WriteNBYTE(hi2c, slave_address, data_symbol_eight, sizeof(data_symbol_eight));
         break;
     case 9:
-        HAL_I2C_Master_Write(hi2c, slave_address, data_symbol_nine, sizeof(data_symbol_nine));
+        HAL_I2C_Master_WriteNBYTE(hi2c, slave_address, data_symbol_nine, sizeof(data_symbol_nine));
         break;
     default:
-        HAL_I2C_Master_Write(hi2c, slave_address, data_symbol_colon, sizeof(data_symbol_colon));
+        HAL_I2C_Master_WriteNBYTE(hi2c, slave_address, data_symbol_colon, sizeof(data_symbol_colon));
         break;
     }
 
