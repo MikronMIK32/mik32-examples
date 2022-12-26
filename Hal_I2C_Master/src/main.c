@@ -3,17 +3,17 @@
 I2C_HandleTypeDef hi2c0;
 
 void SystemClock_Config(void);
-static void MX_I2C0_Init(void);
+static void I2C0_Init(void);
 
 int main()
 {    
 
     SystemClock_Config();
     
-    MX_I2C0_Init();
+    I2C0_Init();
 
     // Адрес ведомого
-    uint16_t slave_address = 0x3FF; //0x36 0x3FF 0x7F
+    uint16_t slave_address = 0x2BB; //0x36 0x3FF 0x7F
 
     uint8_t data[I2C_DATA_BYTES];
 
@@ -30,7 +30,7 @@ int main()
     {    
 
         /*Запись данных по адресу slave_address = 0x36 без сдвига адреса*/
-        HAL_I2C_Master_Write(&hi2c0, 0x36, data, sizeof(data)); 
+        HAL_I2C_Master_WriteNBYTE(&hi2c0, 0x36, data, sizeof(data)); 
         if(hi2c0.Init.AutoEnd == AUTOEND_DISABLE)
         {
             /*Формирование события STOP*/
@@ -74,7 +74,7 @@ void SystemClock_Config(void)
     HAL_RCC_ClockConfig(&PeriphClkInit);
 }
 
-static void MX_I2C0_Init(void)
+static void I2C0_Init(void)
 {
 
     /*Общие настройки*/
@@ -98,7 +98,7 @@ static void MX_I2C0_Init(void)
     hi2c0.Init.OwnAddress2 = 0;
     hi2c0.Init.OwnAddress2Mask = I2C_OWNADDRESS2_MASK_DISABLE;
     hi2c0.Init.SBCMode = I2C_SBC_DISABLE;
-    hi2c0.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
+    hi2c0.Init.NoStretchMode = I2C_NOSTRETCH_ENABLE;
 
     /*Нстройки ведущего*/
     hi2c0.Init.AutoEnd = AUTOEND_DISABLE;
