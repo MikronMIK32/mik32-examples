@@ -1,55 +1,48 @@
 #include "mik32_hal_rcc.h"
 
 
-void HAL_RCC_OscConfig(RCC_OscInitTypeDef *RCC_OscInit)
+void HAL_RCC_OscEnable(uint8_t ocillator)
 {
-    /* Источники 32МГц */
-    if(RCC_OscInit->OscillatorEnable & RCC_OSCILLATORTYPE_HSI32M)
+    switch (ocillator)
     {
+    case RCC_OSCILLATORTYPE_HSI32M:
         WU->CLOCKS_SYS &= ~(1 << WU_CLOCKS_SYS_HSI32M_PD_S); //Включить HSI32M
-        WU->CLOCKS_SYS = WU_CLOCKS_SYS_ADJ_HSI32M(RCC_OscInit->HSI32MCalibrationValue); // Поправочный коэффициент HSI32M
-    }
-    else
-    {
-        WU->CLOCKS_SYS |= (1 << WU_CLOCKS_SYS_HSI32M_PD_S); //Выключить HSI32M
-    }
-
-    if(RCC_OscInit->OscillatorEnable & RCC_OSCILLATORTYPE_OSC32M)
-    {
+        break;
+    case RCC_OSCILLATORTYPE_OSC32M:
         WU->CLOCKS_SYS &= ~(1 << WU_CLOCKS_SYS_OSC32M_PD_S); // Включить OSC32M
-    }
-    else
-    {
-        WU->CLOCKS_SYS |= (1 << WU_CLOCKS_SYS_OSC32M_PD_S); // Выключить OSC32M
-    }
-
-    /* Источники 32кГц */
-    if(RCC_OscInit->OscillatorEnable & RCC_OSCILLATORTYPE_LSI32K)
-    {
+        break;
+    case RCC_OSCILLATORTYPE_LSI32K:
         WU->CLOCKS_BU &= ~(1 << WU_CLOCKS_BU_LSI32K_PD_S); // Включить LSI32K
-        WU->CLOCKS_BU = WU_CLOCKS_BU_ADJ_LSI32K(RCC_OscInit->LSI32KCalibrationValue); // Поправочный коэффициент LSI32K
-    }
-    else
-    {
-        WU->CLOCKS_BU |= (1 << WU_CLOCKS_BU_LSI32K_PD_S); // Выключить LSI32K
-    }
-
-    if(RCC_OscInit->OscillatorEnable & RCC_OSCILLATORTYPE_OSC32K)
-    {
+        break;
+    case RCC_OSCILLATORTYPE_OSC32K:
         WU->CLOCKS_BU &= ~(1 << WU_CLOCKS_BU_OSC32K_PD_S); // Включить OSC32K
+        break;
     }
-    else
-    {
-        WU->CLOCKS_BU |= (1 << WU_CLOCKS_BU_OSC32K_PD_S); // Выключить OSC32K
-    }
-    
-    /* Делители частоты */
-    PM->DIV_AHB = RCC_OscInit->AHBDivider;
-    PM->DIV_APB_M = RCC_OscInit->APBMDivider;
-    PM->DIV_APB_P = RCC_OscInit->APBPDivider;
+}
 
+void HAL_RCC_OscDisable(uint8_t ocillator)
+{
+    switch (ocillator)
+    {
+    case RCC_OSCILLATORTYPE_HSI32M:
+        WU->CLOCKS_SYS |= (1 << WU_CLOCKS_SYS_HSI32M_PD_S); //Включить HSI32M
+        break;
+    case RCC_OSCILLATORTYPE_OSC32M:
+        WU->CLOCKS_SYS |= (1 << WU_CLOCKS_SYS_OSC32M_PD_S); // Включить OSC32M
+        break;
+    case RCC_OSCILLATORTYPE_LSI32K:
+        WU->CLOCKS_BU |= (1 << WU_CLOCKS_BU_LSI32K_PD_S); // Включить LSI32K
+        break;
+    case RCC_OSCILLATORTYPE_OSC32K:
+        WU->CLOCKS_BU |= (1 << WU_CLOCKS_BU_OSC32K_PD_S); // Включить OSC32K
+        break;
+    }
+}
+
+void HAL_RCC_SetOscSystem(uint8_t ocillator_system)
+{
     /* Настройка источника тактирования системы */
-    switch (RCC_OscInit->OscillatorSystem)
+    switch (ocillator_system)
     {
     case RCC_OSCILLATORTYPE_HSI32M:
         PM->AHB_CLK_MUX = PM_AHB_CLK_MUX_HSI32M_M;
@@ -64,6 +57,76 @@ void HAL_RCC_OscConfig(RCC_OscInitTypeDef *RCC_OscInit)
         PM->AHB_CLK_MUX = PM_AHB_CLK_MUX_OSC32K_M;
         break;
     }
+}
+
+void HAL_RCC_DividerAHB(uint8_t divider_AHB)
+{
+    PM->DIV_AHB = divider_AHB;
+}
+
+void HAL_RCC_DividerAPB_M(uint8_t divider_APB_M)
+{
+    PM->DIV_APB_M = divider_APB_M;
+}
+
+void HAL_RCC_DividerAPB_P(uint8_t divider_APB_P)
+{
+    PM->DIV_APB_P = divider_APB_P;
+}  
+
+void HAL_RCC_OscConfig(RCC_OscInitTypeDef *RCC_OscInit)
+{
+    /* Источники 32МГц */
+    /* Внутренний */
+    if(RCC_OscInit->OscillatorEnable & RCC_OSCILLATORTYPE_HSI32M)
+    {
+        HAL_RCC_OscEnable(RCC_OSCILLATORTYPE_HSI32M); //Включить HSI32M
+        WU->CLOCKS_SYS = WU_CLOCKS_SYS_ADJ_HSI32M(RCC_OscInit->HSI32MCalibrationValue); // Поправочный коэффициент HSI32M
+    }
+    else
+    {
+        HAL_RCC_OscDisable(RCC_OSCILLATORTYPE_HSI32M);  //Выключить HSI32M
+    }
+
+    /* Внешний */
+    if(RCC_OscInit->OscillatorEnable & RCC_OSCILLATORTYPE_OSC32M)
+    {
+        HAL_RCC_OscEnable(RCC_OSCILLATORTYPE_OSC32M);   // Включить OSC32M
+    }
+    else
+    {
+        HAL_RCC_OscDisable(RCC_OSCILLATORTYPE_OSC32M);   // Выключить OSC32M
+    }
+
+    /* Источники 32кГц */
+    /* Внутренний  */
+    if(RCC_OscInit->OscillatorEnable & RCC_OSCILLATORTYPE_LSI32K)
+    {
+        HAL_RCC_OscEnable(RCC_OSCILLATORTYPE_LSI32K);   // Включить LSI32K
+        WU->CLOCKS_BU = WU_CLOCKS_BU_ADJ_LSI32K(RCC_OscInit->LSI32KCalibrationValue); // Поправочный коэффициент LSI32K
+    }
+    else
+    {
+        HAL_RCC_OscDisable(RCC_OSCILLATORTYPE_LSI32K); // Выключить LSI32K
+    }
+
+    /* Внешний */
+    if(RCC_OscInit->OscillatorEnable & RCC_OSCILLATORTYPE_OSC32K)
+    {
+        HAL_RCC_OscEnable(RCC_OSCILLATORTYPE_OSC32K); // Включить OSC32K
+    }
+    else
+    {
+        HAL_RCC_OscDisable(RCC_OSCILLATORTYPE_OSC32K); // Выключить OSC32K
+    }
+    
+    /* Делители частоты */
+    HAL_RCC_DividerAHB(RCC_OscInit->AHBDivider);
+    HAL_RCC_DividerAPB_M(RCC_OscInit->APBMDivider);
+    HAL_RCC_DividerAPB_P(RCC_OscInit->APBPDivider);
+
+    /* Настройка источника тактирования системы */
+    HAL_RCC_SetOscSystem(RCC_OscInit->OscillatorSystem);
     
 }
 

@@ -6,11 +6,11 @@
 #include "power_manager.h"
 
 /* Источники тактирования */
-#define RCC_OSCILLATORTYPE_NONE            0b0000
-#define RCC_OSCILLATORTYPE_HSI32M          0b0001
-#define RCC_OSCILLATORTYPE_OSC32M          0b0010
-#define RCC_OSCILLATORTYPE_LSI32K          0b0100
-#define RCC_OSCILLATORTYPE_OSC32K          0b1000
+#define RCC_OSCILLATORTYPE_NONE            0b0000       /* Нет источника */
+#define RCC_OSCILLATORTYPE_HSI32M          0b0001       /* Внутренний источник тактирования 32МГц */           
+#define RCC_OSCILLATORTYPE_OSC32M          0b0010       /* Внешний источник тактирования 32МГц */    
+#define RCC_OSCILLATORTYPE_LSI32K          0b0100       /* Внутренний источник тактирования 32КГц */    
+#define RCC_OSCILLATORTYPE_OSC32K          0b1000       /* Внешний источник тактирования 32КГц */    
 
 /* Источники тактирования RTC */
 #define RCC_RTCCLKSOURCE_NO_CLK            0b00          /* Нет источника */
@@ -112,6 +112,13 @@ typedef struct
 
 } RCC_PeriphCLKInitTypeDef;
 
+
+void HAL_RCC_OscEnable(uint8_t ocillator);
+void HAL_RCC_OscDisable(uint8_t ocillator);
+void HAL_RCC_SetOscSystem(uint8_t ocillator_system);
+void HAL_RCC_DividerAHB(uint8_t divider_AHB);
+void HAL_RCC_DividerAPB_M(uint8_t divider_APB_M);
+void HAL_RCC_DividerAPB_P(uint8_t divider_APB_P);
 void HAL_RCC_OscConfig(RCC_OscInitTypeDef *RCC_OscInit);
 void HAL_RCC_ClockConfig(RCC_PeriphCLKInitTypeDef *PeriphClkInit);
 void HAL_RCC_ClockEnable(uint32_t periphery);
