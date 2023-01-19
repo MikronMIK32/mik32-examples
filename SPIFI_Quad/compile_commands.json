@@ -1,0 +1,62 @@
+[
+    {
+        "command": "C:\\Users\\shche\\.platformio\\packages\\toolchain-riscv\\bin\\riscv64-unknown-elf-as.exe -march=rv32imc -mabi=ilp32 -mcmodel=medlow -Os -Wall -march=rv32imc -mabi=ilp32 -mcmodel=medlow -fmessage-length=0 -fsigned-char -ffunction-sections -fdata-sections -fno-common -march=rv32imc -mabi=ilp32 -mcmodel=medlow -Os -Wall -march=rv32imc -mabi=ilp32 -mcmodel=medlow -fmessage-length=0 -fsigned-char -ffunction-sections -fdata-sections -fno-common -Os -Wall -march=rv32imc -mabi=ilp32 -mcmodel=medlow -fmessage-length=0 -fsigned-char -ffunction-sections -fdata-sections -fno-common -o .pio\\build\\mik32\\runtime\\crt0.o C:\\Users\\shche\\.platformio\\packages\\framework-mik32v0-sdk\\shared\\runtime\\crt0.S",
+        "directory": "C:\\Users\\shche\\Documents\\PlatformIO\\Projects\\mik32-examples\\SPIFI_Quad",
+        "file": "C:\\Users\\shche\\.platformio\\packages\\framework-mik32v0-sdk\\shared\\runtime\\crt0.S"
+    },
+    {
+        "command": "C:\\Users\\shche\\.platformio\\packages\\toolchain-riscv\\bin\\riscv64-unknown-elf-as.exe -march=rv32imc -mabi=ilp32 -mcmodel=medlow -Os -Wall -march=rv32imc -mabi=ilp32 -mcmodel=medlow -fmessage-length=0 -fsigned-char -ffunction-sections -fdata-sections -fno-common -march=rv32imc -mabi=ilp32 -mcmodel=medlow -Os -Wall -march=rv32imc -mabi=ilp32 -mcmodel=medlow -fmessage-length=0 -fsigned-char -ffunction-sections -fdata-sections -fno-common -Os -Wall -march=rv32imc -mabi=ilp32 -mcmodel=medlow -fmessage-length=0 -fsigned-char -ffunction-sections -fdata-sections -fno-common -o .pio\\build\\mik32\\runtime\\crt0.o C:\\Users\\shche\\.platformio\\packages\\framework-mik32v0-sdk\\shared\\runtime\\crt0.S",
+        "directory": "C:\\Users\\shche\\Documents\\PlatformIO\\Projects\\mik32-examples\\SPIFI_Quad",
+        "file": "C:\\Users\\shche\\.platformio\\packages\\framework-mik32v0-sdk\\shared\\runtime\\crt0.S"
+    },
+    {
+        "command": "C:\\Users\\shche\\.platformio\\packages\\toolchain-riscv\\bin\\riscv64-unknown-elf-gcc.exe -o .pio\\build\\mik32\\lib0ff\\libs\\SPIFI_W25Q_lib.o -c -Os -Wall -march=rv32imc -mabi=ilp32 -mcmodel=medlow -fmessage-length=0 -fsigned-char -ffunction-sections -fdata-sections -fno-common -Os -Wall -march=rv32imc -mabi=ilp32 -mcmodel=medlow -fmessage-length=0 -fsigned-char -ffunction-sections -fdata-sections -fno-common -DPLATFORMIO=60105 -Ilib\\libs -IC:\\Users\\shche\\.platformio\\platforms\\mik32\\builder\\-v -Isrc -IC:\\Users\\shche\\.platformio\\packages\\framework-mik32v0-sdk\\shared\\include -IC:\\Users\\shche\\.platformio\\packages\\framework-mik32v0-sdk\\shared\\periphery -IC:\\Users\\shche\\.platformio\\packages\\framework-mik32v0-sdk\\shared\\runtime lib\\libs\\SPIFI_W25Q_lib.c",
+        "directory": "C:\\Users\\shche\\Documents\\PlatformIO\\Projects\\mik32-examples\\SPIFI_Quad",
+        "file": "C:\\Users\\shche\\Documents\\PlatformIO\\Projects\\mik32-examples\\SPIFI_Quad\\lib\\libs\\SPIFI_W25Q_lib.c"
+    },
+    {
+        "command": "C:\\Users\\shche\\.platformio\\packages\\toolchain-riscv\\bin\\riscv64-unknown-elf-gcc.exe -o .pio\\build\\mik32\\lib0ff\\libs\\common.o -c -Os -Wall -march=rv32imc -mabi=ilp32 -mcmodel=medlow -fmessage-length=0 -fsigned-char -ffunction-sections -fdata-sections -fno-common -Os -Wall -march=rv32imc -mabi=ilp32 -mcmodel=medlow -fmessage-length=0 -fsigned-char -ffunction-sections -fdata-sections -fno-common -DPLATFORMIO=60105 -Ilib\\libs -IC:\\Users\\shche\\.platformio\\platforms\\mik32\\builder\\-v -Isrc -IC:\\Users\\shche\\.platformio\\packages\\framework-mik32v0-sdk\\shared\\include -IC:\\Users\\shche\\.platformio\\packages\\framework-mik32v0-sdk\\shared\\periphery -IC:\\Users\\shche\\.platformio\\packages\\framework-mik32v0-sdk\\shared\\runtime lib\\libs\\common.c",
+        "directory": "C:\\Users\\shche\\Documents\\PlatformIO\\Projects\\mik32-examples\\SPIFI_Quad",
+        "file": "C:\\Users\\shche\\Documents\\PlatformIO\\Projects\\mik32-examples\\SPIFI_Quad\\lib\\libs\\common.c"
+    },
+    {
+        "command": "C:\\Users\\shche\\.platformio\\packages\\toolchain-riscv\\bin\\riscv64-unknown-elf-gcc.exe -o .pio\\build\\mik32\\lib0ff\\libs\\dma_lib.o -c -Os -Wall -march=rv32imc -mabi=ilp32 -mcmodel=medlow -fmessage-length=0 -fsigned-char -ffunction-sections -fdata-sections -fno-common -Os -Wall -march=rv32imc -mabi=ilp32 -mcmodel=medlow -fmessage-length=0 -fsigned-char -ffunction-sections -fdata-sections -fno-common -DPLATFORMIO=60105 -Ilib\\libs -IC:\\Users\\shche\\.platformio\\platforms\\mik32\\builder\\-v -Isrc -IC:\\Users\\shche\\.platformio\\packages\\framework-mik32v0-sdk\\shared\\include -IC:\\Users\\shche\\.platformio\\packages\\framework-mik32v0-sdk\\shared\\periphery -IC:\\Users\\shche\\.platformio\\packages\\framework-mik32v0-sdk\\shared\\runtime lib\\libs\\dma_lib.c",
+        "directory": "C:\\Users\\shche\\Documents\\PlatformIO\\Projects\\mik32-examples\\SPIFI_Quad",
+        "file": "C:\\Users\\shche\\Documents\\PlatformIO\\Projects\\mik32-examples\\SPIFI_Quad\\lib\\libs\\dma_lib.c"
+    },
+    {
+        "command": "C:\\Users\\shche\\.platformio\\packages\\toolchain-riscv\\bin\\riscv64-unknown-elf-gcc.exe -o .pio\\build\\mik32\\lib0ff\\libs\\memcpy.o -c -Os -Wall -march=rv32imc -mabi=ilp32 -mcmodel=medlow -fmessage-length=0 -fsigned-char -ffunction-sections -fdata-sections -fno-common -Os -Wall -march=rv32imc -mabi=ilp32 -mcmodel=medlow -fmessage-length=0 -fsigned-char -ffunction-sections -fdata-sections -fno-common -DPLATFORMIO=60105 -Ilib\\libs -IC:\\Users\\shche\\.platformio\\platforms\\mik32\\builder\\-v -Isrc -IC:\\Users\\shche\\.platformio\\packages\\framework-mik32v0-sdk\\shared\\include -IC:\\Users\\shche\\.platformio\\packages\\framework-mik32v0-sdk\\shared\\periphery -IC:\\Users\\shche\\.platformio\\packages\\framework-mik32v0-sdk\\shared\\runtime lib\\libs\\memcpy.c",
+        "directory": "C:\\Users\\shche\\Documents\\PlatformIO\\Projects\\mik32-examples\\SPIFI_Quad",
+        "file": "C:\\Users\\shche\\Documents\\PlatformIO\\Projects\\mik32-examples\\SPIFI_Quad\\lib\\libs\\memcpy.c"
+    },
+    {
+        "command": "C:\\Users\\shche\\.platformio\\packages\\toolchain-riscv\\bin\\riscv64-unknown-elf-gcc.exe -o .pio\\build\\mik32\\lib0ff\\libs\\rtc_lib.o -c -Os -Wall -march=rv32imc -mabi=ilp32 -mcmodel=medlow -fmessage-length=0 -fsigned-char -ffunction-sections -fdata-sections -fno-common -Os -Wall -march=rv32imc -mabi=ilp32 -mcmodel=medlow -fmessage-length=0 -fsigned-char -ffunction-sections -fdata-sections -fno-common -DPLATFORMIO=60105 -Ilib\\libs -IC:\\Users\\shche\\.platformio\\platforms\\mik32\\builder\\-v -Isrc -IC:\\Users\\shche\\.platformio\\packages\\framework-mik32v0-sdk\\shared\\include -IC:\\Users\\shche\\.platformio\\packages\\framework-mik32v0-sdk\\shared\\periphery -IC:\\Users\\shche\\.platformio\\packages\\framework-mik32v0-sdk\\shared\\runtime lib\\libs\\rtc_lib.c",
+        "directory": "C:\\Users\\shche\\Documents\\PlatformIO\\Projects\\mik32-examples\\SPIFI_Quad",
+        "file": "C:\\Users\\shche\\Documents\\PlatformIO\\Projects\\mik32-examples\\SPIFI_Quad\\lib\\libs\\rtc_lib.c"
+    },
+    {
+        "command": "C:\\Users\\shche\\.platformio\\packages\\toolchain-riscv\\bin\\riscv64-unknown-elf-gcc.exe -o .pio\\build\\mik32\\lib0ff\\libs\\spi_lib.o -c -Os -Wall -march=rv32imc -mabi=ilp32 -mcmodel=medlow -fmessage-length=0 -fsigned-char -ffunction-sections -fdata-sections -fno-common -Os -Wall -march=rv32imc -mabi=ilp32 -mcmodel=medlow -fmessage-length=0 -fsigned-char -ffunction-sections -fdata-sections -fno-common -DPLATFORMIO=60105 -Ilib\\libs -IC:\\Users\\shche\\.platformio\\platforms\\mik32\\builder\\-v -Isrc -IC:\\Users\\shche\\.platformio\\packages\\framework-mik32v0-sdk\\shared\\include -IC:\\Users\\shche\\.platformio\\packages\\framework-mik32v0-sdk\\shared\\periphery -IC:\\Users\\shche\\.platformio\\packages\\framework-mik32v0-sdk\\shared\\runtime lib\\libs\\spi_lib.c",
+        "directory": "C:\\Users\\shche\\Documents\\PlatformIO\\Projects\\mik32-examples\\SPIFI_Quad",
+        "file": "C:\\Users\\shche\\Documents\\PlatformIO\\Projects\\mik32-examples\\SPIFI_Quad\\lib\\libs\\spi_lib.c"
+    },
+    {
+        "command": "C:\\Users\\shche\\.platformio\\packages\\toolchain-riscv\\bin\\riscv64-unknown-elf-gcc.exe -o .pio\\build\\mik32\\lib0ff\\libs\\uart_lib.o -c -Os -Wall -march=rv32imc -mabi=ilp32 -mcmodel=medlow -fmessage-length=0 -fsigned-char -ffunction-sections -fdata-sections -fno-common -Os -Wall -march=rv32imc -mabi=ilp32 -mcmodel=medlow -fmessage-length=0 -fsigned-char -ffunction-sections -fdata-sections -fno-common -DPLATFORMIO=60105 -Ilib\\libs -IC:\\Users\\shche\\.platformio\\platforms\\mik32\\builder\\-v -Isrc -IC:\\Users\\shche\\.platformio\\packages\\framework-mik32v0-sdk\\shared\\include -IC:\\Users\\shche\\.platformio\\packages\\framework-mik32v0-sdk\\shared\\periphery -IC:\\Users\\shche\\.platformio\\packages\\framework-mik32v0-sdk\\shared\\runtime lib\\libs\\uart_lib.c",
+        "directory": "C:\\Users\\shche\\Documents\\PlatformIO\\Projects\\mik32-examples\\SPIFI_Quad",
+        "file": "C:\\Users\\shche\\Documents\\PlatformIO\\Projects\\mik32-examples\\SPIFI_Quad\\lib\\libs\\uart_lib.c"
+    },
+    {
+        "command": "C:\\Users\\shche\\.platformio\\packages\\toolchain-riscv\\bin\\riscv64-unknown-elf-gcc.exe -o .pio\\build\\mik32\\lib0ff\\libs\\xprintf.o -c -Os -Wall -march=rv32imc -mabi=ilp32 -mcmodel=medlow -fmessage-length=0 -fsigned-char -ffunction-sections -fdata-sections -fno-common -Os -Wall -march=rv32imc -mabi=ilp32 -mcmodel=medlow -fmessage-length=0 -fsigned-char -ffunction-sections -fdata-sections -fno-common -DPLATFORMIO=60105 -Ilib\\libs -IC:\\Users\\shche\\.platformio\\platforms\\mik32\\builder\\-v -Isrc -IC:\\Users\\shche\\.platformio\\packages\\framework-mik32v0-sdk\\shared\\include -IC:\\Users\\shche\\.platformio\\packages\\framework-mik32v0-sdk\\shared\\periphery -IC:\\Users\\shche\\.platformio\\packages\\framework-mik32v0-sdk\\shared\\runtime lib\\libs\\xprintf.c",
+        "directory": "C:\\Users\\shche\\Documents\\PlatformIO\\Projects\\mik32-examples\\SPIFI_Quad",
+        "file": "C:\\Users\\shche\\Documents\\PlatformIO\\Projects\\mik32-examples\\SPIFI_Quad\\lib\\libs\\xprintf.c"
+    },
+    {
+        "command": "C:\\Users\\shche\\.platformio\\packages\\toolchain-riscv\\bin\\riscv64-unknown-elf-gcc.exe -o .pio\\build\\mik32\\src\\main.o -c -Os -Wall -march=rv32imc -mabi=ilp32 -mcmodel=medlow -fmessage-length=0 -fsigned-char -ffunction-sections -fdata-sections -fno-common -Os -Wall -march=rv32imc -mabi=ilp32 -mcmodel=medlow -fmessage-length=0 -fsigned-char -ffunction-sections -fdata-sections -fno-common -DPLATFORMIO=60105 -Iinclude -Isrc -Ilib\\libs -IC:\\Users\\shche\\.platformio\\platforms\\mik32\\builder\\-v -Isrc -IC:\\Users\\shche\\.platformio\\packages\\framework-mik32v0-sdk\\shared\\include -IC:\\Users\\shche\\.platformio\\packages\\framework-mik32v0-sdk\\shared\\periphery -IC:\\Users\\shche\\.platformio\\packages\\framework-mik32v0-sdk\\shared\\runtime src\\main.c",
+        "directory": "C:\\Users\\shche\\Documents\\PlatformIO\\Projects\\mik32-examples\\SPIFI_Quad",
+        "file": "C:\\Users\\shche\\Documents\\PlatformIO\\Projects\\mik32-examples\\SPIFI_Quad\\src\\main.c"
+    },
+    {
+        "command": "C:\\Users\\shche\\.platformio\\packages\\toolchain-riscv\\bin\\riscv64-unknown-elf-gcc.exe -o .pio\\build\\mik32\\src\\main_timer.o -c -Os -Wall -march=rv32imc -mabi=ilp32 -mcmodel=medlow -fmessage-length=0 -fsigned-char -ffunction-sections -fdata-sections -fno-common -Os -Wall -march=rv32imc -mabi=ilp32 -mcmodel=medlow -fmessage-length=0 -fsigned-char -ffunction-sections -fdata-sections -fno-common -DPLATFORMIO=60105 -Iinclude -Isrc -Ilib\\libs -IC:\\Users\\shche\\.platformio\\platforms\\mik32\\builder\\-v -Isrc -IC:\\Users\\shche\\.platformio\\packages\\framework-mik32v0-sdk\\shared\\include -IC:\\Users\\shche\\.platformio\\packages\\framework-mik32v0-sdk\\shared\\periphery -IC:\\Users\\shche\\.platformio\\packages\\framework-mik32v0-sdk\\shared\\runtime src\\main_timer.c",
+        "directory": "C:\\Users\\shche\\Documents\\PlatformIO\\Projects\\mik32-examples\\SPIFI_Quad",
+        "file": "C:\\Users\\shche\\Documents\\PlatformIO\\Projects\\mik32-examples\\SPIFI_Quad\\src\\main_timer.c"
+    }
+]
