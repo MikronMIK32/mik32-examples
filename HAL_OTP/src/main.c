@@ -6,6 +6,12 @@ OTP_HandleTypeDef hotp;
 void SystemClock_Config(void);
 static void OTP_Init(void);
 
+void HAL_OTP_TestRead(OTP_HandleTypeDef *hotp, uint8_t Address)
+{
+    hotp->Instance->OTPA = Address;
+    xprintf("Address %d: 0x%08x\n", hotp->Instance->OTPA, hotp->Instance->OTPDAT);
+}
+
 int main()
 {    
 
@@ -15,10 +21,10 @@ int main()
 
     uint8_t address = 0;
 
-    uint32_t otp_data_writeTestRow = 0x1234abcd;
+    uint32_t otp_data_writeTestRow = 0x12345678;
     uint32_t otp_data_writeTestColumn[8] = {0b1, 0b0, 0b1, 0b1, 0b1, 0b1, 0b0, 0b1};
-    uint32_t otp_data_writeTestBit = 0;
-    uint32_t otp_data_write[8] = {0xCCCCDDDF, 0x12344321, 0xABCDFEDC, 0xAABBCCDD, 0x01231396, 0xDACCDACC, 0xFECDFECD, 0xAAAABBBB};
+    uint32_t otp_data_writeTestBit = 1;
+    uint32_t otp_data_write[8] = {0xAAAAAAAA, 0xBBBBBBBB, 0xCCCCCCCC, 0xDDDDDDDD, 0xEEEEEEEE, 0xFFFFFFFF, 0xAAAABBBB, 0xCCCCDDDD};
 
     uint32_t otp_data_readTestRow = 0;
     uint32_t otp_data_readTestColumn[8] = {0, 0, 0, 0, 0, 0, 0, 0};
@@ -81,7 +87,6 @@ int main()
     xprintf("\notp_data_readTestBit = 0x%08x\n", otp_data_readTestBit);
     #endif
 
-
     while (1)
     {    
 
@@ -114,6 +119,8 @@ void SystemClock_Config(void)
 static void OTP_Init(void)
 {
     hotp.Instance = OTP;
+
+    hotp.ReadMode = OPT_READ_2STAGES;
 
     HAL_OTP_Init(&hotp);
 }

@@ -31,26 +31,32 @@
 #define OTP_POWER_OFF       1            /* Hard IP введен в режим пониженного энергопотребления, операции записи и чтения запрещены */
 #define OTP_POWER_ON        0            /* Hard IP выведен из режима пониженного энергопотребления и может выполнять операции чтения и записи */
 
+/* Режим чтения */
+#define OPT_READ_2STAGES    0           /* Чтение в 2 этапа. Вводятся такты ожидания APB */
+#define OPT_READ_3STAGES    1           /* Чтение в 3 этапа. Опрос флага BSY. Нет тактов ожидания APB */
+
 typedef struct
 {
     OTP_TypeDef *Instance;       /* Базоый адрес регистров OTP */
+
+    uint8_t ReadMode;       /* Режим чтения */
     
 } OTP_HandleTypeDef;
 
 
-void HAL_OTP_PowerOff(OTP_HandleTypeDef *hotp, uint8_t power_off);
-void HAL_OTP_SetUppRead(OTP_HandleTypeDef *hotp, uint8_t upp_read_voltage);
-void HAL_OTP_SetReadCur(OTP_HandleTypeDef *hotp, uint8_t read_cur);
+void HAL_OTP_PowerOff(OTP_HandleTypeDef *hotp, uint8_t PowerOff);
+void HAL_OTP_SetUppRead(OTP_HandleTypeDef *hotp, uint8_t UppReadVoltage);
+void HAL_OTP_SetReadCur(OTP_HandleTypeDef *hotp, uint8_t ReadCur);
 void HAL_OPT_TimeInit(OTP_HandleTypeDef *hotp);
 void HAL_OTP_Init(OTP_HandleTypeDef *hotp);
 void HAL_OTP_WaitBSY(OTP_HandleTypeDef *hotp);
-void HAL_OTP_WriteTestColumn(OTP_HandleTypeDef *hotp, uint8_t address, uint32_t data[], uint32_t data_length);
-void HAL_OTP_WriteTestRow(OTP_HandleTypeDef *hotp, uint32_t data);
-void HAL_OTP_WriteTestBit(OTP_HandleTypeDef *hotp, uint32_t data);
-void HAL_OTP_Write(OTP_HandleTypeDef *hotp, uint8_t address, uint32_t data[], uint32_t data_length);
-void HAL_OTP_ReadTestColumn(OTP_HandleTypeDef *hotp, uint8_t address, uint32_t data_read[], uint32_t data_length);
+void HAL_OTP_WriteTestColumn(OTP_HandleTypeDef *hotp, uint8_t Address, uint32_t Data[], uint32_t DataLength);
+void HAL_OTP_WriteTestRow(OTP_HandleTypeDef *hotp, uint32_t Data);
+void HAL_OTP_WriteTestBit(OTP_HandleTypeDef *hotp, uint32_t Data);
+void HAL_OTP_Write(OTP_HandleTypeDef *hotp, uint8_t Address, uint32_t Data[], uint32_t DataLength);
+void HAL_OTP_ReadTestColumn(OTP_HandleTypeDef *hotp, uint8_t Address, uint32_t DataRead[], uint32_t DataLength);
 uint32_t HAL_OTP_ReadTestRow(OTP_HandleTypeDef *hotp);
 uint32_t HAL_OTP_ReadTestBit(OTP_HandleTypeDef *hotp);
-void HAL_OTP_Read(OTP_HandleTypeDef *hotp, uint8_t address, uint32_t data_read[], uint32_t data_length);
+void HAL_OTP_Read(OTP_HandleTypeDef *hotp, uint8_t Address, uint32_t DataRead[], uint32_t DataLength);
 
 #endif
