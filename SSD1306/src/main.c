@@ -121,7 +121,7 @@ static void RTC_Init(void)
     hrtc.Instance = RTC;
 
     sTime.Dow = RTC_WEEKDAY_MONDAY;
-    sTime.Hours = 20;
+    sTime.Hours = 19;
     sTime.Minutes = 26;
     sTime.Seconds = 0;
 
