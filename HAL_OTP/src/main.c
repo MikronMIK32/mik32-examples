@@ -6,11 +6,6 @@ OTP_HandleTypeDef hotp;
 void SystemClock_Config(void);
 static void OTP_Init(void);
 
-void HAL_OTP_TestRead(OTP_HandleTypeDef *hotp, uint8_t Address)
-{
-    hotp->Instance->OTPA = Address;
-    xprintf("Address %d: 0x%08x\n", hotp->Instance->OTPA, hotp->Instance->OTPDAT);
-}
 
 int main()
 {    
@@ -120,7 +115,7 @@ static void OTP_Init(void)
 {
     hotp.Instance = OTP;
 
-    hotp.ReadMode = OPT_READ_2STAGES;
+    hotp.ReadMode = OPT_READ_3STAGES;
 
     HAL_OTP_Init(&hotp);
 }
