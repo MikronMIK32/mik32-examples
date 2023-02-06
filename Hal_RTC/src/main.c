@@ -29,17 +29,17 @@ int main()
             counter = 1000000;
         }
 
-        // if (hrtc.Instance->CTRL & RTC_CTRL_ALRM_M)
-        // {
-        //     for (volatile int i = 0; i < 1000000; i++); 
-
-        //     #ifdef MIK32_RTC_DEBUG
-        //     xprintf("\nAlarm!\n");
-        //     #endif
+        if (hrtc.Instance->CTRL & RTC_CTRL_ALRM_M)
+        {
+            for (volatile int i = 0; i < 1000000; i++);
+             
+            #ifdef MIK32_RTC_DEBUG
+            xprintf("\nAlarm!\n");
+            #endif
             
-        //     hrtc.Instance->CTRL &= ~RTC_CTRL_ALRM_M;
-        //     HAL_RTC_WaitFlag(&hrtc);
-        // }
+            hrtc.Instance->CTRL &= ~RTC_CTRL_ALRM_M;
+            HAL_RTC_WaitFlag(&hrtc);
+        }
     }
 }
 
@@ -110,7 +110,7 @@ static void MX_RTC_Init(void)
     HAL_RTC_SetAlarm(&hrtc, &sAlarm);
 
     /* Настройка прерываний RTC */
-    hrtc.Interrupts.Alarm = RTC_ALARM_IRQn_ENABLE;
+    hrtc.Interrupts.Alarm = RTC_ALARM_IRQn_DISABLE;
     HAL_RTC_IRQnEnable(&hrtc);
 
     HAL_RTC_Enable(&hrtc);
