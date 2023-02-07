@@ -37,6 +37,7 @@ int main()
     //PAD_CONFIG->PORT_0_CFG |= (PORT_AS_TIMER << (2 * TIMER16_1_OUT)); 
     /***************************************************************************************/
 
+    Timer16_1_Init();
 
     /*****************Запуск таймера в одиночном или продолжительном режиме*****************/
     //HAL_Timer16_StartSingleMode(&htimer16_1);
@@ -48,8 +49,6 @@ int main()
     //HAL_Timer16_StartOneShot(&htimer16_1, 0xFFFF, 0xFFFF/2);
     //HAL_Timer16_StartSetOnes(&htimer16_1, 0xFFFF, 0xFFFF/2);
     /****************************************************************************************/
-
-    Timer16_1_Init();
 
     /* Задать значение для сравнения */
     //HAL_Timer16_SetCMP(&htimer16_1, 0xFFFF/2); 
