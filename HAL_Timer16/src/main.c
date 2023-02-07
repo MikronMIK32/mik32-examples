@@ -1,8 +1,6 @@
 #include "main.h"
 #include <gpio.h>
 
-#define PIN_TRIGGER 4 // вывод PORT_0_4
-#define PIN_PWM 7 // вывод PORT_0_7
 
 Timer16_HandleTypeDef htimer16_1;
 
@@ -16,27 +14,63 @@ int main()
     SystemClock_Config();
 
     HAL_RCC_ClockEnable(HAL_CLOCK_GPIO_1);
-    PAD_CONFIG->PORT_1_CFG |= (1 << (2 * 9)); // Установка порта 1 в режим GPIO
-	GPIO_1->DIRECTION_IN = 1 << 9; // Установка направления порта в вход
 
 
-    Timer16_1_Init();
+    /************************Включить GPIO1.9 для триггера Timer16_1************************/
+    // HAL_RCC_ClockEnable(HAL_CLOCK_GPIO_1);
+    // PAD_CONFIG->PORT_1_CFG |= (1 << (2 * 9)); // Установка порта 1 в режим GPIO
+	// GPIO_1->DIRECTION_IN = 1 << 9; // Установка направления порта в вход
+    /***************************************************************************************/
 
-    xprintf("CFGR.B = %d\n", htimer16_1.Instance->CFGR);
-    xprintf("CR.B = %d\n", htimer16_1.Instance->CR);
+    /**************************Включить вывод Input1 для Timer16_1**************************/
+    /* Port0.8 */
+    PAD_CONFIG->PORT_0_CFG |= (PORT_AS_TIMER << 2 * TIMER16_1_IN1);
+    /***************************************************************************************/
 
-    HAL_Timer16_StartSingleMode(&htimer16_1);
-    //HAL_Timer16_StartContinuousMode(&htimer16_1);
+    /**************************Включить вывод Input2 для Timer16_1**************************/
+    /* Port0.9 */
+    // PAD_CONFIG->PORT_0_CFG |= (PORT_AS_TIMER << 2 * TIMER16_1_IN2);
+    /***************************************************************************************/
+
+    /**************************Включить вывод Output для Timer16_1**************************/
+    /* Port0.9 */
+    //PAD_CONFIG->PORT_0_CFG |= (PORT_AS_TIMER << (2 * TIMER16_1_OUT)); 
+    /***************************************************************************************/
+
+
+    /*****************Запуск таймера в одиночном или продолжительном режиме*****************/
+    //HAL_Timer16_StartSingleMode(&htimer16_1);
+    HAL_Timer16_StartContinuousMode(&htimer16_1);
+    /***************************************************************************************/
+
+    /********************************Генерация волновой формы********************************/
     //HAL_Timer16_StartPWM(&htimer16_1, 0xFFFF, 0xFFFF/2);
     //HAL_Timer16_StartOneShot(&htimer16_1, 0xFFFF, 0xFFFF/2);
     //HAL_Timer16_StartSetOnes(&htimer16_1, 0xFFFF, 0xFFFF/2);
+    /****************************************************************************************/
 
+    Timer16_1_Init();
+
+    /* Задать значение для сравнения */
+    //HAL_Timer16_SetCMP(&htimer16_1, 0xFFFF/2); 
+
+    /* Ожидание флага триггера */
     //HAL_Timer16_WaitTrigger(&htimer16_1);
     
     while (1)
     {    
+        /* Очистка флага триггера */
         //HAL_Timer16_ClearTriggerFlag(&htimer16_1);
+
+        /* Вывод значения счетчика */
         xprintf("Counter = %d\n", HAL_Timer16_GetCounterValue(&htimer16_1));
+
+        /* Ожидание совпадения с CMP */
+        // if(HAL_Timer16_CheckCMP(&htimer16_1))
+        // {
+        //     HAL_Timer16_ClearCMPFlag(&htimer16_1);
+        //     xprintf("CMP\n");
+        // }
     }
        
 }
@@ -67,11 +101,8 @@ static void Timer16_1_Init(void)
 {
     htimer16_1.Instance = TIMER16_1;
 
-    /* Режим работы таймера */
-    htimer16_1.TimerMode = TIMER16_MODE_COUNTER;
-
     /* Настройка тактирования */
-    htimer16_1.Clock.Source = TIMER16_SOURCE_INTERNAL_OSC32K;
+    htimer16_1.Clock.Source = TIMER16_SOURCE_INTERNAL_SYSTEM;
     htimer16_1.CountMode = TIMER16_COUNTMODE_INTERNAL;  /* При тактировании от Input1 не имеет значения */
     htimer16_1.Clock.Prescaler = TIMER16_PRESCALER_1;
     htimer16_1.ActiveEdge = TIMER16_ACTIVEEDGE_RISING;  /* Выбирается при тактированиии от Input1 */
@@ -84,10 +115,14 @@ static void Timer16_1_Init(void)
     /* Настройка тригера */
     htimer16_1.Trigger.Source = TIMER16_TRIGGER_TIM1_GPIO1_9; 
     htimer16_1.Trigger.ActiveEdge = TIMER16_TRIGGER_ACTIVEEDGE_SOFTWARE;    /* При использовании триггера значение доложно быть отлично от software */
+    htimer16_1.Trigger.TimeOut = TIMER16_TIMEOUT_DISABLE;   /* Разрешить повторное срабатывание триггера */
 
     /* Настройки фильтра */
     htimer16_1.Filter.ExternalClock = TIMER16_FILTER_NONE;
     htimer16_1.Filter.Trigger = TIMER16_FILTER_NONE;
+
+    /* Настройка режима энкодера */
+    htimer16_1.EncoderMode = TIMER16_ENCODER_DISABLE;
 
     HAL_Timer16_Init(&htimer16_1);
 }

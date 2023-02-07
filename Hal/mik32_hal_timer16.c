@@ -11,48 +11,17 @@ void HAL_Timer16_Enable(Timer16_HandleTypeDef *htimer16)
     htimer16->Instance->CR |= TIMER16_CR_ENABLE_M;
 }
 
-void HAL_Timer16_SetPad(Timer16_HandleTypeDef *htimer16)
-{
-    uint32_t Port0_config = PAD_CONFIG->PORT_0_CFG;
-    if(htimer16->Instance == TIMER16_0)
-    {
-        /* Смена режима вывода */
-        Port0_config &= ~(0b11 << 2 * TIMER16_0_IN1);
-        Port0_config |= (PORT_AS_TIMER << 2 * TIMER16_0_IN1);
-
-        // Port0_config &= ~(0b11 << 2 * TIMER16_0_IN2);
-        // Port0_config |= (PORT_AS_TIMER << 2 * TIMER16_0_IN2);
-    }
-    else if (htimer16->Instance == TIMER16_1)
-    {
-        /* Смена режима вывода */
-        Port0_config &= ~(0b11 << 2 * TIMER16_1_IN1);
-        Port0_config |= (PORT_AS_TIMER << 2 * TIMER16_1_IN1);
-
-        // Port0_config &= ~(0b11 << 2 * TIMER16_1_IN2);
-        // Port0_config |= (PORT_AS_TIMER << 2 * TIMER16_1_IN2);
-    }
-    else if (htimer16->Instance == TIMER16_2)
-    {
-        /* Смена режима вывода */
-        Port0_config &= ~(0b11 << 2 * TIMER16_2_IN1);
-        Port0_config |= (PORT_AS_TIMER << 2 * TIMER16_2_IN1);
-
-        // Port0_config &= ~(0b11 << 2 * TIMER16_2_IN2);
-        // Port0_config |= (PORT_AS_TIMER << 2 * TIMER16_2_IN2);
-    }
-
-    PAD_CONFIG->PORT_0_CFG = Port0_config;
-}
-
 void HAL_Timer16_SetActiveEdge(Timer16_HandleTypeDef *htimer16, uint8_t ActiveEdge)
 {
     htimer16->ActiveEdge = ActiveEdge;
 
     HAL_Timer16_Disable(htimer16);
 
-    htimer16->Instance->CFGR &= ~TIMER16_CFGR_CKPOL_M;
-    htimer16->Instance->CFGR |= ActiveEdge << TIMER16_CFGR_CKPOL_S;
+    uint32_t CFGRConfig = htimer16->Instance->CFGR;
+    CFGRConfig &= ~TIMER16_CFGR_CKPOL_M;
+    CFGRConfig |= ActiveEdge << TIMER16_CFGR_CKPOL_S;
+
+    htimer16->Instance->CFGR = CFGRConfig;
 }
 
 void HAL_Timer16_SetSourceClock(Timer16_HandleTypeDef *htimer16, uint8_t SourceClock)
@@ -66,8 +35,6 @@ void HAL_Timer16_SetSourceClock(Timer16_HandleTypeDef *htimer16, uint8_t SourceC
         htimer16->Instance->CFGR |= TIMER16_CFGR_CKSEL_M;  
 
         HAL_Timer16_SetActiveEdge(htimer16, htimer16->ActiveEdge);  /* Настройка активного фронта при тактировании от внешнего источника  */
-
-        HAL_Timer16_SetPad(htimer16); /* Настройка режима вывода */
     }
     else    /* Внутренний источник */
     {
@@ -115,7 +82,6 @@ void HAL_Timer16_SetCountMode(Timer16_HandleTypeDef *htimer16, uint8_t CountMode
         break;
     case TIMER16_COUNTMODE_EXTERNAL:
         htimer16->Instance->CFGR |= TIMER16_CFGR_COUNTMODE_M;
-        HAL_Timer16_SetPad(htimer16);
         break;
     }
         
@@ -163,21 +129,14 @@ void HAL_Timer16_SetARR(Timer16_HandleTypeDef *htimer16, uint16_t Period)
     htimer16->Period = Period;
 
     /* Выключение таймера для записи ARR */
-    //HAL_Timer16_Disable(htimer16);
-
     htimer16->Instance->ARR = Period;
-    //HAL_Timer16_Enable(htimer16);
     HAL_Timer16_WaitARROK(htimer16);
 }
 
 void HAL_Timer16_SetCMP(Timer16_HandleTypeDef *htimer16, uint16_t Compare)
 {
     /* Выключение таймера для записи CMP */
-
-    //HAL_Timer16_Disable(htimer16);
-
     htimer16->Instance->CMP = Compare;
-    //HAL_Timer16_Enable(htimer16);
     HAL_Timer16_WaitCMPOK(htimer16);
 }
 
@@ -211,17 +170,18 @@ void HAL_Timer16_SetTriggerEdge(Timer16_HandleTypeDef *htimer16, uint8_t Trigger
     htimer16->Instance->CFGR = CFGRConfig;
 }
 
-/**************************Режимы таймера***************************/
-void HAL_Timer16_CounterModeInit(Timer16_HandleTypeDef *htimer16)
+void HAL_Timer16_SetTimeOut(Timer16_HandleTypeDef *htimer16, uint8_t TimeOut)
 {
-    HAL_Timer16_SetPreload(htimer16, htimer16->Preload);
+    htimer16->Trigger.TimeOut = TimeOut;
 
-    /* Настройка триггера */
-    HAL_Timer16_SelectTrigger(htimer16, htimer16->Trigger.Source);
-    HAL_Timer16_SetTriggerEdge(htimer16, htimer16->Trigger.ActiveEdge);
+    HAL_Timer16_Disable(htimer16);
 
+    uint32_t CFGRConfig = htimer16->Instance->CFGR;
+    CFGRConfig &= ~TIMER16_CFGR_TIMOUT_M;
+    CFGRConfig |= TimeOut << TIMER16_CFGR_TIMOUT_S;
+
+    htimer16->Instance->CFGR = CFGRConfig;
 }
-/*******************************************************************/
 
 void HAL_Timer16_SetFilterExternalClock(Timer16_HandleTypeDef *htimer16, uint8_t FilterExternalClock)
 {
@@ -245,6 +205,19 @@ void HAL_Timer16_SetFilterTrigger(Timer16_HandleTypeDef *htimer16, uint8_t Filte
     htimer16->Instance->CFGR |= FilterTrigger << TIMER16_CFGR_TRGFLT_S;
 }
 
+void HAL_Timer16_SetEncoderMode(Timer16_HandleTypeDef *htimer16, uint8_t EncoderMode)
+{
+    htimer16->EncoderMode = EncoderMode;
+
+    HAL_Timer16_Disable(htimer16);
+
+    uint32_t CFGRConfig = htimer16->Instance->CFGR;
+    CFGRConfig &= ~TIMER16_CFGR_ENC_M;
+    CFGRConfig |= EncoderMode << TIMER16_CFGR_ENC_S;
+
+    htimer16->Instance->CFGR = CFGRConfig;
+}
+
 void HAL_Timer16_Init(Timer16_HandleTypeDef *htimer16)
 {
     HAL_Timer16_Disable(htimer16);
@@ -253,19 +226,17 @@ void HAL_Timer16_Init(Timer16_HandleTypeDef *htimer16)
 
     HAL_Timer16_SetFilterExternalClock(htimer16, htimer16->Filter.ExternalClock);
     HAL_Timer16_SetFilterTrigger(htimer16, htimer16->Filter.Trigger);
-    
-    switch (htimer16->CountMode)
-    {
-    case TIMER16_MODE_COUNTER:
-        HAL_Timer16_CounterModeInit(htimer16);
-        break;
-    case TIMER16_MODE_WAVE:
-        //HAL_Timer16_CounterModeInit(htimer16);
-        break;
-    case TIMER16_MODE_TIMEOUT:
-        //HAL_Timer16_CounterModeInit(htimer16);
-        break;
-    }
+
+    /*********************************************************/
+    HAL_Timer16_SetPreload(htimer16, htimer16->Preload);
+
+    /* Настройка триггера */
+    HAL_Timer16_SelectTrigger(htimer16, htimer16->Trigger.Source);
+    HAL_Timer16_SetTriggerEdge(htimer16, htimer16->Trigger.ActiveEdge);
+    HAL_Timer16_SetTimeOut(htimer16, htimer16->Trigger.TimeOut);
+    /*********************************************************/
+
+    HAL_Timer16_SetEncoderMode(htimer16, htimer16->EncoderMode);
 
     HAL_Timer16_Enable(htimer16);
 
@@ -277,6 +248,28 @@ void HAL_Timer16_Init(Timer16_HandleTypeDef *htimer16)
 uint16_t HAL_Timer16_GetCounterValue(Timer16_HandleTypeDef *htimer16)
 {
     return htimer16->Instance->CNT;
+}
+
+uint8_t HAL_Timer16_CheckCMP(Timer16_HandleTypeDef *htimer16)
+{
+    if ((htimer16->Instance->ISR & TIMER16_ISR_CMP_MATCH_M) == 0)
+    {
+        return 0;
+    }
+    else
+    {
+        return 1;
+    }
+}
+
+void HAL_Timer16_ClearCMPFlag(Timer16_HandleTypeDef *htimer16)
+{
+    htimer16->Instance->ICR |= TIMER16_ICR_CMPMCF_M;
+}
+
+void HAL_Timer16_WaitCMP(Timer16_HandleTypeDef *htimer16)
+{
+    while (!(htimer16->Instance->ISR & TIMER16_ISR_CMP_MATCH_M));
 }
 
 void HAL_Timer16_StartSingleMode(Timer16_HandleTypeDef *htimer16)
@@ -299,36 +292,11 @@ void HAL_Timer16_InvertOutput(Timer16_HandleTypeDef *htimer16)
     HAL_Timer16_Enable(htimer16);
 }
 
-void HAL_Timer16_OutConfig(Timer16_HandleTypeDef *htimer16)
-{
-    /* Настройка вывода Timer16_n_out в режим таймера16 */
-    uint32_t CFGConfig = PAD_CONFIG->PORT_0_CFG;
-    if(htimer16->Instance == TIMER16_0)
-    {
-        CFGConfig &= ~(0b11 << (2 * TIMER16_0_OUT)); 
-        CFGConfig |= (PORT_AS_TIMER << (2 * TIMER16_0_OUT)); // Установка вывода порта 0 в режим GPIO
-    }
-    else if (htimer16->Instance == TIMER16_1)
-    {
-        CFGConfig &= ~(0b11 << (2 * TIMER16_1_OUT)); 
-        CFGConfig |= (PORT_AS_TIMER << (2 * TIMER16_1_OUT)); // Установка вывода порта 0 в режим GPIO
-    }
-    else if (htimer16->Instance == TIMER16_2)
-    {
-        CFGConfig &= ~(0b11 << (2 * TIMER16_2_OUT)); 
-        CFGConfig |= (PORT_AS_TIMER << (2 * TIMER16_2_OUT)); // Установка вывода порта 0 в режим GPIO
-    }
-    PAD_CONFIG->PORT_0_CFG = CFGConfig;
-}
-
 void HAL_Timer16_StartPWM(Timer16_HandleTypeDef *htimer16, uint16_t Period, uint16_t Compare)
 {
     HAL_Timer16_Disable(htimer16);
     htimer16->Instance->CFGR &= ~TIMER16_CFGR_WAVE_M;
     HAL_Timer16_Enable(htimer16);
-
-    /* Настройка вывода Timer16_n_out в режим таймера16 */
-    HAL_Timer16_OutConfig(htimer16);
     
     if(Period > Compare)
     {
@@ -346,9 +314,6 @@ void HAL_Timer16_StartOneShot(Timer16_HandleTypeDef *htimer16, uint16_t Period, 
     htimer16->Instance->CFGR &= ~TIMER16_CFGR_WAVE_M;
     HAL_Timer16_Enable(htimer16);
     
-    /* Настройка вывода Timer16_n_out в режим таймера16 */
-    HAL_Timer16_OutConfig(htimer16);
-    
     if(Period > Compare)
     {
         HAL_Timer16_SetCMP(htimer16, Compare);
@@ -364,9 +329,6 @@ void HAL_Timer16_StartSetOnes(Timer16_HandleTypeDef *htimer16, uint16_t Period, 
     HAL_Timer16_Disable(htimer16);
     htimer16->Instance->CFGR |= TIMER16_CFGR_WAVE_M;
     HAL_Timer16_Enable(htimer16);
-    
-    /* Настройка вывода Timer16_n_out в режим таймера16 */
-    HAL_Timer16_OutConfig(htimer16);
     
     if(Period > Compare)
     {

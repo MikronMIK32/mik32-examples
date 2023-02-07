@@ -30,13 +30,8 @@
 #define TIMER16_2_IN2    12     /* Timer16_2 - вход 2 */
 #define TIMER16_2_OUT    13     /* Timer16_2 - выход */
 
-/* TimerMode - Режим работы таймера */
-#define TIMER16_MODE_COUNTER    0     /* Режим счетчика */
-#define TIMER16_MODE_WAVE       1     /* Режим генераии волновой формы */
-#define TIMER16_MODE_TIMEOUT    2     /* Режим Timeout */
-
 /* ClockSource - Источник тактирования */
-#define TIMER16_SOURCE_INTERNAL_SYS         0x0      /* Тактирование от системной частоты (sys_clk) */
+#define TIMER16_SOURCE_INTERNAL_SYSTEM      0x0      /* Тактирование от системной частоты (sys_clk) */
 #define TIMER16_SOURCE_INTERNAL_AHB         0x1      /* Тактирование от частоты шины AHB */
 #define TIMER16_SOURCE_INTERNAL_OSC32M      0x2      /* Тактирование от частоты внешнего осцилятора OSC32М */
 #define TIMER16_SOURCE_INTERNAL_HSI32M      0x3      /* Тактирование от частоты встроенного осцилятора HSI32M */
@@ -94,6 +89,10 @@
 #define TIMER16_TRIGGER_ACTIVEEDGE_FOLLING     0b10     /* Спадающий фронт является активным фронтом */
 #define TIMER16_TRIGGER_ACTIVEEDGE_BOTH        0b11     /* Оба фронта являются активными фронтами */
 
+/* TimeOut - Функция тайм-аут */
+#define TIMER16_TIMEOUT_DISABLE       0     /* Триггерное событие, поступаю-щее, когда таймер уже запущен, будет проигнорировано */
+#define TIMER16_TIMEOUT_ENABLE        1     /* Триггерное событие, поступающее, когда таймер уже запущен, сбросит и перезапустит счетчик */
+
 /* Preload - Режим обновления регисторов ARR и CMP */
 #define TIMER16_PRELOAD_AFTERWRITE    0     /* Регистры обновляются после каждого доступа к записи на шине APB */
 #define TIMER16_PRELOAD_ENDPERIOD     1     /* Регистры обновляются в конце текущего периода Timer16 */
@@ -103,6 +102,10 @@
 #define TIMER16_FILTER_2CLOCK    0b01     /* Фильтр на 2 такта */
 #define TIMER16_FILTER_4CLOCK    0b10     /* Фильтр на 4 такта */
 #define TIMER16_FILTER_8CLOCK    0b11     /* Фильтр на 8 тактов */
+
+/* EncoderMode - Режим энкодера */
+#define TIMER16_ENCODER_DISABLE    0    /* Режим энкодера выключен */
+#define TIMER16_ENCODER_ENABLE     1    /* Режим энкодера включен */
 
 typedef struct
 {
@@ -118,6 +121,8 @@ typedef struct
 
     uint8_t ActiveEdge;     /* Активный фронт */
 
+    uint8_t TimeOut;        /* Функция тайм-аут */
+
 } Timer16_TriggerConfigTypeDef;
 
 typedef struct
@@ -132,7 +137,6 @@ typedef struct
 {
     TIMER16_TypeDef *Instance;       /* Базовый адрес регистров Timer16 */
 
-    uint8_t TimerMode;                       /* Режим работы таймера */
     Timer16_ClockConfigTypeDef Clock;        /* Настройки тактирования */
     uint8_t CountMode;                       /* Источник синхронизации */
     uint8_t ActiveEdge;                      /* Активный фронт */
@@ -142,14 +146,15 @@ typedef struct
 
     Timer16_TriggerConfigTypeDef Trigger;    /* Настройки тригера */
 
-    Timer16_FilterConfigTypeDef Filter;      /* НАстройки фильтра */
+    Timer16_FilterConfigTypeDef Filter;      /* Настройки фильтра */
+
+    uint8_t EncoderMode;                     /* Режим энкодера */
     
 } Timer16_HandleTypeDef;
 
 
 void HAL_Timer16_Disable(Timer16_HandleTypeDef *htimer16);
 void HAL_Timer16_Enable(Timer16_HandleTypeDef *htimer16);
-void HAL_Timer16_SetPad(Timer16_HandleTypeDef *htimer16);
 void HAL_Timer16_SetActiveEdge(Timer16_HandleTypeDef *htimer16, uint8_t ActiveEdge);
 void HAL_Timer16_SetSourceClock(Timer16_HandleTypeDef *htimer16, uint8_t SourceClock);
 void HAL_Timer16_SetCountMode(Timer16_HandleTypeDef *htimer16, uint8_t CountMode);
@@ -159,22 +164,24 @@ void HAL_Timer16_WaitARROK(Timer16_HandleTypeDef *htimer16);
 void HAL_Timer16_WaitCMPOK(Timer16_HandleTypeDef *htimer16);
 void HAL_Timer16_SetARR(Timer16_HandleTypeDef *htimer16, uint16_t Period);
 void HAL_Timer16_SetCMP(Timer16_HandleTypeDef *htimer16, uint16_t Compare);
+void HAL_Timer16_ClearCMPFlag(Timer16_HandleTypeDef *htimer16);
 void HAL_Timer16_SelectTrigger(Timer16_HandleTypeDef *htimer16, uint8_t TriggerSource);
 void HAL_Timer16_SetTriggerEdge(Timer16_HandleTypeDef *htimer16, uint8_t TriggerEdge);
-void HAL_Timer16_CounterModeInit(Timer16_HandleTypeDef *htimer16);
+void HAL_Timer16_SetTimeOut(Timer16_HandleTypeDef *htimer16, uint8_t TimeOut);
 void HAL_Timer16_SetFilterExternalClock(Timer16_HandleTypeDef *htimer16, uint8_t FilterExternalClock);
 void HAL_Timer16_SetFilterTrigger(Timer16_HandleTypeDef *htimer16, uint8_t FilterTrigger);
+void HAL_Timer16_SetEncoderMode(Timer16_HandleTypeDef *htimer16, uint8_t EncoderMode);
 void HAL_Timer16_Init(Timer16_HandleTypeDef *htimer16);
 uint16_t HAL_Timer16_GetCounterValue(Timer16_HandleTypeDef *htimer16);
+uint8_t HAL_Timer16_CheckCMP(Timer16_HandleTypeDef *htimer16);
+void HAL_Timer16_WaitCMP(Timer16_HandleTypeDef *htimer16);
 void HAL_Timer16_StartSingleMode(Timer16_HandleTypeDef *htimer16);
 void HAL_Timer16_StartContinuousMode(Timer16_HandleTypeDef *htimer16);
 void HAL_Timer16_InvertOutput(Timer16_HandleTypeDef *htimer16);
-void HAL_Timer16_OutConfig(Timer16_HandleTypeDef *htimer16);
 void HAL_Timer16_StartPWM(Timer16_HandleTypeDef *htimer16, uint16_t Period, uint16_t Compare);
 void HAL_Timer16_StartOneShot(Timer16_HandleTypeDef *htimer16, uint16_t Period, uint16_t Compare);
 void HAL_Timer16_StartSetOnes(Timer16_HandleTypeDef *htimer16, uint16_t Period, uint16_t Compare);
 void HAL_Timer16_ClearTriggerFlag(Timer16_HandleTypeDef *htimer16);
 void HAL_Timer16_WaitTrigger(Timer16_HandleTypeDef *htimer16);
-
 
 #endif
