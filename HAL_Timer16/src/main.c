@@ -13,9 +13,7 @@ int main()
 
     SystemClock_Config();
 
-    HAL_RCC_ClockEnable(HAL_CLOCK_GPIO_1);
-
-
+    //HAL_RCC_ClockEnable(HAL_CLOCK_GPIO_1);
     /************************Включить GPIO1.9 для триггера Timer16_1************************/
     // HAL_RCC_ClockEnable(HAL_CLOCK_GPIO_1);
     // PAD_CONFIG->PORT_1_CFG |= (1 << (2 * 9)); // Установка порта 1 в режим GPIO
@@ -39,9 +37,12 @@ int main()
 
     Timer16_1_Init();
 
+    /* Задать значение для сравнения */
+    //HAL_Timer16_SetCMP(&htimer16_1, 0xFFFF/2); 
+
     /*****************Запуск таймера в одиночном или продолжительном режиме*****************/
     //HAL_Timer16_StartSingleMode(&htimer16_1);
-    HAL_Timer16_StartContinuousMode(&htimer16_1);
+    //HAL_Timer16_StartContinuousMode(&htimer16_1);
     /***************************************************************************************/
 
     /********************************Генерация волновой формы********************************/
@@ -49,9 +50,6 @@ int main()
     //HAL_Timer16_StartOneShot(&htimer16_1, 0xFFFF, 0xFFFF/2);
     //HAL_Timer16_StartSetOnes(&htimer16_1, 0xFFFF, 0xFFFF/2);
     /****************************************************************************************/
-
-    /* Задать значение для сравнения */
-    //HAL_Timer16_SetCMP(&htimer16_1, 0xFFFF/2); 
 
     /* Ожидание флага триггера */
     //HAL_Timer16_WaitTrigger(&htimer16_1);
@@ -102,7 +100,7 @@ static void Timer16_1_Init(void)
 
     /* Настройка тактирования */
     htimer16_1.Clock.Source = TIMER16_SOURCE_INTERNAL_SYSTEM;
-    htimer16_1.CountMode = TIMER16_COUNTMODE_INTERNAL;  /* При тактировании от Input1 не имеет значения */
+    htimer16_1.CountMode = TIMER16_COUNTMODE_EXTERNAL;  /* При тактировании от Input1 не имеет значения */
     htimer16_1.Clock.Prescaler = TIMER16_PRESCALER_1;
     htimer16_1.ActiveEdge = TIMER16_ACTIVEEDGE_RISING;  /* Выбирается при тактированиии от Input1 */
 
@@ -111,7 +109,7 @@ static void Timer16_1_Init(void)
     /* Настрйока режима обновления регистра ARR и CMP */
     htimer16_1.Preload = TIMER16_PRELOAD_AFTERWRITE;
 
-    /* Настройка тригера */
+    /* Настройка триггера */
     htimer16_1.Trigger.Source = TIMER16_TRIGGER_TIM1_GPIO1_9; 
     htimer16_1.Trigger.ActiveEdge = TIMER16_TRIGGER_ACTIVEEDGE_SOFTWARE;    /* При использовании триггера значение доложно быть отлично от software */
     htimer16_1.Trigger.TimeOut = TIMER16_TIMEOUT_DISABLE;   /* Разрешить повторное срабатывание триггера */
