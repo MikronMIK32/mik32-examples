@@ -13,162 +13,6 @@
 #endif
 
 
-
-/* Title: Структуры */
-/*
- * Struct: Timer16_ClockConfigTypeDef
- * Настройки источника тактирования
- * 
- */
-typedef struct
-{
-    /*
-    * Variable: Source
-    * Источник тактирования
-    *
-    */
-   
-    uint8_t Source;         
-    /*
-    * Variable: Prescaler
-    * Делитель частоты
-    *
-    */
-    uint8_t Prescaler;      
-
-} Timer16_ClockConfigTypeDef;
-
-
-/*
- * Struct: Timer16_TriggerConfigTypeDef
- * Настройки триггера
- * 
- */
-typedef struct
-{
-    /*
-    * Variable: Source
-    * Источник триггера
-    *
-    */
-    uint8_t Source;
-
-    /*
-    * Variable: ActiveEdge
-    * Активный фронт
-    *
-    */
-    uint8_t ActiveEdge;
-
-    /*
-    * Variable: TimeOut
-    * Функция тайм-аут
-    *
-    */
-    uint8_t TimeOut;
-
-} Timer16_TriggerConfigTypeDef;
-
-
-/*
- * Struct: Timer16_FilterConfigTypeDef
- * Настройки фильтров
- * 
- */
-typedef struct
-{
-    /*
-    * Variable: ExternalClock
-    * Фильтр для внешнего тактового генератора
-    *
-    */
-    uint8_t ExternalClock;
-
-    /*
-    * Variable: Trigger
-    * фильтр для триггера
-    *
-    */
-    uint8_t Trigger;
-
-} Timer16_FilterConfigTypeDef;
-
-
-/*
- * Struct: Timer16_HandleTypeDef
- * Настройки экземпляра Timer16
- * 
- */
-typedef struct
-{
-    /*
-    * Variable: Instance
-    * Базовый адрес регистров Timer16
-    * 
-    * Возможные значения:
-    * 
-    * - TIMER16_0;
-    * - TIMER16_1;
-    * - TIMER16_2.
-    *
-    */
-    TIMER16_TypeDef *Instance;
-
-    /*
-    * Variable: Clock
-    * Настройки тактирования
-    *
-    */
-    Timer16_ClockConfigTypeDef Clock;
-    /*
-    * Variable: CountMode
-    * Источник синхронизации
-    *
-    */
-    uint8_t CountMode;
-    /*
-    * Variable: ActiveEdge
-    * Активный фронт
-    *
-    */
-    uint8_t ActiveEdge;
-
-    /*
-    * Variable: Period
-    * Верхнее значение счета
-    *
-    */
-    uint16_t Period;
-    /*
-    * Variable: Preload
-    * Режим записи в ARR и CMP
-    *
-    */
-    uint8_t Preload;
-
-    /*
-    * Variable: Trigger
-    * Настройки триггера
-    *
-    */
-    Timer16_TriggerConfigTypeDef Trigger;
-
-    /*
-    * Variable: Filter
-    * Настройки фильтра
-    *
-    */
-    Timer16_FilterConfigTypeDef Filter;
-
-    /*
-    * Variable: EncoderMode
-    * Режим энкодера
-    *
-    */
-    uint8_t EncoderMode;
-    
-} Timer16_HandleTypeDef;
-
 /* Title: Макросы */
 /* Title: Сдвиг настройки тактирования таймера в регистре Timer_CFG */
 /*
@@ -301,49 +145,49 @@ typedef struct
  * Делитель частоты 1
  *
  */
-#define TIMER16_PRESCALER_1         000
+#define TIMER16_PRESCALER_1         0b000
 /*
  * Define: TIMER16_PRESCALER_2
  * Делитель частоты 2
  *
  */
-#define TIMER16_PRESCALER_2         001
+#define TIMER16_PRESCALER_2         0b001
 /*
  * Define: TIMER16_PRESCALER_4
  * Делитель частоты 4
  *
  */
-#define TIMER16_PRESCALER_4         010
+#define TIMER16_PRESCALER_4         0b010
 /*
  * Define: TIMER16_PRESCALER_8
  * Делитель частоты 8
  *
  */
-#define TIMER16_PRESCALER_8         011
+#define TIMER16_PRESCALER_8         0b011
 /*
  * Define: TIMER16_PRESCALER_16
  * Делитель частоты 16
  *
  */
-#define TIMER16_PRESCALER_16        100
+#define TIMER16_PRESCALER_16        0b100
 /*
  * Define: TIMER16_PRESCALER_32
  * Делитель частоты 32
  *
  */
-#define TIMER16_PRESCALER_32        101
+#define TIMER16_PRESCALER_32        0b101
 /*
  * Define: TIMER16_PRESCALER_64
  * Делитель частоты 64
  *
  */
-#define TIMER16_PRESCALER_64        110
+#define TIMER16_PRESCALER_64        0b110
 /*
  * Define: TIMER16_PRESCALER_128
  * Делитель частоты 128
  *
  */
-#define TIMER16_PRESCALER_128       111
+#define TIMER16_PRESCALER_128       0b111
 
 
 /* Title: Источник тактового сигнала таймера для синхронизации счетчика */
@@ -598,6 +442,161 @@ typedef struct
  *
  */
 #define TIMER16_ENCODER_ENABLE     1
+
+/* Title: Структуры */
+/*
+ * Struct: Timer16_ClockConfigTypeDef
+ * Настройки источника тактирования
+ * 
+ */
+typedef struct
+{
+    /*
+    * Variable: Source
+    * Источник тактирования
+    *
+    */
+   
+    uint8_t Source;         
+    /*
+    * Variable: Prescaler
+    * Делитель частоты
+    *
+    */
+    uint8_t Prescaler;      
+
+} Timer16_ClockConfigTypeDef;
+
+
+/*
+ * Struct: Timer16_TriggerConfigTypeDef
+ * Настройки триггера
+ * 
+ */
+typedef struct
+{
+    /*
+    * Variable: Source
+    * Источник триггера
+    *
+    */
+    uint8_t Source;
+
+    /*
+    * Variable: ActiveEdge
+    * Активный фронт
+    *
+    */
+    uint8_t ActiveEdge;
+
+    /*
+    * Variable: TimeOut
+    * Функция тайм-аут
+    *
+    */
+    uint8_t TimeOut;
+
+} Timer16_TriggerConfigTypeDef;
+
+
+/*
+ * Struct: Timer16_FilterConfigTypeDef
+ * Настройки фильтров
+ * 
+ */
+typedef struct
+{
+    /*
+    * Variable: ExternalClock
+    * Фильтр для внешнего тактового генератора
+    *
+    */
+    uint8_t ExternalClock;
+
+    /*
+    * Variable: Trigger
+    * фильтр для триггера
+    *
+    */
+    uint8_t Trigger;
+
+} Timer16_FilterConfigTypeDef;
+
+
+/*
+ * Struct: Timer16_HandleTypeDef
+ * Настройки экземпляра Timer16
+ * 
+ */
+typedef struct
+{
+    /*
+    * Variable: Instance
+    * Базовый адрес регистров Timer16
+    * 
+    * Возможные значения:
+    * 
+    * - TIMER16_0;
+    * - TIMER16_1;
+    * - TIMER16_2.
+    *
+    */
+    TIMER16_TypeDef *Instance;
+
+    /*
+    * Variable: Clock
+    * Настройки тактирования
+    *
+    */
+    Timer16_ClockConfigTypeDef Clock;
+    /*
+    * Variable: CountMode
+    * Источник синхронизации
+    *
+    */
+    uint8_t CountMode;
+    /*
+    * Variable: ActiveEdge
+    * Активный фронт
+    *
+    */
+    uint8_t ActiveEdge;
+
+    /*
+    * Variable: Period
+    * Верхнее значение счета
+    *
+    */
+    uint16_t Period;
+    /*
+    * Variable: Preload
+    * Режим записи в ARR и CMP
+    *
+    */
+    uint8_t Preload;
+
+    /*
+    * Variable: Trigger
+    * Настройки триггера
+    *
+    */
+    Timer16_TriggerConfigTypeDef Trigger;
+
+    /*
+    * Variable: Filter
+    * Настройки фильтра
+    *
+    */
+    Timer16_FilterConfigTypeDef Filter;
+
+    /*
+    * Variable: EncoderMode
+    * Режим энкодера
+    *
+    */
+    uint8_t EncoderMode;
+    
+} Timer16_HandleTypeDef;
 
 /* Title: Функции */
 /*  
@@ -898,6 +897,20 @@ void HAL_Timer16_SetFilterTrigger(Timer16_HandleTypeDef *htimer16, uint8_t Filte
  */
 void HAL_Timer16_SetEncoderMode(Timer16_HandleTypeDef *htimer16, uint8_t EncoderMode);
 
+
+/*
+ * Function: HAL_Timer16_SetPrescaler
+ * Установить делитель частоты.
+ *
+ * Parameters:
+ * htimer16 - Указатель на структуру с настройками Timer16.
+ * Prescaler - Делитель чатоты.
+ *
+ * Returns:
+ * void
+ */
+void HAL_Timer16_SetPrescaler(Timer16_HandleTypeDef *htimer16, uint8_t Prescaler);
+
 /*
  * Function: HAL_Timer16_Init
  * Инициализировать Timer16 в соответствии с настройками <Timer16_HandleTypeDef> *htimer16.
@@ -1065,6 +1078,30 @@ void HAL_Timer16_ClearTriggerFlag(Timer16_HandleTypeDef *htimer16);
  * void
  */
 void HAL_Timer16_WaitTrigger(Timer16_HandleTypeDef *htimer16);
+
+/*
+ * Function: HAL_Timer16_ClearUpFlag
+ * Очистить флаг смены направления счета - UP.
+ *
+ * Parameters:
+ * htimer16 - Указатель на структуру с настройками Timer16.
+ *
+ * Returns:
+ * void
+ */
+void HAL_Timer16_ClearUpFlag(Timer16_HandleTypeDef *htimer16);
+
+/*
+ * Function: HAL_Timer16_ClearDownFlag
+ * Очистить флаг смены направления счета - DOWN.
+ *
+ * Parameters:
+ * htimer16 - Указатель на структуру с настройками Timer16.
+ *
+ * Returns:
+ * void.
+ */
+void HAL_Timer16_ClearDownFlag(Timer16_HandleTypeDef *htimer16);
 
 
 #endif

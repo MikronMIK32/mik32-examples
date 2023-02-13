@@ -218,11 +218,26 @@ void HAL_Timer16_SetEncoderMode(Timer16_HandleTypeDef *htimer16, uint8_t Encoder
     htimer16->Instance->CFGR = CFGRConfig;
 }
 
+void HAL_Timer16_SetPrescaler(Timer16_HandleTypeDef *htimer16, uint8_t Prescaler)
+{
+    htimer16->Clock.Prescaler = Prescaler;
+
+    HAL_Timer16_Disable(htimer16);
+
+    uint32_t CFGRConfig = htimer16->Instance->CFGR;
+    CFGRConfig &= ~TIMER16_CFGR_PRESC_M;
+    CFGRConfig |= Prescaler << TIMER16_CFGR_PRESC_S;
+
+    htimer16->Instance->CFGR = CFGRConfig;
+}
+
 void HAL_Timer16_Init(Timer16_HandleTypeDef *htimer16)
 {
     HAL_Timer16_Disable(htimer16);
     /* Настройка внутреннего/внешнего источника тактирования */
     HAL_Timer16_ClockInit(htimer16);
+
+    HAL_Timer16_SetPrescaler(htimer16, htimer16->Clock.Prescaler);
 
     HAL_Timer16_SetFilterExternalClock(htimer16, htimer16->Filter.ExternalClock);
     HAL_Timer16_SetFilterTrigger(htimer16, htimer16->Filter.Trigger);
@@ -351,4 +366,14 @@ void HAL_Timer16_WaitTrigger(Timer16_HandleTypeDef *htimer16)
         //xprintf("EXTTRIG = %d. Counter = %d\n", (htimer16->Instance->ISR & TIMER16_ISR_EXT_TRIG_M) >> TIMER16_ISR_EXT_TRIG_S, HAL_Timer16_GetCounterValue(htimer16));
     }
     HAL_Timer16_ClearTriggerFlag(htimer16);
+}
+
+void HAL_Timer16_ClearUpFlag(Timer16_HandleTypeDef *htimer16)
+{
+    htimer16->Instance->ICR |= TIMER16_ICR_UPCF_M;
+}
+
+void HAL_Timer16_ClearDownFlag(Timer16_HandleTypeDef *htimer16)
+{
+    htimer16->Instance->ICR |= TIMER16_ICR_DOWNCF_M;
 }
