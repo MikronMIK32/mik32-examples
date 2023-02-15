@@ -299,12 +299,11 @@ void HAL_Timer16_StartContinuousMode(Timer16_HandleTypeDef *htimer16)
 
 void HAL_Timer16_InvertOutput(Timer16_HandleTypeDef *htimer16)
 {
-    //HAL_Timer16_Disable(htimer16);
+    HAL_Timer16_Disable(htimer16);
     uint32_t CFGRConfig = htimer16->Instance->CFGR & TIMER16_CFGR_WAVPOL_M;
     CFGRConfig = CFGRConfig ^ TIMER16_CFGR_WAVPOL_M;
     CFGRConfig |= htimer16->Instance->CFGR & (~TIMER16_CFGR_WAVPOL_M);
     htimer16->Instance->CFGR = CFGRConfig;
-    HAL_Timer16_Enable(htimer16);
 }
 
 void HAL_Timer16_StartPWM(Timer16_HandleTypeDef *htimer16, uint16_t Period, uint16_t Compare)

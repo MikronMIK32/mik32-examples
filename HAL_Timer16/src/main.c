@@ -40,8 +40,8 @@ int main()
     //HAL_Timer16_SetCMP(&htimer16_1, 0xFFFF/2); 
 
     /*****************Запуск таймера в одиночном или продолжительном режиме*****************/
-    HAL_Timer16_StartSingleMode(&htimer16_1);
-    //HAL_Timer16_StartContinuousMode(&htimer16_1);
+    //HAL_Timer16_StartSingleMode(&htimer16_1);
+    HAL_Timer16_StartContinuousMode(&htimer16_1);
     /***************************************************************************************/
 
     /********************************Генерация волновой формы********************************/
@@ -57,7 +57,7 @@ int main()
     {    
         /* Очистка флага триггера */
         // HAL_Timer16_ClearTriggerFlag(&htimer16_1);
-
+        
         /* Вывод значения счетчика */
         xprintf("Counter = %d\n", HAL_Timer16_GetCounterValue(&htimer16_1));
 
@@ -101,7 +101,7 @@ static void Timer16_1_Init(void)
     htimer16_1.Clock.Source = TIMER16_SOURCE_INTERNAL_SYSTEM;
     htimer16_1.CountMode = TIMER16_COUNTMODE_INTERNAL;  /* При тактировании от Input1 не имеет значения */
     htimer16_1.Clock.Prescaler = TIMER16_PRESCALER_1;
-    htimer16_1.ActiveEdge = TIMER16_ACTIVEEDGE_RISING;  /* Выбирается при тактированиии от Input1 */
+    htimer16_1.ActiveEdge = TIMER16_ACTIVEEDGE_RISING;  /* Выбирается при тактировании от Input1 */
 
     /* Настройка верхнего предела счета */
     htimer16_1.Period = 0xFFFF;
