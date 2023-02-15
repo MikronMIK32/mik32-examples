@@ -37,25 +37,49 @@ void HAL_OTP_SetReadCur(OTP_HandleTypeDef *hotp, uint8_t ReadCur)
 void HAL_OPT_TimeInit(OTP_HandleTypeDef *hotp)
 {
     uint8_t APBMDivider = PM->DIV_APB_M;
+    uint8_t AHBDivider = PM->DIV_AHB;
+    uint32_t OscillatorSystem = PM->AHB_CLK_MUX; 
     
     uint32_t OtpadjConfig = hotp->Instance->OTPADJ;
     uint32_t otpwt1_config = hotp->Instance->OTPWT1;
     uint32_t otpwt2_config = hotp->Instance->OTPWT2;
 
     /* Рекомендуемое значение для N_RA, N_RH, N_SU, N_H. ceil(40/Period), где Period в нс */
-    uint32_t recommended_value = 0; 
-    if((40 * MIK32_FREQ_MHZ) % ((APBMDivider + 1) * 1000) == 0)
+    uint32_t Div = 0; 
+    /* Тактирование от 32МГц */
+    if((OscillatorSystem == PM_AHB_CLK_MUX_HSI32M_M) || (OscillatorSystem == PM_AHB_CLK_MUX_OSC32M_M))
     {
-        recommended_value = (40 * MIK32_FREQ_MHZ) / ((APBMDivider + 1) * 1000);
+        Div = 1000;
+    }
+
+    /* Тактирование от 32кГц */
+    if((OscillatorSystem == PM_AHB_CLK_MUX_LSI32K_M) || (OscillatorSystem == PM_AHB_CLK_MUX_OSC32K_M))
+    {
+        Div = 1000000;
+    }
+
+    uint32_t recommended_value = 0; 
+    if((40 * 32) % (((APBMDivider + 1) * (AHBDivider + 1)) * Div) == 0)
+    {
+        recommended_value = (40 * 32) / (((APBMDivider + 1) * (AHBDivider + 1)) * Div);
     }
     else
     {
-        recommended_value = (40 * MIK32_FREQ_MHZ) / ((APBMDivider + 1) * 1000) + 1;
+        recommended_value = (40 * 32) / (((APBMDivider + 1) * (AHBDivider + 1)) * Div) + 1;
     }
 
-
     /* Рекомендуемое значение N_W = 50 000 000 нс / Pclk, где Pclk – период тактового сигнала в нс */
-    uint32_t recommended_N_W = (MIK32_FREQ / 20) / (APBMDivider + 1); 
+    uint32_t recommended_N_W = 0; 
+    if((OscillatorSystem == PM_AHB_CLK_MUX_HSI32M_M) || (OscillatorSystem == PM_AHB_CLK_MUX_OSC32M_M))
+    {
+        recommended_N_W = (5 * 32 * 10000) / ((APBMDivider + 1) * (AHBDivider + 1));
+    }
+
+    /* Тактирование от 32кГц */
+    if((OscillatorSystem == PM_AHB_CLK_MUX_LSI32K_M) || (OscillatorSystem == PM_AHB_CLK_MUX_OSC32K_M))
+    {
+        recommended_N_W = (5 * 32 * 10) / ((APBMDivider + 1) * (AHBDivider + 1));
+    }
 
     OtpadjConfig &= ~OTP_OTPADJ_N_RSU_M; /* При частоте менее 200МГц рекомендуемое значение 0 */
 

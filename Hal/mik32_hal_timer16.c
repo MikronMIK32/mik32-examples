@@ -42,22 +42,16 @@ void HAL_Timer16_SetSourceClock(Timer16_HandleTypeDef *htimer16, uint8_t SourceC
         uint32_t CFGConfig = PM->TIMER_CFG;
         if(htimer16->Instance == TIMER16_0)
         {
-            xprintf("Timer16_0\n");
-
             CFGConfig &= ~PM_TIMER_CFG_M(MUX_TIM16_0);
             CFGConfig |= SourceClock << MUX_TIM16_0;
         }
         else if (htimer16->Instance == TIMER16_1)
         {
-            xprintf("Timer16_1\n");
-
             CFGConfig &= ~PM_TIMER_CFG_M(MUX_TIM16_1);
             CFGConfig |= SourceClock << MUX_TIM16_1;
         }
         else if (htimer16->Instance == TIMER16_2)
         {
-            xprintf("Timer16_2\n");
-
             CFGConfig &= ~PM_TIMER_CFG_M(MUX_TIM16_2);
             CFGConfig |= SourceClock << MUX_TIM16_2;
         }
@@ -360,10 +354,7 @@ void HAL_Timer16_ClearTriggerFlag(Timer16_HandleTypeDef *htimer16)
 
 void HAL_Timer16_WaitTrigger(Timer16_HandleTypeDef *htimer16)
 {
-    while (!(htimer16->Instance->ISR & TIMER16_ISR_EXT_TRIG_M))
-    {
-        //xprintf("EXTTRIG = %d. Counter = %d\n", (htimer16->Instance->ISR & TIMER16_ISR_EXT_TRIG_M) >> TIMER16_ISR_EXT_TRIG_S, HAL_Timer16_GetCounterValue(htimer16));
-    }
+    while (!(htimer16->Instance->ISR & TIMER16_ISR_EXT_TRIG_M));
     HAL_Timer16_ClearTriggerFlag(htimer16);
 }
 
