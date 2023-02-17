@@ -14,12 +14,22 @@ int main()
 
     uint16_t value = 0;
     //HAL_ADC_ContiniusEnable(&hadc);
+
+
     while (1)
     {    
         HAL_ADC_Single(&hadc);
         value = HAL_ADC_WaitAndGetValue(&hadc);
         //value = HAL_ADC_GetValue(&hadc);
-        xprintf("ADC%d: %d (V = %d,%d)\n", hadc.Init.Sel, value, (value*1200/4095)/1000, (value*1200/4095)%1000);
+
+        if(( (value*1200/4095)%1000 ) > 99)
+        {
+            xprintf("ADC: %d (V = %d,%d)\n", value, ((value*1200)/4095)/1000, ((value*1200)/4095)%1000);
+        }
+        else
+        {
+            xprintf("ADC: %d (V = %d,0%d)\n", value, ((value*1200)/4095)/1000, ((value*1200)/4095)%1000);
+        }
 
         for (volatile int i = 0; i < 1000000; i++);
     }
