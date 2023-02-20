@@ -282,7 +282,7 @@ void HAL_ADC_Single(ADC_HandleTypeDef *hadc);
  * Returns:
  * void
  */
-void HAL_ADC_ContiniusDisabled(ADC_HandleTypeDef *hadc);
+void HAL_ADC_ContinuousDisabled(ADC_HandleTypeDef *hadc);
 
 /*
  * Function: HAL_ADC_ContiniusEnable
@@ -294,7 +294,7 @@ void HAL_ADC_ContiniusDisabled(ADC_HandleTypeDef *hadc);
  * Returns:
  * void
  */
-void HAL_ADC_ContiniusEnable(ADC_HandleTypeDef *hadc);
+void HAL_ADC_ContinuousEnable(ADC_HandleTypeDef *hadc);
 
 /*
  * Function: HAL_ADC_WaitValid
