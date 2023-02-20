@@ -26,8 +26,15 @@ void HAL_DAC_SetDiv(DAC_HandleTypeDef *hdac, uint8_t div)
 {
     //div &= ~(1<<7); // div должно быть 7-битным
 
-    hdac->Instance_dac->CFG &= ~DAC_CFG_DIV_M;
-    hdac->Instance_dac->CFG |= DAC_CFG_DIV_M;
+    hdac->Init.DIV = div;
+
+    uint32_t DAC_CFG = hdac->Instance_dac->CFG;
+
+    DAC_CFG &= ~DAC_CFG_DIV_M;
+    DAC_CFG |= DAC_CFG_DIV_M;
+
+    hdac->Instance_dac->CFG = DAC_CFG;
+
 }
 
 void HAL_DAC_ResetEnable(DAC_HandleTypeDef *hdac)
@@ -69,16 +76,10 @@ void HAL_DAC_Init(DAC_HandleTypeDef *hdac)
     if(hdac->Instance_dac == HAL_DAC1)
     {
         PAD_CONFIG->PORT_1_CFG |= (DAC_PORT_AS_FUNC3 << 2 * DAC1_PORT_1_12);
-        #ifdef MIK32_DAC_DEBUG
-        xprintf("PORT_1_12 - функция DAC1\n");
-        #endif
     }
     if(hdac->Instance_dac == HAL_DAC2)
     {
         PAD_CONFIG->PORT_1_CFG |= (DAC_PORT_AS_FUNC3 << 2 * DAC2_PORT_1_13);
-        #ifdef MIK32_DAC_DEBUG
-        xprintf("PORT_1_13 - функция DAC2\n");
-        #endif
     }
 
     HAL_DAC_SetDiv(hdac, hdac->Init.DIV); /* Задание делителя */

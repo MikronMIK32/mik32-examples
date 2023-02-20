@@ -1,27 +1,34 @@
 #include "main.h"
 
-#define PIN_LED2 7 // LED2 управляется выводом PORT_2_7
-
-DAC_HandleTypeDef hdac0;
+DAC_HandleTypeDef hdac1;
 
 void SystemClock_Config(void);
-static void DAC0_Init(void);
+static void DAC_Init(void);
 
 int main()
 {    
 
     SystemClock_Config();
 
-    DAC0_Init();
+    DAC_Init();
 
     while (1)
     {    
         for (uint16_t DAC_Value = 0; DAC_Value <= 0x0FFF; DAC_Value += 819)
         {
-            HAL_DAC_SetValue(&hdac0, DAC_Value);
+            HAL_DAC_SetValue(&hdac1, DAC_Value);
+
             #ifdef MIK32_DAC_DEBUG
-            xprintf("DAC = %d\n", DAC_Value);
+            if(( (DAC_Value*1200/4095)%1000 ) > 99)
+            {
+                xprintf("DAC: %d (V = %d,%d)\n", DAC_Value, ((DAC_Value*1200)/4095)/1000, ((DAC_Value*1200)/4095)%1000);
+            }
+            else
+            {
+                xprintf("DAC: %d (V = %d,0%d)\n", DAC_Value, ((DAC_Value*1200)/4095)/1000, ((DAC_Value*1200)/4095)%1000);
+            }
             #endif
+
             for (volatile int i = 0; i < 1000000; i++);
         }
     }
@@ -50,14 +57,14 @@ void SystemClock_Config(void)
     HAL_RCC_ClockConfig(&PeriphClkInit);
 }
 
-static void DAC0_Init(void)
+static void DAC_Init(void)
 {
-    hdac0.Instance = ANALOG_REG;
+    hdac1.Instance = ANALOG_REG;
 
-    hdac0.Instance_dac = HAL_DAC1;
-    hdac0.Init.DIV = 0;
-    hdac0.Init.EXTRef = DAC_EXTREF_OFF;     /* Выбор источника опорного напряжения: «1» - внешний; «0» - встроенный */
-    hdac0.Init.EXTClb = DAC_EXTCLB_DACREF;  /* Выбор источника внешнего опорного напряжения: «1» - внешний вывод; «0» - настраиваемый ОИН */
+    hdac1.Instance_dac = HAL_DAC1;
+    hdac1.Init.DIV = 0;
+    hdac1.Init.EXTRef = DAC_EXTREF_OFF;     /* Выбор источника опорного напряжения: «1» - внешний; «0» - встроенный */
+    hdac1.Init.EXTClb = DAC_EXTCLB_DACREF;  /* Выбор источника внешнего опорного напряжения: «1» - внешний вывод; «0» - настраиваемый ОИН */
 
-    HAL_DAC_Init(&hdac0);
+    HAL_DAC_Init(&hdac1);
 }
