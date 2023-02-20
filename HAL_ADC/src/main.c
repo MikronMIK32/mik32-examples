@@ -63,7 +63,7 @@ static void ADC_Init(void)
     hadc.Instance = ANALOG_REG;
 
     hadc.Init.Sel = ADC_CHANNEL1;
-    hadc.Init.EXTRef = ADC_EXTREF_ON; /* Выбор источника опорного напряжения: «1» - внешний; «0» - встроенный */
+    hadc.Init.EXTRef = ADC_EXTREF_OFF; /* Выбор источника опорного напряжения: «1» - внешний; «0» - встроенный */
     hadc.Init.EXTClb = ADC_EXTCLB_CLBREF; /* Выбор источника внешнего опорного напряжения: «1» - внешний вывод; «0» - настраиваемый ОИН */
 
     HAL_ADC_Init(&hadc);
