@@ -6,7 +6,7 @@ void SystemClock_Config(void);
 static void Crypto_Init(void);
 
 uint32_t crypto_key[CRYPTO_KEY_KUZNECHIK] = {0x8899aabb, 0xccddeeff, 0x00112233, 0x44556677, 0xfedcba98, 0x76543210, 0x01234567, 0x89abcdef};
-uint32_t init_vector[IV_LENGTH] = {0x00000000, 0x00000000, 0x00000000, 0x00000000};
+uint32_t init_vector[IV_LENGTH_KUZNECHIK] = {0x00000000, 0x00000000, 0x00000000, 0x00000000};
 
 
 void kuznechik_ECB_code()
@@ -355,27 +355,26 @@ int main()
 
     xprintf("\nkuznechik_ECB_code\n");
     HAL_Crypto_SetCipherMode(&hcrypto, CRYPTO_CIPHER_MODE_ECB);     /* Настройка режима шифрования */
-    xprintf("Config_b 0x%x\n", hcrypto.Instance->CONFIG);
     kuznechik_ECB_code();
     xprintf("\nkuznechik_ECB_decode\n");   
     kuznechik_ECB_decode();
 
 
-    xprintf("\nkuznechik_CBC_code\n");
-    HAL_Crypto_SetCipherMode(&hcrypto, CRYPTO_CIPHER_MODE_CBC);  
-    HAL_Crypto_SetINIT(&hcrypto, init_vector);      /* Установка вектора инициализации */       
-    kuznechik_CBC_code();
-    xprintf("\nkuznechik_CBC_decode\n");
-    HAL_Crypto_SetINIT(&hcrypto, init_vector);      /* Установка вектора инициализации */   
-    kuznechik_CBC_decode();
+    // xprintf("\nkuznechik_CBC_code\n");
+    // HAL_Crypto_SetCipherMode(&hcrypto, CRYPTO_CIPHER_MODE_CBC);  
+    // HAL_Crypto_SetINIT(&hcrypto, init_vector);      /* Установка вектора инициализации */       
+    // kuznechik_CBC_code();
+    // xprintf("\nkuznechik_CBC_decode\n");
+    // HAL_Crypto_SetINIT(&hcrypto, init_vector);      /* Установка вектора инициализации */   
+    // kuznechik_CBC_decode();
 
-    xprintf("\nkuznechik_CTR_code\n");
-    HAL_Crypto_SetCipherMode(&hcrypto, CRYPTO_CIPHER_MODE_CTR);
-    HAL_Crypto_SetINIT(&hcrypto, init_vector);      /* Установка вектора инициализации */           
-    kuznechik_CTR_code();
-    xprintf("\nkuznechik_CTR_decode\n");
-    HAL_Crypto_SetINIT(&hcrypto, init_vector);      /* Установка вектора инициализации */   
-    kuznechik_CTR_decode();
+    // xprintf("\nkuznechik_CTR_code\n");
+    // HAL_Crypto_SetCipherMode(&hcrypto, CRYPTO_CIPHER_MODE_CTR);
+    // HAL_Crypto_SetINIT(&hcrypto, init_vector);      /* Установка вектора инициализации */           
+    // kuznechik_CTR_code();
+    // xprintf("\nkuznechik_CTR_decode\n");
+    // HAL_Crypto_SetINIT(&hcrypto, init_vector);      /* Установка вектора инициализации */   
+    // kuznechik_CTR_decode();
 
     while (1)
     {    
@@ -398,7 +397,7 @@ void SystemClock_Config(void)
     RCC_OscInit.LSI32KCalibrationValue = 0;
     HAL_RCC_OscConfig(&RCC_OscInit);
 
-    PeriphClkInit.PMClockAHB = PMCLOCKAHB_DEFAULT | HAL_CLOCK_CRYPTO;    
+    PeriphClkInit.PMClockAHB = PMCLOCKAHB_DEFAULT | PM_CLOCK_CRYPTO_M;    
     PeriphClkInit.PMClockAPB_M = PMCLOCKAPB_M_DEFAULT | PM_CLOCK_WU_M | PM_CLOCK_PAD_CONFIG_M;     
     PeriphClkInit.PMClockAPB_P = PMCLOCKAPB_P_DEFAULT | PM_CLOCK_UART_0_M; 
     PeriphClkInit.RTCClockSelection = RCC_RTCCLKSOURCE_NO_CLK;

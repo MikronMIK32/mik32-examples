@@ -13,6 +13,8 @@ void HAL_Crypto_WaitReady(Crypto_HandleTypeDef *hcrypto)
 
 void HAL_Crypto_SetAlgorithm(Crypto_HandleTypeDef *hcrypto, uint8_t Algorithm)
 {
+    hcrypto->Algorithm = Algorithm;
+
     uint32_t ConfigTemp = hcrypto->Instance->CONFIG;
     
     ConfigTemp &= ~CRYPTO_CONFIG_DECODE_M; /* Обнуление DECODE */ 
@@ -24,6 +26,8 @@ void HAL_Crypto_SetAlgorithm(Crypto_HandleTypeDef *hcrypto, uint8_t Algorithm)
 
 void HAL_Crypto_SetCipherMode(Crypto_HandleTypeDef *hcrypto, uint8_t CipherMode)
 {
+    hcrypto->CipherMode = CipherMode;
+    
     uint32_t ConfigTemp = hcrypto->Instance->CONFIG;
 
     ConfigTemp &= ~CRYPTO_CONFIG_MODE_SEL_M; /* Обнуление MODE_SEL */
@@ -35,6 +39,8 @@ void HAL_Crypto_SetCipherMode(Crypto_HandleTypeDef *hcrypto, uint8_t CipherMode)
 
 void HAL_Crypto_SetSwapMode(Crypto_HandleTypeDef *hcrypto, uint8_t SwapMode)
 {
+    hcrypto->SwapMode = SwapMode;
+    
     uint32_t ConfigTemp = hcrypto->Instance->CONFIG;
 
     ConfigTemp &= ~CRYPTO_CONFIG_SWAP_MODE_M; /* Обнуление SWAP_MODE */ 
@@ -46,6 +52,8 @@ void HAL_Crypto_SetSwapMode(Crypto_HandleTypeDef *hcrypto, uint8_t SwapMode)
 
 void HAL_Crypto_SetOrderMode(Crypto_HandleTypeDef *hcrypto, uint8_t OrderMode)
 {
+    hcrypto->OrderMode = OrderMode;
+    
     uint32_t ConfigTemp = hcrypto->Instance->CONFIG;
 
     ConfigTemp &= ~CRYPTO_CONFIG_ORDER_MODE_M; /* Обнуление ORDER_MODE */ 
