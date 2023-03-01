@@ -16,14 +16,20 @@
 /*
  * Defines: Длина вектора инициализации 
  *
- * IV_LENGTH_KUZNECHIK - Длина вектора инициализации (Кузнечик)
- * IV_LENGTH_MAGMA - Длина вектора инициализации (Магма)
- * IV_LENGTH_AES - Длина вектора инициализации (AES)
+ * IV_LENGTH_KUZNECHIK_CBC - Количество слов вектора инициализации в режиме шифрования CBC (Кузнечик)
+ * IV_LENGTH_MAGMA_CBC - Количество слов вектора инициализации в режиме шифрования CBC (Магма) 
+ * IV_LENGTH_AES_CBC - Количество слов вектора инициализации в режиме шифрования CBC (AES)
+ * IV_LENGTH_KUZNECHIK_CTR - Количество слов вектора инициализации в режиме шифрования CTR (Кузнечик)
+ * IV_LENGTH_MAGMA_CTR - Количество слов вектора инициализации в режиме шифрования CTR (Магма)
+ * IV_LENGTH_AES_CTR - Количество слов вектора инициализации в режиме шифрования CTR (AES)
  *
  */
-#define IV_LENGTH_KUZNECHIK       4       /* Длина вектора инициализации (Кузнечик) */
-#define IV_LENGTH_MAGMA           4       /* Длина вектора инициализации (Магма) */
-#define IV_LENGTH_AES             2       /* Длина вектора инициализации (AES) */
+#define IV_LENGTH_KUZNECHIK_CBC       4       /* Количество слов вектора инициализации в режиме шифрования CBC (Кузнечик) */
+#define IV_LENGTH_MAGMA_CBC           4       /* Количество слов вектора инициализации в режиме шифрования CBC (Магма) */
+#define IV_LENGTH_AES_CBC             2       /* Количество слов вектора инициализации в режиме шифрования CBC (AES) */
+#define IV_LENGTH_KUZNECHIK_CTR       2       /* Количество слов вектора инициализации в режиме шифрования CTR (Кузнечик) */
+#define IV_LENGTH_MAGMA_CTR           2       /* Количество слов вектора инициализации в режиме шифрования CTR (Магма) */
+#define IV_LENGTH_AES_CTR             1       /* Количество слов вектора инициализации в режиме шифрования CTR (AES) */
 
 /*
  * Defines: Длина ключа
@@ -257,17 +263,18 @@ void HAL_Crypto_SetSwapMode(Crypto_HandleTypeDef *hcrypto, uint8_t SwapMode);
 void HAL_Crypto_SetOrderMode(Crypto_HandleTypeDef *hcrypto, uint8_t OrderMode);
 
 /*
- * Function: HAL_Crypto_SetINIT
+ * Function: HAL_Crypto_SetIV
  * Задать вектор инициализации 
  *
  * Parameters:
  * hcrypto - Указатель на структуру с настройками Crypto
- * InitVector - Вектор инициализации  
+ * InitVector - Вектор инициализации (IV)
+ * IvLength - Количество слов в InitVector
  *
  * Returns:
  * void
  */
-void HAL_Crypto_SetINIT(Crypto_HandleTypeDef *hcrypto, uint32_t InitVector[]);
+void HAL_Crypto_SetIV(Crypto_HandleTypeDef *hcrypto, uint32_t InitVector[], uint32_t IvLength);
 
 /*
  * Function: HAL_Crypto_SetKey
