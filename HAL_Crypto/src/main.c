@@ -7,17 +7,23 @@ static void Crypto_Init(void);
 
 uint32_t crypto_key[CRYPTO_KEY_KUZNECHIK] = {0x8899aabb, 0xccddeeff, 0x00112233, 0x44556677, 0xfedcba98, 0x76543210, 0x01234567, 0x89abcdef};
 
+                           
 
 void kuznechik_ECB_code()
 {
-    uint32_t plain_text[] = {            
-                                0x11223344, 0x55667700, 0xffeeddcc, 0xbbaa9988,
-                                0x00112233, 0x44556677, 0x8899aabb, 0xcceeff0a,
-                                0x11223344, 0x55667788, 0x99aabbcc, 0xeeff0a00,
-                                0x22334455, 0x66778899, 0xaabbccee, 0xff0a0011
-                            };
-
-                    
+    uint32_t plain_text[] =     {            
+                                    0x11223344, 0x55667700, 0xffeeddcc, 0xbbaa9988,
+                                    0x00112233, 0x44556677, 0x8899aabb, 0xcceeff0a,
+                                    0x11223344, 0x55667788, 0x99aabbcc, 0xeeff0a00,
+                                    0x22334455, 0x66778899, 0xaabbccee, 0xff0a0011
+                                };
+    
+    uint32_t cipher_text[] = {  
+                                0x0, 0x0, 0x0, 0x0, 
+                                0x0, 0x0, 0x0, 0x0, 
+                                0x0, 0x0, 0x0, 0x0, 
+                                0x0, 0x0, 0x0, 0x0
+                             }; 
 
     uint32_t expect_cipher_text[] = {
                                         0x7f679d90, 0xbebc2430, 0x5a468d42, 0xb9d4edcd, 
@@ -30,21 +36,21 @@ void kuznechik_ECB_code()
     uint32_t key_length = sizeof(crypto_key)/sizeof(*crypto_key);
     uint32_t plain_text_length = sizeof(plain_text)/sizeof(*plain_text);
 
-    uint32_t cipher_text[plain_text_length];
 
     /* Задать режим шифрования */
     HAL_Crypto_SetCipherMode(&hcrypto, CRYPTO_CIPHER_MODE_ECB);
-
     /* Установка ключа */
     HAL_Crypto_SetKey(&hcrypto, crypto_key);
+
 
     /* Зашифровать данные */
     HAL_Crypto_Encode(&hcrypto, plain_text, cipher_text, plain_text_length); 
 
+
     xprintf("KEY ");
     for (uint32_t i = 0; i < key_length; i++)
     {
-        xprintf("0x%08x ", crypto_key[i]);
+        xprintf("0x%08x, ", crypto_key[i]);
     }
     xprintf("\n");  
 
@@ -86,6 +92,20 @@ void kuznechik_ECB_code()
 
 void kuznechik_ECB_decode()
 {
+    uint32_t plain_text[] =     {            
+                                    0x0, 0x0, 0x0, 0x0, 
+                                    0x0, 0x0, 0x0, 0x0, 
+                                    0x0, 0x0, 0x0, 0x0, 
+                                    0x0, 0x0, 0x0, 0x0
+                                };
+    
+    uint32_t cipher_text[] = {  
+                                0x7f679d90, 0xbebc2430, 0x5a468d42, 0xb9d4edcd, 
+                                0xb429912c, 0x6e0032f9, 0x285452d7, 0x6718d08b, 
+                                0xf0ca3354, 0x9d247cee, 0xf3f5a531, 0x3bd4b157, 
+                                0xd0b09ccd, 0xe830b9eb, 0x3a02c4c5, 0xaa8ada98
+                             }; 
+    
     uint32_t expect_plain_text[] =  {            
                                         0x11223344, 0x55667700, 0xffeeddcc, 0xbbaa9988,
                                         0x00112233, 0x44556677, 0x8899aabb, 0xcceeff0a,
@@ -93,27 +113,19 @@ void kuznechik_ECB_decode()
                                         0x22334455, 0x66778899, 0xaabbccee, 0xff0a0011
                                     };
 
-                
-    uint32_t cipher_text[] = {  
-                                0x7f679d90, 0xbebc2430, 0x5a468d42, 0xb9d4edcd, 
-                                0xb429912c, 0x6e0032f9, 0x285452d7, 0x6718d08b, 
-                                0xf0ca3354, 0x9d247cee, 0xf3f5a531, 0x3bd4b157, 
-                                0xd0b09ccd, 0xe830b9eb, 0x3a02c4c5, 0xaa8ada98
-                             };
-
     uint32_t key_length = sizeof(crypto_key)/sizeof(*crypto_key);
     uint32_t cipher_text_length = sizeof(cipher_text)/sizeof(*cipher_text);
 
-    uint32_t plain_text[cipher_text_length];
 
     /* Задать режим шифрования */
     HAL_Crypto_SetCipherMode(&hcrypto, CRYPTO_CIPHER_MODE_ECB);
-
     /* Установка ключа */
     HAL_Crypto_SetKey(&hcrypto, crypto_key);
-    
+
+
     /* Расшифровать данные */
     HAL_Crypto_Decode(&hcrypto, cipher_text, plain_text, cipher_text_length); 
+
 
     xprintf("KEY ");
     for (uint32_t i = 0; i < key_length; i++)
@@ -160,7 +172,7 @@ void kuznechik_ECB_decode()
 
 void kuznechik_CBC_code()
 {
-    uint32_t init_vector[IV_LENGTH_KUZNECHIK_CBC] = {0x00000000, 0x00000000, 0x00000000, 0x00000000};
+    uint32_t init_vector[IV_LENGTH_KUZNECHIK_CBC] = {0x12341234, 0x11114444, 0xABCDABCD, 0xAAAABBBB};
     
     uint32_t plain_text[] = {            
                                 0x11223344, 0x55667700, 0xffeeddcc, 0xbbaa9988,
@@ -169,35 +181,39 @@ void kuznechik_CBC_code()
                                 0x22334455, 0x66778899, 0xaabbccee, 0xff0a0011
                             };
 
-                    
+    uint32_t cipher_text[] = {  
+                                0x0, 0x0, 0x0, 0x0, 
+                                0x0, 0x0, 0x0, 0x0, 
+                                0x0, 0x0, 0x0, 0x0, 
+                                0x0, 0x0, 0x0, 0x0
+                             }; 
 
     uint32_t expect_cipher_text[] = {
-                                        0xd4643dbb, 0x6b9501a7, 0xb613a7a4, 0x8652e5e9, 
-                                        0xbbba9af5, 0x1e7bc4dd, 0xe1e9a0f2, 0xb7c2155b, 
-                                        0x1287d133, 0x5b1c0eee, 0x29387b0d, 0xdc4d481b, 
-                                        0x86486ab6, 0xc8bce113, 0x69c607a8, 0xe3f91801
+                                        0x50796e7f, 0x4094ce10, 0xbab7374c, 0x981047e3, 
+                                        0x1ee4f83b, 0x334948ed, 0x86a0873c, 0x86bff9a2, 
+                                        0xa084f5fa, 0x965481e4, 0xb64be9bd, 0x32ef21e3, 
+                                        0xa6e376cf, 0x95e8a097, 0x9a46ba33, 0x152b1843
                                     };
 
     uint32_t key_length = sizeof(crypto_key)/sizeof(*crypto_key);
     uint32_t plain_text_length = sizeof(plain_text)/sizeof(*plain_text);
 
-    uint32_t cipher_text[plain_text_length];
 
     /* Задать режим шифрования */
     HAL_Crypto_SetCipherMode(&hcrypto, CRYPTO_CIPHER_MODE_CBC);
-
+    /* Установка вектора инициализации */  
+    HAL_Crypto_SetIV(&hcrypto, init_vector, sizeof(init_vector)/sizeof(*init_vector)); 
     /* Установка ключа */
     HAL_Crypto_SetKey(&hcrypto, crypto_key);
-    /* Установка вектора инициализации */  
-    HAL_Crypto_SetIV(&hcrypto, init_vector, sizeof(init_vector)/sizeof(*init_vector));  
-    
+
+
     /* Зашифровать данные */
     HAL_Crypto_Encode(&hcrypto, plain_text, cipher_text, plain_text_length);     
 
     xprintf("KEY ");
     for (uint32_t i = 0; i < key_length; i++)
     {
-        xprintf("0x%08x ", crypto_key[i]);
+        xprintf("0x%08x, ", crypto_key[i]);
     }
     xprintf("\n");  
 
@@ -239,35 +255,42 @@ void kuznechik_CBC_code()
 
 void kuznechik_CBC_decode()
 {
-    uint32_t init_vector[IV_LENGTH_KUZNECHIK_CBC] = {0x00000000, 0x00000000, 0x00000000, 0x00000000};
+    uint32_t init_vector[IV_LENGTH_KUZNECHIK_CBC] = {0x12341234, 0x11114444, 0xABCDABCD, 0xAAAABBBB};
     
+    uint32_t plain_text[] =     {            
+                                    0x0, 0x0, 0x0, 0x0, 
+                                    0x0, 0x0, 0x0, 0x0, 
+                                    0x0, 0x0, 0x0, 0x0, 
+                                    0x0, 0x0, 0x0, 0x0
+                                };
+    
+    uint32_t cipher_text[] = {  
+                                0x50796e7f, 0x4094ce10, 0xbab7374c, 0x981047e3, 
+                                0x1ee4f83b, 0x334948ed, 0x86a0873c, 0x86bff9a2, 
+                                0xa084f5fa, 0x965481e4, 0xb64be9bd, 0x32ef21e3, 
+                                0xa6e376cf, 0x95e8a097, 0x9a46ba33, 0x152b1843
+                             }; 
+
     uint32_t expect_plain_text[] =  {            
                                         0x11223344, 0x55667700, 0xffeeddcc, 0xbbaa9988,
                                         0x00112233, 0x44556677, 0x8899aabb, 0xcceeff0a,
                                         0x11223344, 0x55667788, 0x99aabbcc, 0xeeff0a00,
                                         0x22334455, 0x66778899, 0xaabbccee, 0xff0a0011
                                     };
-
-                
-    uint32_t cipher_text[] = {  
-                                0x7f679d90, 0xbebc2430, 0x5a468d42, 0xb9d4edcd, 
-                                0x1ac9d976, 0xf83636f5, 0x5ae9ef30, 0x5e7c90d2, 
-                                0x15645af4, 0xa78e50a9, 0xabe8db4b, 0x754de3f2, 
-                                0x9cda9458, 0x8e61dc9c, 0xe42e2643, 0x75303df2
-                             };
+    
 
     uint32_t key_length = sizeof(crypto_key)/sizeof(*crypto_key);
     uint32_t cipher_text_length = sizeof(cipher_text)/sizeof(*cipher_text);
 
-    uint32_t plain_text[cipher_text_length];
+    
 
     /* Задать режим шифрования */
     HAL_Crypto_SetCipherMode(&hcrypto, CRYPTO_CIPHER_MODE_CBC);
-    
+    /* Установка вектора инициализации */  
+    HAL_Crypto_SetIV(&hcrypto, init_vector, sizeof(init_vector)/sizeof(*init_vector)); 
     /* Установка ключа */
     HAL_Crypto_SetKey(&hcrypto, crypto_key);
-    /* Установка вектора инициализации */  
-    HAL_Crypto_SetIV(&hcrypto, init_vector, sizeof(init_vector)/sizeof(*init_vector));  
+  
 
     /* Расшифровать данные */
     HAL_Crypto_Decode(&hcrypto, cipher_text, plain_text, cipher_text_length); 
@@ -317,36 +340,40 @@ void kuznechik_CBC_decode()
 
 void kuznechik_CTR_code()
 {
-    uint32_t init_vector[IV_LENGTH_KUZNECHIK_CTR] = {0x00000000, 0x00000000};
+    uint32_t init_vector[IV_LENGTH_KUZNECHIK_CTR] = {0x12341235, 0x5BCDABCD};
     
-    uint32_t plain_text[] = {            
-                                0x11223344, 0x55667700, 0xffeeddcc, 0xbbaa9988,
-                                0x00112233, 0x44556677, 0x8899aabb, 0xcceeff0a,
-                                0x11223344, 0x55667788, 0x99aabbcc, 0xeeff0a00,
-                                0x22334455, 0x66778899, 0xaabbccee, 0xff0a0011
-                            };
-
-                    
+    uint32_t plain_text[] =     {            
+                                    0x11223344, 0x55667700, 0xffeeddcc, 0xbbaa9988,
+                                    0x00112233, 0x44556677, 0x8899aabb, 0xcceeff0a,
+                                    0x11223344, 0x55667788, 0x99aabbcc, 0xeeff0a00,
+                                    0x22334455, 0x66778899, 0xaabbccee, 0xff0a0011
+                                };
+    
+    uint32_t cipher_text[] = {  
+                                0x0, 0x0, 0x0, 0x0, 
+                                0x0, 0x0, 0x0, 0x0, 
+                                0x0, 0x0, 0x0, 0x0, 
+                                0x0, 0x0, 0x0, 0x0
+                             }; 
 
     uint32_t expect_cipher_text[] = {
-                                        0x675b2a7e, 0xf0b9d788, 0xbb9e7619, 0x013c144b, 
-                                        0x8154a662, 0xf7c93530, 0x58d02698, 0xb431e88a, 
-                                        0x02525e18, 0x62fa6cd9, 0xa9105a1a, 0x8fb9b742, 
-                                        0x36d4762c, 0xcffb8e64, 0xd3765c2a, 0x6fb7f734
+                                        0xf12504ea, 0x08bf9cd4, 0x2c1daede, 0x98792153, 
+                                        0x2b92cfc8, 0xca2e1091, 0x2bf5d2b7, 0xe2179b86,
+                                        0xab37ec96, 0x918795fe, 0xe6c2e8fa, 0xc2773e7b,
+                                        0x74d3290d, 0xcd9aaf15, 0x874a6ab9, 0x75078b63
                                     };
 
     uint32_t key_length = sizeof(crypto_key)/sizeof(*crypto_key);
     uint32_t plain_text_length = sizeof(plain_text)/sizeof(*plain_text);
 
-    uint32_t cipher_text[plain_text_length];
 
     /* Задать режим шифрования */
     HAL_Crypto_SetCipherMode(&hcrypto, CRYPTO_CIPHER_MODE_CTR);
-    
+    /* Установка вектора инициализации */  
+    HAL_Crypto_SetIV(&hcrypto, init_vector, sizeof(init_vector)/sizeof(*init_vector)); 
     /* Установка ключа */
     HAL_Crypto_SetKey(&hcrypto, crypto_key);
-    /* Установка вектора инициализации */  
-    HAL_Crypto_SetIV(&hcrypto, init_vector, sizeof(init_vector)/sizeof(*init_vector));   
+ 
 
     /* Зашифровать данные */
     HAL_Crypto_Encode(&hcrypto, plain_text, cipher_text, plain_text_length); 
@@ -355,7 +382,7 @@ void kuznechik_CTR_code()
     xprintf("KEY ");
     for (uint32_t i = 0; i < key_length; i++)
     {
-        xprintf("0x%08x ", crypto_key[i]);
+        xprintf("0x%08x, ", crypto_key[i]);
     }
     xprintf("\n");  
 
@@ -397,8 +424,22 @@ void kuznechik_CTR_code()
 
 void kuznechik_CTR_decode()
 {
-    uint32_t init_vector[IV_LENGTH_KUZNECHIK_CTR] = {0x00000000, 0x00000000};
+    uint32_t init_vector[IV_LENGTH_KUZNECHIK_CTR] = {0x12341235, 0x5BCDABCD};
     
+    uint32_t plain_text[] =     {            
+                                    0x0, 0x0, 0x0, 0x0, 
+                                    0x0, 0x0, 0x0, 0x0, 
+                                    0x0, 0x0, 0x0, 0x0, 
+                                    0x0, 0x0, 0x0, 0x0
+                                };
+    
+    uint32_t cipher_text[] = {  
+                                0xf12504ea, 0x08bf9cd4, 0x2c1daede, 0x98792153, 
+                                0x2b92cfc8, 0xca2e1091, 0x2bf5d2b7, 0xe2179b86,
+                                0xab37ec96, 0x918795fe, 0xe6c2e8fa, 0xc2773e7b,
+                                0x74d3290d, 0xcd9aaf15, 0x874a6ab9, 0x75078b63
+                             }; 
+
     uint32_t expect_plain_text[] =  {            
                                         0x11223344, 0x55667700, 0xffeeddcc, 0xbbaa9988,
                                         0x00112233, 0x44556677, 0x8899aabb, 0xcceeff0a,
@@ -406,26 +447,18 @@ void kuznechik_CTR_decode()
                                         0x22334455, 0x66778899, 0xaabbccee, 0xff0a0011
                                     };
 
-                
-    uint32_t cipher_text[] = {  
-                                0x859cf21a, 0x73fa86e5, 0xf91ef655, 0xf7a01728, 
-                                0x01c95134, 0x7e94a413, 0xdda109d0, 0xff8009cd, 
-                                0xa52e6661, 0xa7f21c84, 0x26c26636, 0x50f5d618, 
-                                0xdaa7da93, 0x012565b2, 0x02d41642, 0x6f31b25c
-                             };
 
     uint32_t key_length = sizeof(crypto_key)/sizeof(*crypto_key);
-    uint32_t cipher_text_length = sizeof(cipher_text)/sizeof(*cipher_text);
+    uint32_t cipher_text_length = sizeof(cipher_text)/sizeof(*cipher_text); 
 
-    uint32_t plain_text[cipher_text_length];
 
     /* Задать режим шифрования */
     HAL_Crypto_SetCipherMode(&hcrypto, CRYPTO_CIPHER_MODE_CTR);
-    
+    /* Установка вектора инициализации */  
+    HAL_Crypto_SetIV(&hcrypto, init_vector, sizeof(init_vector)/sizeof(*init_vector)); 
     /* Установка ключа */
     HAL_Crypto_SetKey(&hcrypto, crypto_key);
-    /* Установка вектора инициализации */  
-    HAL_Crypto_SetIV(&hcrypto, init_vector, sizeof(init_vector)/sizeof(*init_vector));  
+
 
     /* Расшифровать данные */
     HAL_Crypto_Decode(&hcrypto, cipher_text, plain_text, cipher_text_length); 
@@ -480,12 +513,10 @@ int main()
 
     Crypto_Init();
 
-      
     xprintf("\nkuznechik_ECB_code\n");
     kuznechik_ECB_code();
     xprintf("\nkuznechik_ECB_decode\n");   
     kuznechik_ECB_decode();
-
 
     xprintf("\nkuznechik_CBC_code\n");
     kuznechik_CBC_code();
@@ -497,6 +528,7 @@ int main()
     kuznechik_CTR_code();
     xprintf("\nkuznechik_CTR_decode\n");   
     kuznechik_CTR_decode();
+
 
 
     while (1)

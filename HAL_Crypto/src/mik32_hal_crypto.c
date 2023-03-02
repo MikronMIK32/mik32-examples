@@ -65,20 +65,21 @@ void HAL_Crypto_SetOrderMode(Crypto_HandleTypeDef *hcrypto, uint8_t OrderMode)
 
 void HAL_Crypto_SetIV(Crypto_HandleTypeDef *hcrypto, uint32_t InitVector[], uint32_t IvLength)
 {
-    
+
     for (uint32_t i = 0; i < IvLength; i++)
     {
         hcrypto->Instance->INIT = InitVector[i];
-    }    
+    } 
 
     /* В режиме шифрования CTR длина вектора инициализации равна половине блока и такое же количество нулей */
-    if(hcrypto->Algorithm == CRYPTO_CIPHER_MODE_CTR)
+    if(hcrypto->CipherMode == CRYPTO_CIPHER_MODE_CTR)
     {
         for (uint32_t i = 0; i < IvLength; i++)
         {
             hcrypto->Instance->INIT = 0;
         }   
     }
+
 }
 
 void HAL_Crypto_SetKey(Crypto_HandleTypeDef *hcrypto, uint32_t crypto_key[])
@@ -97,6 +98,9 @@ void HAL_Crypto_SetKey(Crypto_HandleTypeDef *hcrypto, uint32_t crypto_key[])
         key_length = CRYPTO_KEY_AES;
         break;
     }
+
+    /* Ключ должен быть инициализирован в режиме шифрования */
+    hcrypto->Instance->CONFIG &= ~CRYPTO_CONFIG_DECODE_M;
 
     for (uint32_t i = 0; i < key_length; i++)
     {
