@@ -1,26 +1,35 @@
-#include "main.h"
+#include "mik32_hal_rcc.h"
+#include "mik32_hal_spi.h"
+
+#include "uart_lib.h"
+#include "xprintf.h"
+
+
 
 SPI_HandleTypeDef hspi0;
 
 void SystemClock_Config(void);
-static void MX_SPI0_Init(void);
+static void SPI0_Init(void);
 
 int main()
 {    
 
     SystemClock_Config();
-    
-    MX_SPI0_Init();
 
-    uint8_t master_output[] = {0xA0, 0xA1, 0xA2, 0xA3, 0xA4, 0xA5, 0xA6, 0xA7, 0xA8, 0xA9, 0xB0, 0xB1};
-    uint8_t maser_input[sizeof(master_output)];
+    UART_Init(UART_0, 3333, 
+        UART_CONTROL1_TE_M | UART_CONTROL1_M_8BIT_M, 0, 0);
+    
+    SPI0_Init();
+
+    volatile uint8_t master_output[] = {0xA0, 0xA1, 0xA2, 0xA3, 0xA4, 0xA5, 0xA6, 0xA7, 0xA8, 0xA9, 0xB0, 0xB1};
+    volatile uint8_t maser_input[sizeof(master_output)];
 
     while (1)
     {    
         /* Начало передачи в ручном режиме управления CS */
         if(hspi0.Init.ManualCS == SPI_MANUALCS_ON)
         {
-            HAL_SPI_Enable(&hspi0);
+            //HAL_SPI_Enable(&hspi0);
             HAL_SPI_CS_Enable(&hspi0, SPI_CS_0);
         }
 
@@ -31,7 +40,7 @@ int main()
         if(hspi0.Init.ManualCS == SPI_MANUALCS_ON)
         {
             HAL_SPI_CS_Disable(&hspi0);
-            HAL_SPI_Disable(&hspi0);
+            //HAL_SPI_Disable(&hspi0);
         }
 
         xprintf("Status = 0x%x\n", (uint8_t)hspi0.Instance->IntStatus);
@@ -69,7 +78,7 @@ void SystemClock_Config(void)
     HAL_RCC_ClockConfig(&PeriphClkInit);
 }
 
-static void MX_SPI0_Init(void)
+static void SPI0_Init(void)
 {
     hspi0.Instance = SPI_0;
 

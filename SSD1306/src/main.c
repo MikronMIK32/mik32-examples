@@ -1,4 +1,13 @@
-#include "main.h"
+#include "mik32_hal_rcc.h"
+#include "mik32_hal_i2c.h"
+#include "mik32_hal_rtc.h"
+#include "mik32_hal_ssd1306.h"
+
+#include "uart_lib.h"
+#include "xprintf.h"
+
+#define SSD1306_128x32
+//#define ssd1306_128x64
 
 I2C_HandleTypeDef hi2c0;
 RTC_HandleTypeDef hrtc;
@@ -11,6 +20,8 @@ int main()
 {    
 
     SystemClock_Config();
+
+    UART_Init(UART_0, 3333, UART_CONTROL1_TE_M | UART_CONTROL1_M_8BIT_M, 0, 0);
     
     I2C0_Init();
 

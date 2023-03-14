@@ -1,5 +1,6 @@
 {
     "files.associations": {
         "crypto.h": "c"
-    }
+    },
+    "cmake.configureOnOpen": true
 }

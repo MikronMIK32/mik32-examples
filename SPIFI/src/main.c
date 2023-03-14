@@ -1,5 +1,9 @@
 
-#include "common.h"
+#include "uart_lib.h"
+#include "xprintf.h"
+#include "mcu32_memory_map.h"
+#include "power_manager.h"
+
 #include "spifi.h"
 #include "array.h"
 
@@ -99,7 +103,7 @@ void write_enable()
                         (SPIFI_CONFIG_CMD_FIELDFORM_ALL_SERIAL << SPIFI_CONFIG_CMD_FIELDFORM_S);
     if(SPIFI_WaitIntrqTimeout(SPIFI_CONFIG, TIMEOUT) == 0)
     {
-        TEST_ERROR("Timeout executing write enable command");
+        xprintf("Timeout executing write enable command\n");
         return;
     }
 }
@@ -135,7 +139,7 @@ uint8_t read_sreg_1()
                         (READ_SREG << SPIFI_CONFIG_CMD_DATALEN_S);
     if(SPIFI_WaitIntrqTimeout(SPIFI_CONFIG, TIMEOUT) == 0)
     {
-        TEST_ERROR("Timeout executing read sreg1 command");
+        xprintf("Timeout executing read sreg1 command\n");
         return 0;
     }
 
@@ -165,7 +169,7 @@ void chip_erase()
                         (SPIFI_CONFIG_CMD_FIELDFORM_ALL_SERIAL << SPIFI_CONFIG_CMD_FIELDFORM_S);
     if(SPIFI_WaitIntrqTimeout(SPIFI_CONFIG, TIMEOUT) == 0)
     {
-        TEST_ERROR("Timeout executing chip erase command");
+        xprintf("Timeout executing chip erase command");
         return;
     }
 }   
@@ -290,6 +294,8 @@ void write(int address, char data[], int data_len)
 
 int main()
 {       
+    PM->CLK_APB_P_SET |= PM_CLOCK_UART_0_M;
+    UART_Init(UART_0, 3333, UART_CONTROL1_TE_M | UART_CONTROL1_M_8BIT_M, 0, 0);
     spifi_init();
     erase();
     int bin_data_len = sizeof(bin_data);

@@ -1,16 +1,23 @@
-#include "main.h"
+#include "mik32_hal_rcc.h"
+#include "mik32_hal_spi.h"
+
+#include "uart_lib.h"
+#include "xprintf.h"
 
 SPI_HandleTypeDef hspi0;
 
 void SystemClock_Config(void);
-static void MX_SPI0_Init(void);
+static void SPI0_Init(void);
 
 int main()
 {    
 
     SystemClock_Config();
+
+    UART_Init(UART_0, 3333, 
+        UART_CONTROL1_TE_M | UART_CONTROL1_M_8BIT_M, 0, 0);
     
-    MX_SPI0_Init();
+    SPI0_Init();
 
     uint8_t slave_output[] = {0xB0, 0xB1, 0xB2, 0xB3, 0xB4, 0xB5, 0xB6, 0xB7, 0xB8, 0xB9, 0xC0, 0xC1};
     uint8_t slave_input[sizeof(slave_output)]; 
@@ -57,18 +64,16 @@ void SystemClock_Config(void)
     HAL_RCC_ClockConfig(&PeriphClkInit);
 }
 
-static void MX_SPI0_Init(void)
+static void SPI0_Init(void)
 {
     hspi0.Instance = SPI_0;
 
     /* Режим SPI */
     hspi0.Init.SPI_Mode = HAL_SPI_MODE_SLAVE;
 
-    /* Настройки */    
-    hspi0.Init.BaudRateDiv = SPI_BAUDRATE_DIV64;                    
+    /* Настройки */                       
     hspi0.Init.CLKPhase = SPI_PHASE_OFF;            
     hspi0.Init.CLKPolarity = SPI_POLARITY_LOW;         
-    hspi0.Init.Decoder = SPI_DECODER_NONE;
     hspi0.Init.DataSize = SPI_DATASIZE_8BITS;  
 
     HAL_SPI_Init(&hspi0);

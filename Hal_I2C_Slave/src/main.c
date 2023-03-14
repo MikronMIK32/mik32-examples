@@ -1,4 +1,8 @@
-#include "main.h"
+#include "mik32_hal_rcc.h"
+#include "mik32_hal_i2c.h"
+
+#include "uart_lib.h"
+#include "xprintf.h"
 
 I2C_HandleTypeDef hi2c0;
 uint8_t flag = 0;
@@ -10,6 +14,8 @@ int main()
 {
    
     SystemClock_Config();
+
+    UART_Init(UART_0, 3333, UART_CONTROL1_TE_M | UART_CONTROL1_M_8BIT_M, 0, 0);
 
     I2C0_Init();
     

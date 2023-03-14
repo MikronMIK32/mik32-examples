@@ -1,4 +1,9 @@
-#include "main.h"
+#include "mik32_hal_rcc.h"
+#include "mik32_hal_dac.h"
+
+#include "uart_lib.h"
+#include "xprintf.h"
+
 
 DAC_HandleTypeDef hdac1;
 
@@ -9,6 +14,8 @@ int main()
 {    
 
     SystemClock_Config();
+
+    UART_Init(UART_0, 3333, UART_CONTROL1_TE_M | UART_CONTROL1_M_8BIT_M, 0, 0);
 
     DAC_Init();
 

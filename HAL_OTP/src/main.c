@@ -1,4 +1,8 @@
-#include "main.h"
+#include "mik32_hal_rcc.h"
+#include "mik32_hal_otp.h"
+
+#include "uart_lib.h"
+#include "xprintf.h"
 
 
 OTP_HandleTypeDef hotp;
@@ -11,6 +15,8 @@ int main()
 {    
 
     SystemClock_Config();
+
+    UART_Init(UART_0, 3333, UART_CONTROL1_TE_M | UART_CONTROL1_M_8BIT_M, 0, 0);
 
     OTP_Init();
 
@@ -28,16 +34,14 @@ int main()
     uint32_t data_length = sizeof(otp_data_read)/sizeof(*otp_data_read);
 
     /*********************************** Запись ***********************************/
-    #ifdef MIK32_OTP_DEBUG
+    
     xprintf("Write\n");
-    #endif
     
     HAL_OTP_Write(&hotp, address, otp_data_write, data_length);
     HAL_OTP_WriteTestRow(&hotp, otp_data_writeTestRow);
     HAL_OTP_WriteTestColumn(&hotp, address, otp_data_writeTestColumn, data_length);
     HAL_OTP_WriteTestBit(&hotp, otp_data_writeTestBit);
 
-    #ifdef MIK32_OTP_DEBUG
     for (uint32_t i = 0; i < data_length; i++)
     {
         xprintf("otp_data_write[%d] = 0x%08x\n", i, otp_data_write[i]);
@@ -51,22 +55,19 @@ int main()
     }
 
     xprintf("\notp_data_writeTestBit = 0x%08x\n\n", otp_data_writeTestBit);
-    #endif
 
     /* После окончания операции записи(чтения) до начала следующей за ней операции чтения(записи) должно пройти не менее 1 мкс */
     for (volatile int i = 0; i < 1000000; i++); 
 
     /*********************************** Чтение ***********************************/
-    #ifdef MIK32_OTP_DEBUG
     xprintf("Read\n");
-    #endif
+
     
     HAL_OTP_Read(&hotp, address, otp_data_read, data_length);
     otp_data_readTestRow = HAL_OTP_ReadTestRow(&hotp);
     HAL_OTP_ReadTestColumn(&hotp, address, otp_data_readTestColumn, data_length);
     otp_data_readTestBit = HAL_OTP_ReadTestBit(&hotp);
 
-    #ifdef MIK32_OTP_DEBUG
     for (uint32_t i = 0; i < data_length; i++)
     {
         xprintf("otp_data_read[%d] = 0x%08x\n", i, otp_data_read[i]);
@@ -80,7 +81,6 @@ int main()
     }
 
     xprintf("\notp_data_readTestBit = 0x%08x\n", otp_data_readTestBit);
-    #endif
 
     while (1)
     {    

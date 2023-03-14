@@ -1,4 +1,9 @@
-#include "main.h"
+#include "uart_lib.h"
+#include "xprintf.h"
+
+#include "mik32_hal_rcc.h"
+#include "mik32_hal_crypto.h"
+
 
 Crypto_HandleTypeDef hcrypto;
 
@@ -346,21 +351,21 @@ void kuznechik_CTR_code()
                                     0x11223344, 0x55667700, 0xffeeddcc, 0xbbaa9988,
                                     0x00112233, 0x44556677, 0x8899aabb, 0xcceeff0a,
                                     0x11223344, 0x55667788, 0x99aabbcc, 0xeeff0a00,
-                                    0x22334455, 0x66778899, 0xaabbccee, 0xff0a0011
+                                    0x22334455, 0x66778899
                                 };
     
     uint32_t cipher_text[] = {  
                                 0x0, 0x0, 0x0, 0x0, 
                                 0x0, 0x0, 0x0, 0x0, 
                                 0x0, 0x0, 0x0, 0x0, 
-                                0x0, 0x0, 0x0, 0x0
+                                0x0, 0x0
                              }; 
 
     uint32_t expect_cipher_text[] = {
                                         0xf12504ea, 0x08bf9cd4, 0x2c1daede, 0x98792153, 
                                         0x2b92cfc8, 0xca2e1091, 0x2bf5d2b7, 0xe2179b86,
                                         0xab37ec96, 0x918795fe, 0xe6c2e8fa, 0xc2773e7b,
-                                        0x74d3290d, 0xcd9aaf15, 0x874a6ab9, 0x75078b63
+                                        0x74d3290d, 0xcd9aaf15
                                     };
 
     uint32_t key_length = sizeof(crypto_key)/sizeof(*crypto_key);
@@ -430,21 +435,21 @@ void kuznechik_CTR_decode()
                                     0x0, 0x0, 0x0, 0x0, 
                                     0x0, 0x0, 0x0, 0x0, 
                                     0x0, 0x0, 0x0, 0x0, 
-                                    0x0, 0x0, 0x0, 0x0
+                                    0x0, 0x0
                                 };
     
     uint32_t cipher_text[] = {  
                                 0xf12504ea, 0x08bf9cd4, 0x2c1daede, 0x98792153, 
                                 0x2b92cfc8, 0xca2e1091, 0x2bf5d2b7, 0xe2179b86,
                                 0xab37ec96, 0x918795fe, 0xe6c2e8fa, 0xc2773e7b,
-                                0x74d3290d, 0xcd9aaf15, 0x874a6ab9, 0x75078b63
+                                0x74d3290d, 0xcd9aaf15
                              }; 
 
     uint32_t expect_plain_text[] =  {            
                                         0x11223344, 0x55667700, 0xffeeddcc, 0xbbaa9988,
                                         0x00112233, 0x44556677, 0x8899aabb, 0xcceeff0a,
                                         0x11223344, 0x55667788, 0x99aabbcc, 0xeeff0a00,
-                                        0x22334455, 0x66778899, 0xaabbccee, 0xff0a0011
+                                        0x22334455, 0x66778899
                                     };
 
 
@@ -511,6 +516,8 @@ int main()
 
     SystemClock_Config();
 
+    UART_Init(UART_0, 3333, UART_CONTROL1_TE_M | UART_CONTROL1_M_8BIT_M, 0, 0);
+
     Crypto_Init();
 
     xprintf("\nkuznechik_ECB_code\n");
@@ -528,7 +535,6 @@ int main()
     kuznechik_CTR_code();
     xprintf("\nkuznechik_CTR_decode\n");   
     kuznechik_CTR_decode();
-
 
 
     while (1)

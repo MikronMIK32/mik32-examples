@@ -2,7 +2,6 @@
 #include <pad_config.h>
 #include <gpio.h>
 #include <power_manager.h>
-#include "common.h"
 
 #define PIN_LED2 7 // LED2 управляется выводом PORT_2_7
 #define PIN_button 6 // LED2 управляется выводом PORT_2_6

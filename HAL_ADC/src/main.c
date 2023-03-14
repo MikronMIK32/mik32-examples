@@ -1,4 +1,9 @@
-#include "main.h"
+#include "mik32_hal_rcc.h"
+#include "mik32_hal_adc.h"
+
+#include "uart_lib.h"
+#include "xprintf.h"
+
 
 ADC_HandleTypeDef hadc;
 
@@ -9,6 +14,8 @@ int main()
 {    
 
     SystemClock_Config();
+
+    UART_Init(UART_0, 3333, UART_CONTROL1_TE_M | UART_CONTROL1_M_8BIT_M, 0, 0);
     
     ADC_Init();
 
@@ -62,7 +69,7 @@ static void ADC_Init(void)
 {
     hadc.Instance = ANALOG_REG;
 
-    hadc.Init.Sel = ADC_CHANNEL1;
+    hadc.Init.Sel = ADC_CHANNEL4;
     hadc.Init.EXTRef = ADC_EXTREF_OFF; /* Выбор источника опорного напряжения: «1» - внешний; «0» - встроенный */
     hadc.Init.EXTClb = ADC_EXTCLB_CLBREF; /* Выбор источника внешнего опорного напряжения: «1» - внешний вывод; «0» - настраиваемый ОИН */
 

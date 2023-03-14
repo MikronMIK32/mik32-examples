@@ -1,5 +1,10 @@
-#include "main.h"
+#include "mik32_hal_rcc.h"
+#include "mik32_hal_timer16.h"
+
 #include <gpio.h>
+
+#include "uart_lib.h"
+#include "xprintf.h"
 
 
 Timer16_HandleTypeDef htimer16_1;
@@ -12,6 +17,8 @@ int main()
 {    
 
     SystemClock_Config();
+
+    UART_Init(UART_0, 3333, UART_CONTROL1_TE_M | UART_CONTROL1_M_8BIT_M, 0, 0);
 
     /************************Включить GPIO1.9 для триггера Timer16_1************************/
     // HAL_RCC_ClockEnable(HAL_CLOCK_GPIO_1);
@@ -31,7 +38,7 @@ int main()
 
     /**************************Включить вывод Output для Timer16_1**************************/
     /* Port0.10 */
-    // PAD_CONFIG->PORT_0_CFG |= (PORT_AS_TIMER << (2 * TIMER16_1_OUT)); 
+    PAD_CONFIG->PORT_0_CFG |= (PORT_AS_TIMER << (2 * TIMER16_1_OUT)); 
     /***************************************************************************************/
 
     Timer16_1_Init();
@@ -41,11 +48,11 @@ int main()
 
     /*****************Запуск таймера в одиночном или продолжительном режиме*****************/
     //HAL_Timer16_StartSingleMode(&htimer16_1);
-    HAL_Timer16_StartContinuousMode(&htimer16_1);
+    //HAL_Timer16_StartContinuousMode(&htimer16_1);
     /***************************************************************************************/
 
     /********************************Генерация волновой формы********************************/
-    //HAL_Timer16_StartPWM(&htimer16_1, 0xFFFF, 0xFFFF/2);
+    HAL_Timer16_StartPWM(&htimer16_1, 0xFFFF, 0xFFFF/2);
     //HAL_Timer16_StartOneShot(&htimer16_1, 0xFFFF, 0xFFFF/2);
     //HAL_Timer16_StartSetOnes(&htimer16_1, 0xFFFF, 0xFFFF/2);
     /****************************************************************************************/

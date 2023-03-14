@@ -1,4 +1,9 @@
-#include "main.h"
+#include "mik32_hal_rcc.h"
+#include <pad_config.h>
+#include <gpio.h>
+
+#include "uart_lib.h"
+#include "xprintf.h"
 
 #define PIN_LED2 7 // LED2 управляется выводом PORT_2_7
 #define PIN_button 6 // LED2 управляется выводом PORT_2_6
@@ -30,6 +35,8 @@ int main()
 {    
 
     SystemClock_Config();
+
+	UART_Init(UART_0, 3333, UART_CONTROL1_TE_M | UART_CONTROL1_M_8BIT_M, 0, 0);
 
 	PAD_CONFIG->PORT_2_CFG |= (1 << (2 * PIN_LED2)); // Установка порта 2 в режим GPIO
 	PAD_CONFIG->PORT_2_CFG |= (1 << (2 * PIN_button)); // Установка порта 2 в режим GPIO

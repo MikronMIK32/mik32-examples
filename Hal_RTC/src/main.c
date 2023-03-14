@@ -1,20 +1,25 @@
-#include "main.h"
-#include "common.h"
+#include "mik32_hal_rtc.h"
+#include "mik32_hal_rcc.h"
 
-/* Private variables ---------------------------------------------------------*/
+#include "uart_lib.h"
+#include "xprintf.h"
+
+
 RTC_HandleTypeDef hrtc;
 
-/* Private function prototypes -----------------------------------------------*/
+RTC_TimeTypeDef CurrentTime = {0};
+RTC_DateTypeDef CurrentDate = {0};
+
 void SystemClock_Config(void);
-static void MX_RTC_Init(void);
+static void RTC_Init(void);
 
 int main()
 {
-    /* Configure the system clock */
     SystemClock_Config();
 
-    /* Initialize all configured peripherals */
-    MX_RTC_Init();
+    UART_Init(UART_0, 3333, UART_CONTROL1_TE_M | UART_CONTROL1_M_8BIT_M, 0, 0);
+
+    RTC_Init();
 
     int counter = 1000000;
 
@@ -22,23 +27,48 @@ int main()
     {
         if (--counter < 0)
         {
-            #ifdef MIK32_RTC_DEBUG
-            HAL_RTC_Check(&hrtc);
-            #endif
+            CurrentDate = HAL_RTC_CheckDate(&hrtc);
+            xprintf("\n%d век\n", CurrentDate.Century);
+            xprintf("%d.%d.%d\n", CurrentDate.Day, CurrentDate.Month, CurrentDate.Year);
+
+            CurrentTime = HAL_RTC_CheckTime(&hrtc);
+            switch (CurrentTime.Dow)
+            {
+            case 1:
+                xprintf("Понедельник\n");
+                break;
+            case 2:
+                xprintf("Вторник\n");
+                break;
+            case 3:
+                xprintf("Среда\n");
+                break;
+            case 4:
+                xprintf("Четверг\n");
+                break;
+            case 5:
+                xprintf("Пятница\n");
+                break;
+            case 6:
+                xprintf("Суббота\n");
+                break;
+            case 7:
+                xprintf("Воскресенье\n");
+                break;
+            }
+            xprintf("%d:%d:%d.%d\n", CurrentTime.Hours, CurrentTime.Minutes, CurrentTime.Seconds, hrtc.Instance->TOS);
+
             
             counter = 1000000;
         }
 
-        if (hrtc.Instance->CTRL & RTC_CTRL_ALRM_M)
+        if (HAL_RTC_GetAlrmFlag(&hrtc))
         {
-            for (volatile int i = 0; i < 1000000; i++);
              
-            #ifdef MIK32_RTC_DEBUG
             xprintf("\nAlarm!\n");
-            #endif
-            
-            hrtc.Instance->CTRL &= ~RTC_CTRL_ALRM_M;
-            HAL_RTC_WaitFlag(&hrtc);
+
+            HAL_RTC_AlarmDisable(&hrtc);
+            HAL_RTC_ClearAlrmFlag(&hrtc);
         }
     }
 }
@@ -65,7 +95,7 @@ void SystemClock_Config(void)
     HAL_RCC_ClockConfig(&PeriphClkInit);
 }
 
-static void MX_RTC_Init(void)
+static void RTC_Init(void)
 {
     
     RTC_TimeTypeDef sTime = {0};
@@ -74,72 +104,39 @@ static void MX_RTC_Init(void)
 
     hrtc.Instance = RTC;
 
-    /* Установка даты и времени RTC */
-    sTime.Dow = RTC_WEEKDAY_FRIDAY;
-    sTime.Hours = 23;
-    sTime.Minutes = 54;
-    sTime.Seconds = 0;
-
     /* Выключение RTC для записи даты и времени */
     HAL_RTC_Disable(&hrtc);
 
+    /* Установка даты и времени RTC */
+    sTime.Dow       = RTC_WEEKDAY_FRIDAY;
+    sTime.Hours     = 23;
+    sTime.Minutes   = 54;
+    sTime.Seconds   = 0;
     HAL_RTC_SetTime(&hrtc, &sTime);
 
-    sDate.Century = 21;
-    sDate.Day = 9;
-    sDate.Month = RTC_MONTH_OCTOBER;
-    sDate.Year = 22;
-
+    sDate.Century   = 21;
+    sDate.Day       = 9;
+    sDate.Month     = RTC_MONTH_OCTOBER;
+    sDate.Year      = 22;
     HAL_RTC_SetDate(&hrtc, &sDate);
 
     /* Включение будильника. Настройка даты и времени будильника */
-    sAlarm.AlarmTime.Dow = sTime.Dow;
-    sAlarm.AlarmTime.Hours = sTime.Hours;
-    sAlarm.AlarmTime.Minutes = sTime.Minutes;
-    sAlarm.AlarmTime.Seconds = sTime.Seconds + 5;
+    sAlarm.AlarmTime.Dow       = RTC_WEEKDAY_FRIDAY;
+    sAlarm.AlarmTime.Hours     = 23;
+    sAlarm.AlarmTime.Minutes   = 54;
+    sAlarm.AlarmTime.Seconds   = 5;
 
-    sAlarm.AlarmDate.Century = 0;
-    sAlarm.AlarmDate.Day = 0;
-    sAlarm.AlarmDate.Month = 0;
-    sAlarm.AlarmDate.Year = 0;
-    sAlarm.AlarmDate = sDate;
+    sAlarm.AlarmDate.Century   = 21;
+    sAlarm.AlarmDate.Day       = 9;
+    sAlarm.AlarmDate.Month     = RTC_MONTH_OCTOBER;
+    sAlarm.AlarmDate.Year      = 22;
 
     sAlarm.MaskAlarmTime = RTC_TALRM_CDOW_M | RTC_TALRM_CH_M | RTC_TALRM_CM_M | RTC_TALRM_CS_M;
     sAlarm.MaskAlarmDate = RTC_DALRM_CC_M | RTC_DALRM_CD_M | RTC_DALRM_CM_M | RTC_DALRM_CY_M;
 
     HAL_RTC_SetAlarm(&hrtc, &sAlarm);
 
-    /* Настройка прерываний RTC */
-    hrtc.Interrupts.Alarm = RTC_ALARM_IRQn_DISABLE;
-    HAL_RTC_IRQnEnable(&hrtc);
-
     HAL_RTC_Enable(&hrtc);
 
 
-}
-
-void trap_handler() 
-{
-    HAL_IRQ_DisableInterrupts();
-
-    uint32_t epic_mask = (1 << EPIC_RTC_INDEX);
-
-    if ((EPIC->RAW_STATUS & epic_mask) == 0)
-    {
-        xprintf("Флаг прерывнаия в EPIC равный 0 не ожидалось\n");
-    } 
-    
-    //HAL_RTC_Disable(&hrtc);
-    HAL_RTC_AlarmDisable(&hrtc);
-    //HAL_RTC_Enable(&hrtc);
-
-    HAL_RTC_AlrmClear(&hrtc);
-
-    if ((EPIC->RAW_STATUS & epic_mask) != 0)
-    {
-        xprintf("Флаг прерывнаия в EPIC не был сброшен\n");
-    } 
-
-    xprintf("\nAlarm!\n");
-    HAL_IRQ_EnableInterrupts();
 }

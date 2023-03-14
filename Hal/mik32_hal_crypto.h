@@ -279,6 +279,8 @@ void HAL_Crypto_SetIV(Crypto_HandleTypeDef *hcrypto, uint32_t InitVector[], uint
 /*
  * Function: HAL_Crypto_SetKey
  * Задать мастер-ключ
+ * 
+ * Ключ должен быть инициализирован в режиме шифрования (CONFIG.decode = 0).
  *
  * Parameters:
  * hcrypto - Указатель на структуру с настройками Crypto

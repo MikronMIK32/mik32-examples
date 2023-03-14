@@ -1,4 +1,9 @@
-#include "main.h"
+#include "mik32_hal_rcc.h"
+#include "mik32_hal_crc32.h"
+
+#include "uart_lib.h"
+#include "xprintf.h"
+
 
 CRC_HandleTypeDef hcrc;
 
@@ -10,6 +15,8 @@ int main()
 
     SystemClock_Config();
 
+    UART_Init(UART_0, 3333, UART_CONTROL1_TE_M | UART_CONTROL1_M_8BIT_M, 0, 0);
+
     CRC_Init();
 
     uint8_t  message[] ={'1', '2', '3', '4', '5', '6', '7', '8', '9'};
@@ -19,16 +26,12 @@ int main()
     /* Запись по байтам */
     HAL_RTC_WriteData(&hcrc, message, sizeof(message));
     CRCValue = HAL_RTC_ReadCRC(&hcrc);
-    #ifdef MIK32_CRC_DEBUG
     xprintf("CRC32 = 0x%08x, ожидалось 0x3010BF7F\n", CRCValue);
-    #endif
     
     /* Запись по словам */
     HAL_RTC_WriteData32(&hcrc, data, sizeof(data)/sizeof(*data));
     CRCValue = HAL_RTC_ReadCRC(&hcrc);
-    #ifdef MIK32_CRC_DEBUG
     xprintf("CRC32 = 0x%08x, ожидалось 0x6311BC18\n", CRCValue);
-    #endif
     
 
     while (1)
