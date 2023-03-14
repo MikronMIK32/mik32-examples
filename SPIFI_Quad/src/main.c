@@ -1,6 +1,7 @@
-
-#include "common.h"
-#include "spifi.h"
+#include <mcu32_memory_map.h>
+#include <power_manager.h>
+#include <spifi.h>
+#include <uart_lib.h>
 #include "array.h"
 
 #define SREG1_BUSY                1
@@ -108,7 +109,7 @@ void write_enable()
                         (SPIFI_CONFIG_CMD_FIELDFORM_ALL_SERIAL << SPIFI_CONFIG_CMD_FIELDFORM_S);
     if(SPIFI_WaitIntrqTimeout(SPIFI_CONFIG, TIMEOUT) == 0)
     {
-        TEST_ERROR("Timeout executing write enable command");
+        xprintf("Timeout executing write enable command");
         return;
     }
 }
@@ -144,7 +145,7 @@ uint8_t read_sreg_1()
                         (READ_SREG << SPIFI_CONFIG_CMD_DATALEN_S);
     if(SPIFI_WaitIntrqTimeout(SPIFI_CONFIG, TIMEOUT) == 0)
     {
-        TEST_ERROR("Timeout executing read sreg1 command");
+        xprintf("Timeout executing read sreg1 command");
         return 0;
     }
 
@@ -174,7 +175,7 @@ void chip_erase()
                         (SPIFI_CONFIG_CMD_FIELDFORM_ALL_SERIAL << SPIFI_CONFIG_CMD_FIELDFORM_S);
     if(SPIFI_WaitIntrqTimeout(SPIFI_CONFIG, TIMEOUT) == 0)
     {
-        TEST_ERROR("Timeout executing chip erase command");
+        xprintf("Timeout executing chip erase command");
         return;
     }
 }   
@@ -215,7 +216,7 @@ void read_data(unsigned int address, int byte_count)
     
     // if(SPIFI_WaitIntrqTimeout(SPIFI_CONFIG, TIMEOUT) == 0)
     // {
-    //     TEST_ERROR("Timeout executing read data command");
+    //     xprintf("Timeout executing read data command");
     //     return;
     // }
 
@@ -327,7 +328,7 @@ void quad_enable()
                         (1 << SPIFI_CONFIG_CMD_DATALEN_S);
     if(SPIFI_WaitIntrqTimeout(SPIFI_CONFIG, TIMEOUT) == 0)
     {
-        TEST_ERROR("Timeout executing write enable command");
+        xprintf("Timeout executing write enable command");
         return;
     }
     uint8_t sreg1 = SPIFI_CONFIG->DATA8;
@@ -340,7 +341,7 @@ void quad_enable()
                         (1 << SPIFI_CONFIG_CMD_DATALEN_S);
     if(SPIFI_WaitIntrqTimeout(SPIFI_CONFIG, TIMEOUT) == 0)
     {
-        TEST_ERROR("Timeout executing write enable command");
+        xprintf("Timeout executing write enable command");
         return;
     }
     uint8_t sreg2 = SPIFI_CONFIG->DATA8;
@@ -356,7 +357,7 @@ void quad_enable()
     SPIFI_CONFIG->DATA8 = sreg2 | SREG2_QUAD_ENABLE_M;
     if(SPIFI_WaitIntrqTimeout(SPIFI_CONFIG, TIMEOUT) == 0)
     {
-        TEST_ERROR("Timeout executing write enable command");
+        xprintf("Timeout executing write enable command");
         return;
     }
 
@@ -369,7 +370,7 @@ void quad_enable()
                         (1 << SPIFI_CONFIG_CMD_DATALEN_S);
     if(SPIFI_WaitIntrqTimeout(SPIFI_CONFIG, TIMEOUT) == 0)
     {
-        TEST_ERROR("Timeout executing write enable command");
+        xprintf("Timeout executing write enable command");
         return;
     }
     sreg2 = SPIFI_CONFIG->DATA8;
@@ -379,7 +380,7 @@ void quad_enable()
     }
     else
     {
-        TEST_ERROR("SREG2_QUAD_ENABLE setting failure");
+        xprintf("SREG2_QUAD_ENABLE setting failure");
         return;
     }
 }
@@ -421,7 +422,7 @@ void read_data_quad(unsigned int address, int byte_count)
     
     // if(SPIFI_WaitIntrqTimeout(SPIFI_CONFIG, TIMEOUT) == 0)
     // {
-    //     TEST_ERROR("Timeout executing read data command");
+    //     xprintf("Timeout executing read data command");
     //     return;
     // }
 
@@ -484,7 +485,7 @@ void read_data_quad_io(unsigned int address, int byte_count)
     
     // if(SPIFI_WaitIntrqTimeout(SPIFI_CONFIG, TIMEOUT) == 0)
     // {
-    //     TEST_ERROR("Timeout executing read data command");
+    //     xprintf("Timeout executing read data command");
     //     return;
     // }
 
@@ -511,7 +512,9 @@ void read_data_quad_io(unsigned int address, int byte_count)
 }
 
 int main()
-{       
+{
+    PM->CLK_APB_P_SET |= PM_CLOCK_UART_0_M;
+    UART_Init(UART_0, 3333, UART_CONTROL1_TE_M | UART_CONTROL1_M_8BIT_M, 0, 0);
     spifi_init();
     erase();
     int bin_data_len = sizeof(bin_data);
@@ -536,12 +539,12 @@ int main()
     }
     
     xprintf("end\n");
-    quad_enable();
-    if (SPIFI_CONFIG->CTRL & SPIFI_CONFIG_CTRL_MODE3_M)
-    {
-        xprintf("MODE3 ACTIVE\n");
-    }
-    SPIFI_CONFIG->CTRL |= SPIFI_CONFIG_CTRL_MODE3_M;
+    // quad_enable();
+    // if (SPIFI_CONFIG->CTRL & SPIFI_CONFIG_CTRL_MODE3_M)
+    // {
+    //     xprintf("MODE3 ACTIVE\n");
+    // }
+    // SPIFI_CONFIG->CTRL |= SPIFI_CONFIG_CTRL_MODE3_M;
     // SPIFI_CONFIG->STAT |= SPIFI_CONFIG_STAT_INTRQ_M |
     //                       SPIFI_CONFIG_STAT_RESET_M;
     // SPIFI_CONFIG->ADDR = 0x00;
@@ -554,7 +557,7 @@ int main()
     {
         // xprintf("\n");
         // read_data_quad(0, 64);
-        read_data_quad(0, 64);
+        // read_data_quad(0, 64);
         // for (volatile int i = 0; i < 1; i++);
     }
 }
