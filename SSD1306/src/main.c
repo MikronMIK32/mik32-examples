@@ -12,6 +12,8 @@
 I2C_HandleTypeDef hi2c0;
 RTC_HandleTypeDef hrtc;
 
+RTC_TimeTypeDef CurrentTime = {0};
+
 void SystemClock_Config(void);
 static void I2C0_Init(void);
 static void RTC_Init(void);
@@ -46,22 +48,23 @@ int main()
 
     while (1)
     {    
+        CurrentTime = HAL_RTC_CheckTime(&hrtc);
 
             // часы 1
             HAL_SSD1306_SetBorder(&hi2c0, START_COLUMN_TH, END_COLUMN_TH, START_PAGE, END_PAGE);
-            HAL_SSD1306_Write(&hi2c0, (uint8_t)hrtc.Instance->TH);
+            HAL_SSD1306_Write(&hi2c0, CurrentTime.Hours/10);
 
             // часы 2
             HAL_SSD1306_SetBorder(&hi2c0, START_COLUMN_H, END_COLUMN_H, START_PAGE, END_PAGE);
-            HAL_SSD1306_Write(&hi2c0, (uint8_t)hrtc.Instance->H);
+            HAL_SSD1306_Write(&hi2c0, CurrentTime.Hours%10);
 
             // минуты 4
             HAL_SSD1306_SetBorder(&hi2c0, START_COLUMN_TM, END_COLUMN_TM, START_PAGE, END_PAGE);
-            HAL_SSD1306_Write(&hi2c0, (uint8_t)hrtc.Instance->TM);
+            HAL_SSD1306_Write(&hi2c0, CurrentTime.Minutes/10);
 
             // минуты 5
             HAL_SSD1306_SetBorder(&hi2c0, START_COLUMN_M, END_COLUMN_M, START_PAGE, END_PAGE);
-            HAL_SSD1306_Write(&hi2c0, (uint8_t)hrtc.Instance->M);
+            HAL_SSD1306_Write(&hi2c0, CurrentTime.Minutes%10);
 
     }
     
