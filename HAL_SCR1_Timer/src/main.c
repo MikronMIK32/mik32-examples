@@ -4,10 +4,8 @@
 #include <pad_config.h>
 #include <gpio.h>
 
-#include "uart_lib.h"
-#include "xprintf.h"
 
-#define PIN_LED2 3 // LED2 управляется выводом PORT_2_7
+#define PIN_LED1 3 // LED1 управляется выводом PORT_0_3
 
 
 OTP_HandleTypeDef hscr1_timer;
@@ -21,18 +19,16 @@ int main()
 
     SystemClock_Config();
 
-    UART_Init(UART_0, 3333, UART_CONTROL1_TE_M | UART_CONTROL1_M_8BIT_M, 0, 0);
-
     Scr1_Timer_Init();
 
-    PAD_CONFIG->PORT_0_CFG |= (1 << (2 * PIN_LED2)); // Установка вывода 7 порта 2 в режим GPIO
-	GPIO_0->DIRECTION_OUT = 1 << PIN_LED2; // Установка направления вывода 7 на выход
+    PAD_CONFIG->PORT_0_CFG |= (1 << (2 * PIN_LED1)); // Установка вывода 3 порта 0 в режим GPIO
+	GPIO_0->DIRECTION_OUT = 1 << PIN_LED1; // Установка направления вывода 3 на выход
 
     while (1)
     {    
-        GPIO_0->OUTPUT |= 1 << PIN_LED2;   //Установка значения вывода 7 порта 2 в высокий уровень
+        GPIO_0->OUTPUT |= 1 << PIN_LED1;   //Установка значения вывода 3 порта 0 в высокий уровень
         HAL_DelayMs(&hscr1_timer, 1000);
-        GPIO_0->OUTPUT &= ~(1 << PIN_LED2); //Установка значения вывода 7 порта 2 в низкий уровень   
+        GPIO_0->OUTPUT &= ~(1 << PIN_LED1); //Установка значения вывода 3 порта 0 в низкий уровень   
         HAL_DelayMs(&hscr1_timer, 1000);
     }
        
@@ -54,7 +50,7 @@ void SystemClock_Config(void)
 
     PeriphClkInit.PMClockAHB = PMCLOCKAHB_DEFAULT;    
     PeriphClkInit.PMClockAPB_M = PMCLOCKAPB_M_DEFAULT | PM_CLOCK_WU_M | PM_CLOCK_PAD_CONFIG_M;    
-    PeriphClkInit.PMClockAPB_P = PMCLOCKAPB_P_DEFAULT | PM_CLOCK_UART_0_M | PM_CLOCK_GPIO_0_M;      
+    PeriphClkInit.PMClockAPB_P = PMCLOCKAPB_P_DEFAULT | PM_CLOCK_GPIO_0_M;      
     PeriphClkInit.RTCClockSelection = RCC_RTCCLKSOURCE_NO_CLK;
     PeriphClkInit.RTCClockCPUSelection = RCC_RTCCLKCPUSOURCE_NO_CLK;
     HAL_RCC_ClockConfig(&PeriphClkInit);
@@ -65,7 +61,7 @@ static void Scr1_Timer_Init(void)
     hscr1_timer.Instance = SCR1_TIMER;
 
     hscr1_timer.ClockSource = SCR1_TIMER_CLKSRC_INTERNAL;    /* Источник тактирования */
-    hscr1_timer.Divider = 0;       /* Делтитель частоты 10-битное число. На данный момент делитель не устанавливается при инициализации */
+    hscr1_timer.Divider = 0;       /* Делитель частоты 10-битное число */
 
     HAL_SCR1_Timer_Init(&hscr1_timer);
 }

@@ -4,5 +4,25 @@
         "i2c.h": "c",
         "common.h": "c",
         "wakeup.h": "c"
-    }
+    },
+    "cSpell.words": [
+        "ADDRESSINGMODE",
+        "APBM",
+        "APBP",
+        "AUTOEND",
+        "DUALADDRESS",
+        "NOSTRETCH",
+        "OSCILLATORTYPE",
+        "OWNADDRESS",
+        "Periph",
+        "PMCLOCKAHB",
+        "PMCLOCKAPB",
+        "PRESC",
+        "RTCCLKCPUSOURCE",
+        "RTCCLKSOURCE",
+        "SCLDEL",
+        "SCLH",
+        "SCLL",
+        "SDADEL"
+    ]
 }

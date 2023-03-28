@@ -16,39 +16,38 @@ int main()
 
     SystemClock_Config();
 
-    UART_Init(UART_0, 3333, 
-        UART_CONTROL1_TE_M | UART_CONTROL1_M_8BIT_M, 0, 0);
+    UART_Init(UART_0, 3333, UART_CONTROL1_TE_M | UART_CONTROL1_M_8BIT_M, 0, 0);
     
     SPI0_Init();
 
-    volatile uint8_t master_output[] = {0xA0, 0xA1, 0xA2, 0xA3, 0xA4, 0xA5, 0xA6, 0xA7, 0xA8, 0xA9, 0xB0, 0xB1};
-    volatile uint8_t maser_input[sizeof(master_output)];
+    uint8_t master_output[] = {0xA0, 0xA1, 0xA2, 0xA3, 0xA4, 0xA5, 0xA6, 0xA7, 0xA8, 0xA9, 0xB0, 0xB1};
+    uint8_t master_input[sizeof(master_output)];
 
     while (1)
     {    
         /* Начало передачи в ручном режиме управления CS */
         if(hspi0.Init.ManualCS == SPI_MANUALCS_ON)
         {
-            //HAL_SPI_Enable(&hspi0);
+            HAL_SPI_Enable(&hspi0);
             HAL_SPI_CS_Enable(&hspi0, SPI_CS_0);
         }
 
         /* Передача и прием данных */
-        HAL_SPI_Exchange(&hspi0, master_output, maser_input, sizeof(master_output));
+        HAL_SPI_Exchange(&hspi0, master_output, master_input, sizeof(master_output));
 
         /* Конец передачи в ручном режиме управления CS */
         if(hspi0.Init.ManualCS == SPI_MANUALCS_ON)
         {
             HAL_SPI_CS_Disable(&hspi0);
-            //HAL_SPI_Disable(&hspi0);
+            HAL_SPI_Disable(&hspi0);
         }
 
-        xprintf("Status = 0x%x\n", (uint8_t)hspi0.Instance->IntStatus);
-        /* Вывод принятый данных и обнуление массива maser_input */
-        for(uint32_t i = 0; i < sizeof(maser_input); i++)
+        //xprintf("Status = 0x%x\n", (uint8_t)hspi0.Instance->IntStatus);
+        /* Вывод принятый данных и обнуление массива master_input */
+        for(uint32_t i = 0; i < sizeof(master_input); i++)
         {
-            xprintf("maser_input[%d] = %02x\n", i, maser_input[i]);
-            maser_input[i] = 0;
+            xprintf("master_input[%d] = 0x%02x\n", i, master_input[i]);
+            master_input[i] = 0;
         }
 
         for (volatile int i = 0; i < 1000000; i++);
@@ -92,9 +91,9 @@ static void SPI0_Init(void)
     hspi0.Init.Decoder = SPI_DECODER_NONE;
     hspi0.Init.DataSize = SPI_DATASIZE_8BITS;  
 
-    /* Натсройки для ведущего */
+    /* Настройки для ведущего */
     hspi0.Init.ManualCS = SPI_MANUALCS_OFF;     /* Настройки ручного режима управления сигналом CS */
-    hspi0.ChipSelect = SPI_CS_0;                /* Выбор ведомого устройства в атоматическом режиме управления CS */
+    hspi0.ChipSelect = SPI_CS_0;                /* Выбор ведомого устройства в автоматическом режиме управления CS */
 
     HAL_SPI_Init(&hspi0);
 

@@ -28,7 +28,7 @@ int main()
 
     /**************************Включить вывод Input1 для Timer16_1**************************/
     /* Port0.8 */
-    // PAD_CONFIG->PORT_0_CFG |= (PORT_AS_TIMER << 2 * TIMER16_1_IN1);
+    PAD_CONFIG->PORT_0_CFG |= (PORT_AS_TIMER << 2 * TIMER16_1_IN1);
     /***************************************************************************************/
 
     /**************************Включить вывод Input2 для Timer16_1**************************/
@@ -47,12 +47,12 @@ int main()
     //HAL_Timer16_SetCMP(&htimer16_1, 0xFFFF/2); 
 
     /*****************Запуск таймера в одиночном или продолжительном режиме*****************/
-    //HAL_Timer16_StartSingleMode(&htimer16_1);
+    HAL_Timer16_StartSingleMode(&htimer16_1);
     //HAL_Timer16_StartContinuousMode(&htimer16_1);
     /***************************************************************************************/
 
     /********************************Генерация волновой формы********************************/
-    HAL_Timer16_StartPWM(&htimer16_1, 0xFFFF, 0xFFFF/2);
+    //HAL_Timer16_StartPWM(&htimer16_1, 0xFFFF, 0xFFFF/2);
     //HAL_Timer16_StartOneShot(&htimer16_1, 0xFFFF, 0xFFFF/2);
     //HAL_Timer16_StartSetOnes(&htimer16_1, 0xFFFF, 0xFFFF/2);
     /****************************************************************************************/
@@ -106,18 +106,18 @@ static void Timer16_1_Init(void)
 
     /* Настройка тактирования */
     htimer16_1.Clock.Source = TIMER16_SOURCE_INTERNAL_SYSTEM;
-    htimer16_1.CountMode = TIMER16_COUNTMODE_INTERNAL;  /* При тактировании от Input1 не имеет значения */
+    htimer16_1.CountMode = TIMER16_COUNTMODE_EXTERNAL;  /* При тактировании от Input1 не имеет значения */
     htimer16_1.Clock.Prescaler = TIMER16_PRESCALER_1;
     htimer16_1.ActiveEdge = TIMER16_ACTIVEEDGE_RISING;  /* Выбирается при тактировании от Input1 */
 
     /* Настройка верхнего предела счета */
     htimer16_1.Period = 0xFFFF;
-    /* Настрйока режима обновления регистра ARR и CMP */
+    /* Настройка режима обновления регистра ARR и CMP */
     htimer16_1.Preload = TIMER16_PRELOAD_AFTERWRITE;
 
     /* Настройка триггера */
     htimer16_1.Trigger.Source = TIMER16_TRIGGER_TIM1_GPIO1_9; 
-    htimer16_1.Trigger.ActiveEdge = TIMER16_TRIGGER_ACTIVEEDGE_SOFTWARE;    /* При использовании триггера значение доложно быть отлично от software */
+    htimer16_1.Trigger.ActiveEdge = TIMER16_TRIGGER_ACTIVEEDGE_SOFTWARE;    /* При использовании триггера значение должно быть отлично от software */
     htimer16_1.Trigger.TimeOut = TIMER16_TIMEOUT_DISABLE;   /* Разрешить повторное срабатывание триггера */
 
     /* Настройки фильтра */

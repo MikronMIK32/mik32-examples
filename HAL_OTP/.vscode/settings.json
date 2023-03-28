@@ -1,5 +1,11 @@
 {
     "files.associations": {
-        "otp.h": "c"
+        "otp.h": "c",
+        "mik32_hal_otp.h": "c",
+        "uart_lib.h": "c",
+        "xprintf.h": "c",
+        "mcu32_memory_map.h": "c",
+        "power_manager.h": "c",
+        "pad_config.h": "c"
     }
 }
