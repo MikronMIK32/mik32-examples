@@ -14,10 +14,10 @@ void initClock() {
 
 void ledBlink() {
 	GPIO_2->OUTPUT |= 1 << PIN_LED2;   //Установка значения вывода 7 порта 2 в высокий уровень
-	xprintf("ON \n");
+	// xprintf("ON \n");
 	for (volatile int i = 0; i < 100000; i++);
 	GPIO_2->OUTPUT &= ~(1 << PIN_LED2); //Установка значения вывода 7 порта  в низкий уровень   
-	xprintf("OFF \n");
+	// xprintf("OFF \n");
 	for (volatile int i = 0; i < 100000; i++);
 }
 
