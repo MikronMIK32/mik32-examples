@@ -8,7 +8,7 @@
 #define PIN_LED1 3 // LED1 управляется выводом PORT_0_3
 
 
-OTP_HandleTypeDef hscr1_timer;
+SCR1_TIMER_HandleTypeDef hscr1_timer;
 
 void SystemClock_Config(void);
 static void Scr1_Timer_Init(void);
