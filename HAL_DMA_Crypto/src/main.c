@@ -1,9 +1,9 @@
-#include "uart_lib.h"
-#include "xprintf.h"
-
 #include "mik32_hal_rcc.h"
 #include "mik32_hal_crypto.h"
 #include "mik32_hal_dma.h"
+
+#include "uart_lib.h"
+#include "xprintf.h"
 
 Crypto_HandleTypeDef hcrypto;
 DMA_InitTypeDef hdma;
@@ -170,14 +170,14 @@ static void DMA_CH0_Init(DMA_InitTypeDef* hdma)
     hdma_ch0.ChannelInit.ReadSize = DMA_CHANNEL_SIZE_WORD;       /* data_len должно быть кратно read_size */
     hdma_ch0.ChannelInit.ReadBurstSize = 2;                     /* read_burst_size должно быть кратно read_size */
     hdma_ch0.ChannelInit.ReadRequest = DMA_CHANNEL_CRYPTO_REQUEST;
-    hdma_ch1.ChannelInit.ReadAck = DMA_CHANNEL_ACK_DISABLE;
+    hdma_ch0.ChannelInit.ReadAck = DMA_CHANNEL_ACK_DISABLE;
 
     hdma_ch0.ChannelInit.WriteMode = DMA_CHANNEL_MODE_PERIPHERY;
     hdma_ch0.ChannelInit.WriteInc = DMA_CHANNEL_INC_DISABLE;
     hdma_ch0.ChannelInit.WriteSize = DMA_CHANNEL_SIZE_WORD;     /* data_len должно быть кратно write_size */
     hdma_ch0.ChannelInit.WriteBurstSize = 2;                    /* write_burst_size должно быть кратно read_size */
     hdma_ch0.ChannelInit.WriteRequest = DMA_CHANNEL_CRYPTO_REQUEST;
-    hdma_ch1.ChannelInit.WriteAck = DMA_CHANNEL_ACK_DISABLE;  
+    hdma_ch0.ChannelInit.WriteAck = DMA_CHANNEL_ACK_DISABLE;  
 
 }
 
