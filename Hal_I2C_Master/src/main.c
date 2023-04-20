@@ -27,10 +27,7 @@ int main()
     for(int i = 0; i < sizeof(data); i++)
     {
         data[i] = (uint8_t)i;
-
-        #ifdef MIK32_I2C_DEBUG
         xprintf("data[%d] = %d\n", i, data[i]);
-        #endif
     }
  
     while (1)
@@ -43,7 +40,7 @@ int main()
             /*Формирование события STOP*/
             HAL_I2C_Master_Stop(&hi2c0);
         }
-        for (volatile int i = 0; i < 1000000; i++); 
+        for (volatile int i = 0; i < 100000; i++); 
 
 
         /*Чтение данных по адресу slave_address = 0x36 без сдвига адреса*/
@@ -98,17 +95,9 @@ static void I2C0_Init(void)
     hi2c0.Clock.SDADEL = 10;
     hi2c0.Clock.SCLH = 16;
     hi2c0.Clock.SCLL = 16;
-    //hi2c0.Init.ClockSpeed = 175;
 
-    /*Настройки ведомого*/
-    hi2c0.Init.OwnAddress1 = 0;
-    hi2c0.Init.OwnAddress2 = 0;
-    hi2c0.Init.OwnAddress2Mask = I2C_OWNADDRESS2_MASK_DISABLE;
-    hi2c0.Init.SBCMode = I2C_SBC_DISABLE;
-    hi2c0.Init.NoStretchMode = I2C_NOSTRETCH_ENABLE;
-
-    /*Нстройки ведущего*/
-    hi2c0.Init.AutoEnd = AUTOEND_DISABLE;
+    /*Настройки ведущего*/
+    hi2c0.Init.AutoEnd = AUTOEND_ENABLE;
 
     HAL_I2C_Init(&hi2c0);
 

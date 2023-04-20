@@ -77,7 +77,6 @@ static void I2C0_Init(void)
     hi2c0.Clock.SDADEL = 10;
     hi2c0.Clock.SCLH = 16;
     hi2c0.Clock.SCLL = 16;
-    //hi2c0.Init.ClockSpeed = 175;
 
     /*Настройки ведомого*/
     hi2c0.Init.OwnAddress1 = 0x2BB; //0x36 0x3FF
@@ -85,9 +84,6 @@ static void I2C0_Init(void)
     hi2c0.Init.OwnAddress2Mask = I2C_OWNADDRESS2_MASK_DISABLE;
     hi2c0.Init.SBCMode = I2C_SBC_DISABLE;
     hi2c0.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE; // Не совместим с режимом SBC
-
-    /*Нстройки ведущего*/
-    hi2c0.Init.AutoEnd = AUTOEND_ENABLE;
 
     HAL_I2C_Init(&hi2c0);
 
