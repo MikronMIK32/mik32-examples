@@ -1,0 +1,11 @@
+{
+    "files.associations": {
+        "mik32_hal_rtc.h": "c",
+        "wakeup.h": "c",
+        "main.h": "c",
+        "mik32_hal_rcc.h": "c",
+        "common.h": "c",
+        "epic.h": "c",
+        "mcu32_memory_map.h": "c"
+    }
+}
