@@ -7,6 +7,7 @@
 
 RTC_HandleTypeDef hrtc;
 
+RTC_TimeTypeDef LastTime = {0};
 RTC_TimeTypeDef CurrentTime = {0};
 RTC_DateTypeDef CurrentDate = {0};
 
@@ -21,17 +22,20 @@ int main()
 
     RTC_Init();
 
-    int counter = 1000000;
+    LastTime = HAL_RTC_GetTime(&hrtc);
 
     while (1)
     {
-        if (--counter < 0)
+        CurrentTime = HAL_RTC_GetTime(&hrtc);
+        
+        if (CurrentTime.Seconds != LastTime.Seconds)
         {
-            CurrentDate = HAL_RTC_CheckDate(&hrtc);
+            LastTime = CurrentTime;
+            CurrentDate = HAL_RTC_GetDate(&hrtc);
             xprintf("\n%d век\n", CurrentDate.Century);
             xprintf("%d.%d.%d\n", CurrentDate.Day, CurrentDate.Month, CurrentDate.Year);
 
-            CurrentTime = HAL_RTC_CheckTime(&hrtc);
+            CurrentTime = HAL_RTC_GetTime(&hrtc);
             switch (CurrentTime.Dow)
             {
             case 1:
@@ -57,9 +61,6 @@ int main()
                 break;
             }
             xprintf("%d:%d:%d.%d\n", CurrentTime.Hours, CurrentTime.Minutes, CurrentTime.Seconds, hrtc.Instance->TOS);
-
-            
-            counter = 1000000;
         }
 
         if (HAL_RTC_GetAlrmFlag(&hrtc))
