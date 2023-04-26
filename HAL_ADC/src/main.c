@@ -20,14 +20,14 @@ int main()
     ADC_Init();
 
     uint16_t value = 0;
-    //HAL_ADC_ContiniusEnable(&hadc);
+    // HAL_ADC_ContinuousEnable(&hadc); /* Запуск преобразования в непрерывном режиме */
 
 
     while (1)
     {    
-        HAL_ADC_Single(&hadc);
-        value = HAL_ADC_WaitAndGetValue(&hadc);
-        //value = HAL_ADC_GetValue(&hadc);
+        HAL_ADC_Single(&hadc); /* Запуск однократного преобразования */
+        value = HAL_ADC_WaitAndGetValue(&hadc); /* Ожидание и чтение актуальных данных (режим одиночного преобразования) */
+        //value = HAL_ADC_GetValue(&hadc); /* Получить текущий результат преобразования (режим непрерывного преобразования) */
 
         if(( (value*1200/4095)%1000 ) > 99)
         {
