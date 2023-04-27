@@ -19,24 +19,17 @@ int main()
     
     ADC_Init();
 
-    uint16_t value = 0;
+    uint16_t adc_value = 0;
     // HAL_ADC_ContinuousEnable(&hadc); /* Запуск преобразования в непрерывном режиме */
 
 
     while (1)
     {    
         HAL_ADC_Single(&hadc); /* Запуск однократного преобразования */
-        value = HAL_ADC_WaitAndGetValue(&hadc); /* Ожидание и чтение актуальных данных (режим одиночного преобразования) */
-        //value = HAL_ADC_GetValue(&hadc); /* Получить текущий результат преобразования (режим непрерывного преобразования) */
+        adc_value = HAL_ADC_WaitAndGetValue(&hadc); /* Ожидание и чтение актуальных данных (режим одиночного преобразования) */
+        //adc_value = HAL_ADC_GetValue(&hadc); /* Получить текущий результат преобразования (режим непрерывного преобразования) */
 
-        if(( (value*1200/4095)%1000 ) > 99)
-        {
-            xprintf("ADC: %d (V = %d,%d)\n", value, ((value*1200)/4095)/1000, ((value*1200)/4095)%1000);
-        }
-        else
-        {
-            xprintf("ADC: %d (V = %d,0%d)\n", value, ((value*1200)/4095)/1000, ((value*1200)/4095)%1000);
-        }
+        xprintf("ADC: %d (V = %d,%03d)\n", adc_value, ((adc_value*1200)/4095)/1000, ((adc_value*1200)/4095)%1000);
 
         for (volatile int i = 0; i < 1000000; i++);
     }

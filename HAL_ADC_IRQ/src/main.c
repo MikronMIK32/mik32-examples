@@ -32,14 +32,8 @@ int main()
     while (1)
     {    
         adc_value = HAL_ADC_GetValue(&hadc);
-        if(( (adc_value*1200/4095)%1000 ) > 99)
-        {
-            xprintf("ADC: %d (V = %d,%d)\n", adc_value, ((adc_value*1200)/4095)/1000, ((adc_value*1200)/4095)%1000);
-        }
-        else
-        {
-            xprintf("ADC: %d (V = %d,0%d)\n", adc_value, ((adc_value*1200)/4095)/1000, ((adc_value*1200)/4095)%1000);
-        }
+
+        xprintf("ADC: %d (V = %d,%03d)\n", adc_value, ((adc_value*1200)/4095)/1000, ((adc_value*1200)/4095)%1000);
 
         adc_value = 0;
 
