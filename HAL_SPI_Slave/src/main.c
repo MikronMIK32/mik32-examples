@@ -28,15 +28,20 @@ int main()
     while (1)
     {    
         /* Передача и прием данных */
-        HAL_SPI_Exchange(&hspi0, slave_output, slave_input, sizeof(slave_output));
+        HAL_StatusTypeDef SPI_Status = HAL_SPI_Exchange(&hspi0, slave_output, slave_input, sizeof(slave_output), SPI_TIMEOUT_DEFAULT);
+        if (SPI_Status != HAL_OK)
+        {
+            xprintf("SPI_Error %d, OVR %d, MODF %d\n", SPI_Status, hspi0.Error.RXOVR, hspi0.Error.ModeFail);
+            HAL_SPI_ClearError(&hspi0);
+        }
               
-        xprintf("Status = 0x%x\n", (uint8_t)hspi0.Instance->IntStatus); 
         /* Вывод принятый данных и обнуление массива slave_input */
         for(uint32_t i = 0; i < sizeof(slave_input); i++)
         {
-            xprintf("slave_input[%d] = %02x\n", i, slave_input[i]);
+            xprintf("slave_input[%d] = 0x%02x\n", i, slave_input[i]);
             slave_input[i] = 0;
         }
+        xprintf("\n");
     }
        
 }
@@ -73,8 +78,11 @@ static void SPI0_Init(void)
     /* Настройки */                       
     hspi0.Init.CLKPhase = SPI_PHASE_OFF;            
     hspi0.Init.CLKPolarity = SPI_POLARITY_LOW;         
-    hspi0.Init.DataSize = SPI_DATASIZE_8BITS;  
+    hspi0.Init.ThresholdTX = SPI_THRESHOLD_DEFAULT; 
 
-    HAL_SPI_Init(&hspi0);
+    if ( HAL_SPI_Init(&hspi0) != HAL_OK )
+    {
+        xprintf("SPI_Init_Error\n");
+    }
 
 }
