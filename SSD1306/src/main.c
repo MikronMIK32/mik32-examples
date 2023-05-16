@@ -48,7 +48,7 @@ int main()
 
     while (1)
     {    
-        CurrentTime = HAL_RTC_CheckTime(&hrtc);
+        CurrentTime = HAL_RTC_GetTime(&hrtc);
 
             // часы 1
             HAL_SSD1306_SetBorder(&hi2c0, START_COLUMN_TH, END_COLUMN_TH, START_PAGE, END_PAGE);
