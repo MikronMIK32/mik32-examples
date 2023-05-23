@@ -35,6 +35,7 @@ int main()
             HAL_SPI_Enable(&hspi0);
             HAL_SPI_CS_Enable(&hspi0, SPI_CS_0);
         }
+        
 
         /* Передача и прием данных */
         HAL_StatusTypeDef SPI_Status = HAL_SPI_Exchange(&hspi0, master_output, master_input, sizeof(master_output), SPI_TIMEOUT_DEFAULT);
@@ -93,16 +94,16 @@ static void SPI0_Init(void)
     /* Режим SPI */
     hspi0.Init.SPI_Mode = HAL_SPI_MODE_MASTER;
 
-    /* Настройки */    
-    hspi0.Init.BaudRateDiv = SPI_BAUDRATE_DIV64;                    
+    /* Настройки */                       
     hspi0.Init.CLKPhase = SPI_PHASE_OFF;            
     hspi0.Init.CLKPolarity = SPI_POLARITY_LOW;         
-    hspi0.Init.Decoder = SPI_DECODER_NONE;
-    hspi0.Init.ThresholdTX = SPI_THRESHOLD_DEFAULT;  
+
 
     /* Настройки для ведущего */
+    hspi0.Init.BaudRateDiv = SPI_BAUDRATE_DIV64; 
+    hspi0.Init.Decoder = SPI_DECODER_NONE;
     hspi0.Init.ManualCS = SPI_MANUALCS_OFF;     /* Настройки ручного режима управления сигналом CS */
-    hspi0.ChipSelect = SPI_CS_0;                /* Выбор ведомого устройства в автоматическом режиме управления CS */
+    hspi0.Init.ChipSelect = SPI_CS_0;                /* Выбор ведомого устройства в автоматическом режиме управления CS */
 
     if ( HAL_SPI_Init(&hspi0) != HAL_OK )
     {
