@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "mik32_hal_spi.h": "c",
+        "spi.h": "c",
+        "power_manager.h": "c"
+    }
+}
