@@ -232,3 +232,25 @@ void TIMER16_1_IRQHandler()
     HAL_Timer16_SetClearInterruptMask(&htimer16_1, 0xFFFFFFFF); /* Сброс нескольких флагов прерывания */
 
 }
+
+
+void trap_handler()
+{
+  #ifdef MIK32_IRQ_DEBUG
+  xprintf("\nTrap\n");
+  xprintf("EPIC->RAW_STATUS = %d\n", EPIC->RAW_STATUS);
+  xprintf("EPIC->STATUS = %d\n", EPIC->STATUS);
+  #endif
+
+  TIMER16_1_IT();
+
+  /* Сброс прерываний */
+  HAL_EPIC_Clear(0xFFFFFFFF);
+
+
+  #ifdef MIK32_IRQ_DEBUG
+  xprintf("Clear\n");
+  xprintf("EPIC->RAW_STATUS = %d\n", EPIC->RAW_STATUS);
+  xprintf("EPIC->STATUS = %d\n", EPIC->STATUS);
+  #endif
+}
