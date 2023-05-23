@@ -146,3 +146,26 @@ void RTC_IRQHandler()
     HAL_RTC_ClearAlrmFlag(&hrtc);
 }
 
+
+
+void trap_handler()
+{
+  #ifdef MIK32_IRQ_DEBUG
+  xprintf("\nTrap\n");
+  xprintf("EPIC->RAW_STATUS = %d\n", EPIC->RAW_STATUS);
+  xprintf("EPIC->STATUS = %d\n", EPIC->STATUS);
+  #endif
+
+  RTC_IT();
+
+  /* Сброс прерываний */
+  HAL_EPIC_Clear(0xFFFFFFFF);
+
+
+  #ifdef MIK32_IRQ_DEBUG
+  xprintf("Clear\n");
+  xprintf("EPIC->RAW_STATUS = %d\n", EPIC->RAW_STATUS);
+  xprintf("EPIC->STATUS = %d\n", EPIC->STATUS);
+  #endif
+}
+
