@@ -96,13 +96,14 @@ static void SPI0_Init(void)
     hspi0.Init.CLKPhase = SPI_PHASE_OFF;            
     hspi0.Init.CLKPolarity = SPI_POLARITY_LOW;         
     hspi0.Init.Decoder = SPI_DECODER_NONE;
-    hspi0.Init.DataSize = SPI_DATASIZE_8BITS;  
-
-    /* Настройки для ведущего */
+    hspi0.Init.ThresholdTX = SPI_THRESHOLD_DEFAULT;  
     hspi0.Init.ManualCS = SPI_MANUALCS_OFF;     /* Настройки ручного режима управления сигналом CS */
-    hspi0.ChipSelect = SPI_CS_0;                /* Выбор ведомого устройства в автоматическом режиме управления CS */
+    hspi0.Init.ChipSelect = SPI_CS_0;                /* Выбор ведомого устройства в автоматическом режиме управления CS */
 
-    HAL_SPI_Init(&hspi0);
+    if ( HAL_SPI_Init(&hspi0) != HAL_OK )
+    {
+        xprintf("SPI_Init_Error\n");
+    }
 
 }
 

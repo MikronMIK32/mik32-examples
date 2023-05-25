@@ -98,9 +98,12 @@ static void SPI0_Init(void)
     /* Настройки */                       
     hspi0.Init.CLKPhase = SPI_PHASE_OFF;            
     hspi0.Init.CLKPolarity = SPI_POLARITY_LOW;         
-    hspi0.Init.DataSize = SPI_DATASIZE_8BITS;  
+    hspi0.Init.ThresholdTX = SPI_THRESHOLD_DEFAULT;  
 
-    HAL_SPI_Init(&hspi0);
+    if ( HAL_SPI_Init(&hspi0) != HAL_OK )
+    {
+        xprintf("SPI_Init_Error\n");
+    }
 
 }
 
