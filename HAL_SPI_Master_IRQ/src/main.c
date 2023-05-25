@@ -133,7 +133,10 @@ static void SPI0_Init(void)
     hspi0.Init.ManualCS = SPI_MANUALCS_OFF;     /* Настройки ручного режима управления сигналом CS */
     hspi0.Init.ChipSelect = SPI_CS_0;                /* Выбор ведомого устройства в автоматическом режиме управления CS */
 
-    HAL_SPI_Init(&hspi0);
+    if ( HAL_SPI_Init(&hspi0) != HAL_OK )
+    {
+        xprintf("SPI_Init_Error\n");
+    }
 
 }
 
