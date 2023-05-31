@@ -59,7 +59,11 @@ int main()
         /*Запись данных по адресу slave_address = 0x36 без сдвига адреса*/
         HAL_DMA_Start(&hdma_ch0_tx, data, (void*)&hi2c0.Instance->TXDR, sizeof(data) - 1);
         HAL_DMA_I2C_Master_Write(&hi2c0, 0x36, sizeof(data));
-        HAL_DMA_Wait(&hdma_ch0_tx); 
+        if (HAL_DMA_Wait(&hdma_ch0_tx, DMA_TIMEOUT_DEFAULT) != HAL_OK)
+        {
+            xprintf("Timeout CH0\n");
+        }
+
         if(hi2c0.Init.AutoEnd == AUTOEND_DISABLE)
         {
             /*Формирование события STOP*/
@@ -71,7 +75,10 @@ int main()
         /* Чтение данных по адресу slave_address без сдвига адреса*/
         HAL_DMA_Start(&hdma_ch1_rx, (void*)&hi2c0.Instance->RXDR, data_input, sizeof(data_input) - 1);
         HAL_DMA_I2C_Master_Read(&hi2c0, slave_address, sizeof(data_input));
-        HAL_DMA_Wait(&hdma_ch1_rx); 
+        if (HAL_DMA_Wait(&hdma_ch1_rx, DMA_TIMEOUT_DEFAULT) != HAL_OK)
+        {
+            xprintf("Timeout CH1\n");
+        }
         
         if(hi2c0.Init.AutoEnd == AUTOEND_DISABLE)
         {
@@ -142,6 +149,9 @@ static void I2C0_Init(void)
 static void DMA_CH0_Init(DMA_InitTypeDef* hdma)
 {
     hdma_ch0_tx.dma = hdma;
+    hdma_ch0_tx.CFGWriteBuffer = 0;
+
+    /* Настройки канала */
     hdma_ch0_tx.ChannelInit.Channel = DMA_CHANNEL_0;  
     hdma_ch0_tx.ChannelInit.Priority = DMA_CHANNEL_PRIORITY_VERY_HIGH;  
 
@@ -164,6 +174,9 @@ static void DMA_CH0_Init(DMA_InitTypeDef* hdma)
 static void DMA_CH1_Init(DMA_InitTypeDef* hdma)
 {
     hdma_ch1_rx.dma = hdma;
+    hdma_ch1_rx.CFGWriteBuffer = 0;
+
+    /* Настройки канала */
     hdma_ch1_rx.ChannelInit.Channel = DMA_CHANNEL_1;  
     hdma_ch1_rx.ChannelInit.Priority = DMA_CHANNEL_PRIORITY_VERY_HIGH;  
 
@@ -189,7 +202,10 @@ static void DMA_Init(void)
     /* Настройки DMA */
     hdma.Instance = DMA_CONFIG;
     hdma.CurrentValue = DMA_CURRENT_VALUE_ENABLE;
-    HAL_DMA_Init(&hdma);
+    if (HAL_DMA_Init(&hdma) != HAL_OK)
+    {
+        xprintf("DMA_Init Error\n");
+    }
 
     /* Инициализация канала */
     DMA_CH0_Init(&hdma);

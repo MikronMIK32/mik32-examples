@@ -47,8 +47,16 @@ int main()
 
         HAL_DMA_Start(&hdma_ch0, slave_output, (void*)&hspi0.Instance->TxData, sizeof(slave_output) - 1);
         HAL_DMA_Start(&hdma_ch1, (void*)&hspi0.Instance->RxData, slave_input, sizeof(slave_input) - 1);
-        HAL_DMA_Wait(&hdma_ch0); 
-        HAL_DMA_Wait(&hdma_ch1); 
+
+        if (HAL_DMA_Wait(&hdma_ch0, DMA_TIMEOUT_DEFAULT) != HAL_OK)
+        {
+            xprintf("Timeout CH0\n");
+        }
+
+        if (HAL_DMA_Wait(&hdma_ch1, DMA_TIMEOUT_DEFAULT) != HAL_OK)
+        {
+            xprintf("Timeout CH1\n");
+        }
 
         HAL_SPI_Disable(&hspi0);
 
@@ -110,6 +118,9 @@ static void SPI0_Init(void)
 static void DMA_CH0_Init(DMA_InitTypeDef* hdma)
 {
     hdma_ch0.dma = hdma;
+    hdma_ch0.CFGWriteBuffer = 0;
+
+    /* Настройки канала */
     hdma_ch0.ChannelInit.Channel = DMA_CHANNEL_0;  
     hdma_ch0.ChannelInit.Priority = DMA_CHANNEL_PRIORITY_VERY_HIGH;  
 
@@ -132,6 +143,9 @@ static void DMA_CH0_Init(DMA_InitTypeDef* hdma)
 static void DMA_CH1_Init(DMA_InitTypeDef* hdma)
 {
     hdma_ch1.dma = hdma;
+    hdma_ch1.CFGWriteBuffer = 0;
+
+    /* Настройки канала */
     hdma_ch1.ChannelInit.Channel = DMA_CHANNEL_1;  
     hdma_ch1.ChannelInit.Priority = DMA_CHANNEL_PRIORITY_VERY_HIGH;  
 
@@ -158,7 +172,10 @@ static void DMA_Init(void)
     /* Настройки DMA */
     hdma.Instance = DMA_CONFIG;
     hdma.CurrentValue = DMA_CURRENT_VALUE_ENABLE;
-    HAL_DMA_Init(&hdma);
+    if (HAL_DMA_Init(&hdma) != HAL_OK)
+    {
+        xprintf("DMA_Init Error\n");
+    }
 
     /* Инициализация канала */
     DMA_CH0_Init(&hdma);

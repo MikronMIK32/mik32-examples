@@ -51,12 +51,23 @@ void dma_kuznechik_ECB_code()
     HAL_Crypto_SetCipherMode(&hcrypto, CRYPTO_CIPHER_MODE_ECB);
     /* Установка ключа */
     HAL_Crypto_SetKey(&hcrypto, crypto_key);
-
     /* Зашифровать данные */
-    HAL_DMA_Start(&hdma_ch0, plain_text, (void*)&hcrypto.Instance->BLOCK, plain_text_length*4 - 1);
-    HAL_DMA_Start(&hdma_ch1, (void*)&hcrypto.Instance->BLOCK, cipher_text, plain_text_length*4 - 1);
-    HAL_DMA_Wait(&hdma_ch0); 
-    HAL_DMA_Wait(&hdma_ch1); 
+    HAL_DMA_Start(&hdma_ch0, plain_text, (void*)&hcrypto.Instance->BLOCK, sizeof(plain_text) - 1);
+    HAL_DMA_Start(&hdma_ch1, (void*)&hcrypto.Instance->BLOCK, cipher_text, sizeof(cipher_text) - 1);
+
+
+    if (HAL_DMA_Wait(&hdma_ch0, DMA_TIMEOUT_DEFAULT) != HAL_OK)
+    {
+        xprintf("Timeout CH0, error %d\n", HAL_DMA_GetBusError(&hdma_ch0));
+        return;
+    }
+
+    if (HAL_DMA_Wait(&hdma_ch1, DMA_TIMEOUT_DEFAULT) != HAL_OK)
+    {
+        xprintf("Timeout CH1\n");
+        return;
+    }
+    
 
     xprintf("KEY ");
     for (uint32_t i = 0; i < key_length; i++)
@@ -110,11 +121,10 @@ int main()
     UART_Init(UART_0, 3333, UART_CONTROL1_TE_M | UART_CONTROL1_M_8BIT_M, 0, 0);
 
     Crypto_Init();
-
+    
     DMA_Init();
 
-
-    xprintf("\nkuznechik_ECB_code\n");
+    HAL_Crypto_CounterReset(&hcrypto);
     dma_kuznechik_ECB_code();
     
     while (1)
@@ -162,6 +172,9 @@ static void Crypto_Init(void)
 static void DMA_CH0_Init(DMA_InitTypeDef* hdma)
 {
     hdma_ch0.dma = hdma;
+    hdma_ch0.CFGWriteBuffer = 0;
+
+    /* Настройки канала */
     hdma_ch0.ChannelInit.Channel = DMA_CHANNEL_0;  
     hdma_ch0.ChannelInit.Priority = DMA_CHANNEL_PRIORITY_VERY_HIGH;  
 
@@ -184,6 +197,9 @@ static void DMA_CH0_Init(DMA_InitTypeDef* hdma)
 static void DMA_CH1_Init(DMA_InitTypeDef* hdma)
 {
     hdma_ch1.dma = hdma;
+    hdma_ch1.CFGWriteBuffer = 0;
+
+    /* Настройки канала */
     hdma_ch1.ChannelInit.Channel = DMA_CHANNEL_1;  
     hdma_ch1.ChannelInit.Priority = DMA_CHANNEL_PRIORITY_VERY_HIGH;  
 
@@ -209,8 +225,12 @@ static void DMA_Init(void)
     
     /* Настройки DMA */
     hdma.Instance = DMA_CONFIG;
-    hdma.CurrentValue = DMA_CURRENT_VALUE_ENABLE;
-    HAL_DMA_Init(&hdma);
+    hdma.CurrentValue = DMA_CURRENT_VALUE_DISABLE;
+    if (HAL_DMA_Init(&hdma) != HAL_OK)
+    {
+        xprintf("DMA_Init Error\n");
+    }
+
 
     /* Инициализация канала */
     DMA_CH0_Init(&hdma);
