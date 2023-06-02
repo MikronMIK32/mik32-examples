@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "common.h": "c",
+        "mik32_hal_rcc.h": "c",
+        "mik32_hal_scr1_timer.h": "c"
+    }
+}
