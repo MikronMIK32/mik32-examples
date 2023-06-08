@@ -13,12 +13,12 @@ int main()
     // HAL_PadConfig_PortMode(PORT1, PIN2 | PIN3 | PIN4, PIN_MODE1); /* Альтернативный вариант */
 
     /* Задать выводам подтяжку к питанию */
-    HAL_PadConfig_PinPull(PORT1_2 | PORT1_3 | PORT1_4, PULL_UP);
-    // HAL_PadConfig_PortPull(PORT1, PIN2 | PIN3 | PIN4, PULL_UP); /* Альтернативный вариант */
+    HAL_PadConfig_PinPull(PORT1_2 | PORT1_3 | PORT1_4, PIN_PULL_UP);
+    // HAL_PadConfig_PortPull(PORT1, PIN2 | PIN3 | PIN4, PIN_PULL_UP); /* Альтернативный вариант */
 
     /* Задать выводам максимальный выходной ток 2мА */
-    HAL_PadConfig_PinCurrent(PORT1_2 | PORT1_3 | PORT1_4, CURRENT_2);
-    // HAL_PadConfig_PortCurrent(PORT1, PIN2 | PIN3 | PIN4, CURRENT_2); /* Альтернативный вариант */
+    HAL_PadConfig_PinCurrent(PORT1_2 | PORT1_3 | PORT1_4, PIN_CURRENT_2);
+    // HAL_PadConfig_PortCurrent(PORT1, PIN2 | PIN3 | PIN4, PIN_CURRENT_2); /* Альтернативный вариант */
 
     while (1)
     {    
