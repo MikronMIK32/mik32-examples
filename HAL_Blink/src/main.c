@@ -1,6 +1,5 @@
 #include "mik32_hal_rcc.h"
-#include <pad_config.h>
-#include <gpio.h>
+#include "mik32_hal_gpio.h"
 
 #include "uart_lib.h"
 #include "xprintf.h"
@@ -9,8 +8,8 @@
 #define BOARD_LITE_V0
 
 #ifdef BOARD_LITE_V0
-#define PIN_LED 	7 // Светодиод управляется выводом PORT_2_7
-#define PIN_BUTTON 	6 // Кнопка управляет сигналом на выводе PORT_2_6
+#define PIN_LED 	PORT2_7
+#define PIN_BUTTON 	PORT2_6
 #endif 
 
 
@@ -19,26 +18,31 @@ void SystemClock_Config(void);
 void ledBlink() 
 {
 	#ifdef BOARD_LITE_V0
-	GPIO_2->OUTPUT |= 1 << PIN_LED;   // Установка сигнала вывода 7 порта 2 в высокий уровень
+
+    HAL_GPIO_PinWrite(PIN_LED, PIN_HIGH);
 	xprintf("ON \n");
 	for (volatile int i = 0; i < 100000; i++);
-	GPIO_2->OUTPUT &= ~(1 << PIN_LED); // Установка сигнала вывода 7 порта  в низкий уровень   
+
+    HAL_GPIO_PinWrite(PIN_LED, PIN_LOW);  
 	xprintf("OFF \n");
 	for (volatile int i = 0; i < 100000; i++);
+
 	#endif 
 }
 
 void ledButton() 
 {
 	#ifdef BOARD_LITE_V0
-	if(GPIO_2->SET == (1 << PIN_BUTTON))
+
+	if(HAL_GPIO_PinRead(PIN_BUTTON))
 	{
-		GPIO_2->OUTPUT |= 1 << PIN_LED;   // Установка сигнала вывода 7 порта 2 в высокий уровень
+        HAL_GPIO_PinWrite(PIN_LED, PIN_HIGH);
 	}
 	else
 	{
-		GPIO_2->OUTPUT &= ~(1 << PIN_LED); // Установка сигнала вывода 7 порта в низкий уровень
+        HAL_GPIO_PinWrite(PIN_LED, PIN_LOW);  
 	}
+
 	#endif 
 }
 
@@ -51,10 +55,10 @@ int main()
 	UART_Init(UART_0, 3333, UART_CONTROL1_TE_M | UART_CONTROL1_M_8BIT_M, 0, 0);
 
 	#ifdef BOARD_LITE_V0
-	PAD_CONFIG->PORT_2_CFG |= (1 << (2 * PIN_LED)); 	// Установка вывода 7 порта 2 в режим GPIO
-	GPIO_2->DIRECTION_OUT = 1 << PIN_LED; 				// Установка направления вывода 7 порта 2 на выход
-	PAD_CONFIG->PORT_2_CFG |= (1 << (2 * PIN_BUTTON)); 	// Установка вывода 6 порта 2 в режим GPIO
-	GPIO_2->DIRECTION_IN = 1 << PIN_BUTTON; 			// Установка направления вывода 6 порта 2 на вход
+
+    HAL_GPIO_PinOutputInit(PIN_LED, PIN_LOW);
+    HAL_GPIO_PinInputInit(PIN_BUTTON, PIN_PULL_NONE);
+
 	#endif 
 
 	while (1) {
@@ -85,5 +89,3 @@ void SystemClock_Config(void)
     PeriphClkInit.RTCClockCPUSelection = RCC_RTCCLKCPUSOURCE_NO_CLK;
     HAL_RCC_ClockConfig(&PeriphClkInit);
 }
-
-
