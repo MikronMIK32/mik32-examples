@@ -16,8 +16,8 @@
 #endif 
 
 #ifdef BOARD_DIP
-#define PIN_LED0 	PORT0_3
-#define PIN_LED1 	PORT1_3
+#define PIN_LED1 	PORT0_3
+#define PIN_LED2 	PORT1_3
 #endif 
 
 
@@ -42,8 +42,8 @@ void ledBlink()
 	#endif 
 
     #ifdef BOARD_DIP
-    HAL_GPIO_PinToggle(PIN_LED0);
     HAL_GPIO_PinToggle(PIN_LED1);
+    HAL_GPIO_PinToggle(PIN_LED2);
     for (volatile int i = 0; i < BLINK_LOOP_ITERS; i++);
     #endif
 }
@@ -111,12 +111,12 @@ void GPIO_Config()
     #endif
 
     #ifdef BOARD_DIP
-    HAL_PadConfig_PinMode(PIN_LED0, PIN_MODE1);
     HAL_PadConfig_PinMode(PIN_LED1, PIN_MODE1);
+    HAL_PadConfig_PinMode(PIN_LED2, PIN_MODE1);
 
-    HAL_GPIO_PinDirection(PIN_LED0, GPIO_PIN_OUTPUT);
     HAL_GPIO_PinDirection(PIN_LED1, GPIO_PIN_OUTPUT);
-    HAL_GPIO_PinWrite(PIN_LED0, GPIO_PIN_LOW);
+    HAL_GPIO_PinDirection(PIN_LED2, GPIO_PIN_OUTPUT);
     HAL_GPIO_PinWrite(PIN_LED1, GPIO_PIN_LOW);
+    HAL_GPIO_PinWrite(PIN_LED2, GPIO_PIN_LOW);
     #endif
 }
