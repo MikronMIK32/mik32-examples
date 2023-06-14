@@ -1,17 +1,19 @@
 #include "mik32_hal_rcc.h"
 #include "mik32_hal_scr1_timer.h"
+#include "mik32_hal_pad_config.h"
+#include "mik32_hal_gpio.h"
 
 #include <pad_config.h>
 #include <gpio.h>
 
 /* Тип платы */
-#define BOARD_LITE_V0
+#define BOARD_DIP
 
-#ifdef BOARD_DIP_MIK32_BB_V2
-#define PIN_LED 3 // Светодиод управляется выводом PORT_0_3
+#ifdef BOARD_DIP
+#define PIN_LED PORT0_3
 #endif 
-#ifdef BOARD_LITE_V0
-#define PIN_LED 7 // Светодиод управляется выводом PORT_2_7
+#ifdef BOARD_LITE
+#define PIN_LED PORT2_7
 #endif 
 
 
@@ -28,31 +30,14 @@ int main()
 
     Scr1_Timer_Init();
 
-    #ifdef BOARD_DIP_MIK32_BB_V2
-    PAD_CONFIG->PORT_0_CFG |= (1 << (2 * PIN_LED)); // Установка вывода 3 порта 0 в режим GPIO
-    GPIO_0->DIRECTION_OUT = 1 << PIN_LED; // Установка направления вывода 3 порта 0 на выход
-    #endif 
-    #ifdef BOARD_LITE_V0
-    PAD_CONFIG->PORT_2_CFG |= (1 << (2 * PIN_LED)); // Установка вывода 7 порта 2 в режим GPIO
-    GPIO_2->DIRECTION_OUT = 1 << PIN_LED; // Установка направления вывода 7 порта 2 на выход
-    #endif 
+    HAL_PadConfig_PinMode(PIN_LED, PIN_MODE1);
+    HAL_GPIO_PinDirection(PIN_LED, GPIO_PIN_OUTPUT);
 
 
     while (1)
-    {    
-        #ifdef BOARD_DIP_MIK32_BB_V2
-        GPIO_0->OUTPUT |= 1 << PIN_LED;   // Установка сигнала вывода 3 порта 0 в высокий уровень
+    {
+        HAL_GPIO_PinToggle(PIN_LED);
         HAL_DelayMs(&hscr1_timer, 1000);
-        GPIO_0->OUTPUT &= ~(1 << PIN_LED); // Установка сигнала вывода 3 порта 0 в низкий уровень   
-        HAL_DelayMs(&hscr1_timer, 1000);
-        #endif 
-        #ifdef BOARD_LITE_V0
-        GPIO_2->OUTPUT |= 1 << PIN_LED;   // Установка сигнала вывода 7 порта 2 в высокий уровень
-        HAL_DelayMs(&hscr1_timer, 1000);
-        GPIO_2->OUTPUT &= ~(1 << PIN_LED); // Установка сигнала вывода 7 порта 2 в низкий уровень   
-        HAL_DelayMs(&hscr1_timer, 1000);
-        #endif 
-    
     }
        
 }
