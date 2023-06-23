@@ -16,6 +16,7 @@ static void RTC_Init(void);
 
 int main()
 {
+
     SystemClock_Config();
 
     UART_Init(UART_0, 3333, UART_CONTROL1_TE_M | UART_CONTROL1_M_8BIT_M, 0, 0);
@@ -79,21 +80,24 @@ void SystemClock_Config(void)
     RCC_OscInitTypeDef RCC_OscInit = {0};
     RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
 
-    RCC_OscInit.OscillatorEnable = RCC_OSCILLATORTYPE_OSC32K | RCC_OSCILLATORTYPE_OSC32M;   
+    PeriphClkInit.PMClockAHB = PMCLOCKAHB_DEFAULT;    
+    PeriphClkInit.PMClockAPB_M = PMCLOCKAPB_M_DEFAULT | PM_CLOCK_PAD_CONFIG_M | PM_CLOCK_PM_M | PM_CLOCK_WU_M | PM_CLOCK_RTC_M;     
+    PeriphClkInit.PMClockAPB_P = PMCLOCKAPB_P_DEFAULT | PM_CLOCK_UART_0_M;     
+    HAL_RCC_ClockConfig(&PeriphClkInit);
+
+
+    RCC_OscInit.OscillatorEnable = RCC_OSCILLATORTYPE_OSC32K | RCC_OSCILLATORTYPE_OSC32M;
     RCC_OscInit.OscillatorSystem = RCC_OSCILLATORTYPE_OSC32M;                          
     RCC_OscInit.AHBDivider = 0;                             
     RCC_OscInit.APBMDivider = 0;                             
     RCC_OscInit.APBPDivider = 0;                             
-    RCC_OscInit.HSI32MCalibrationValue = 0;                  
+    RCC_OscInit.HSI32MCalibrationValue = 128;               
     RCC_OscInit.LSI32KCalibrationValue = 0;
+    RCC_OscInit.RTCClockSelection = RCC_RTCCLKSOURCE_OSC32K;
+    RCC_OscInit.RTCClockCPUSelection = RCC_RTCCLKCPUSOURCE_OSC32K;
     HAL_RCC_OscConfig(&RCC_OscInit);
 
-    PeriphClkInit.PMClockAHB = PMCLOCKAHB_DEFAULT;    
-    PeriphClkInit.PMClockAPB_M = PMCLOCKAPB_M_DEFAULT | PM_CLOCK_WU_M | PM_CLOCK_RTC_M | PM_CLOCK_EPIC_M;     
-    PeriphClkInit.PMClockAPB_P = PMCLOCKAPB_P_DEFAULT | PM_CLOCK_UART_0_M;     
-    PeriphClkInit.RTCClockSelection = RCC_RTCCLKSOURCE_OSC32K;
-    PeriphClkInit.RTCClockCPUSelection = RCC_RTCCLKCPUSOURCE_NO_CLK;
-    HAL_RCC_ClockConfig(&PeriphClkInit);
+
 }
 
 static void RTC_Init(void)
@@ -109,27 +113,27 @@ static void RTC_Init(void)
     HAL_RTC_Disable(&hrtc);
 
     /* Установка даты и времени RTC */
-    sTime.Dow       = RTC_WEEKDAY_FRIDAY;
-    sTime.Hours     = 23;
-    sTime.Minutes   = 54;
+    sTime.Dow       = RTC_WEEKDAY_TUESDAY;
+    sTime.Hours     = 20;
+    sTime.Minutes   = 30;
     sTime.Seconds   = 0;
     HAL_RTC_SetTime(&hrtc, &sTime);
 
     sDate.Century   = 21;
-    sDate.Day       = 9;
-    sDate.Month     = RTC_MONTH_OCTOBER;
+    sDate.Day       = 19;
+    sDate.Month     = RTC_MONTH_JULY;
     sDate.Year      = 22;
     HAL_RTC_SetDate(&hrtc, &sDate);
 
     /* Включение будильника. Настройка даты и времени будильника */
-    sAlarm.AlarmTime.Dow       = RTC_WEEKDAY_FRIDAY;
-    sAlarm.AlarmTime.Hours     = 23;
-    sAlarm.AlarmTime.Minutes   = 54;
+    sAlarm.AlarmTime.Dow       = RTC_WEEKDAY_TUESDAY;
+    sAlarm.AlarmTime.Hours     = 20;
+    sAlarm.AlarmTime.Minutes   = 30;
     sAlarm.AlarmTime.Seconds   = 5;
 
     sAlarm.AlarmDate.Century   = 21;
-    sAlarm.AlarmDate.Day       = 9;
-    sAlarm.AlarmDate.Month     = RTC_MONTH_OCTOBER;
+    sAlarm.AlarmDate.Day       = 19;
+    sAlarm.AlarmDate.Month     = RTC_MONTH_JULY;
     sAlarm.AlarmDate.Year      = 22;
 
     sAlarm.MaskAlarmTime = RTC_TALRM_CDOW_M | RTC_TALRM_CH_M | RTC_TALRM_CM_M | RTC_TALRM_CS_M;

@@ -3,8 +3,6 @@
 #include "mik32_hal_rtc.h"
 #include "mik32_hal_ssd1306.h"
 
-#include "uart_lib.h"
-#include "xprintf.h"
 
 #define SSD1306_128x32
 //#define ssd1306_128x64
@@ -12,6 +10,7 @@
 I2C_HandleTypeDef hi2c0;
 RTC_HandleTypeDef hrtc;
 
+RTC_TimeTypeDef LastTime = {0};
 RTC_TimeTypeDef CurrentTime = {0};
 
 void SystemClock_Config(void);
@@ -23,49 +22,48 @@ int main()
 
     SystemClock_Config();
 
-    UART_Init(UART_0, 3333, UART_CONTROL1_TE_M | UART_CONTROL1_M_8BIT_M, 0, 0);
-    
+    RTC_Init();
     I2C0_Init();
 
-    RTC_Init();
-
-    //xprintf("\nИнициализация\n");
+    /* Задержка для включения экрана */
+    for (volatile int i = 0; i < 1000; i++); 
+    
+    /* Инициализация */
     HAL_SSD1306_Init(&hi2c0, BRIGHTNESS_FULL);
-    for (volatile int i = 0; i < 100000; i++);
 
-    //xprintf("\nОчистка\n");
+    /* Очистка */
+    HAL_SSD1306_SetBorder(&hi2c0, START_COLUMN, END_COLUMN, START_PAGE, END_PAGE);
     HAL_SSD1306_CLR_SCR(&hi2c0);
-    for (volatile int i = 0; i < 100000; i++);
 
-    // Разделитель 3
+    // Разделитель. Область 3
     HAL_SSD1306_SetBorder(&hi2c0, START_COLUMN_COLON, END_COLUMN_COLON, START_PAGE, END_PAGE);
     HAL_SSD1306_Write(&hi2c0, SYMBOL_COLON);
 
-    // uint8_t TH = hrtc.Instance->TH;
-    // uint8_t H = hrtc.Instance->H;
-    // uint8_t TM = hrtc.Instance->TM;
-    // uint8_t M = hrtc.Instance->M;
+    LastTime = HAL_RTC_GetTime(&hrtc);
 
     while (1)
     {    
         CurrentTime = HAL_RTC_GetTime(&hrtc);
 
-            // часы 1
+        if (CurrentTime.Seconds != LastTime.Seconds)
+        {
+            // Часы. Область 1
             HAL_SSD1306_SetBorder(&hi2c0, START_COLUMN_TH, END_COLUMN_TH, START_PAGE, END_PAGE);
             HAL_SSD1306_Write(&hi2c0, CurrentTime.Hours/10);
 
-            // часы 2
+            // Часы. Область 2
             HAL_SSD1306_SetBorder(&hi2c0, START_COLUMN_H, END_COLUMN_H, START_PAGE, END_PAGE);
             HAL_SSD1306_Write(&hi2c0, CurrentTime.Hours%10);
 
-            // минуты 4
+            // Минуты. Область 4
             HAL_SSD1306_SetBorder(&hi2c0, START_COLUMN_TM, END_COLUMN_TM, START_PAGE, END_PAGE);
             HAL_SSD1306_Write(&hi2c0, CurrentTime.Minutes/10);
 
-            // минуты 5
+
+            // Минуты. Область 5
             HAL_SSD1306_SetBorder(&hi2c0, START_COLUMN_M, END_COLUMN_M, START_PAGE, END_PAGE);
             HAL_SSD1306_Write(&hi2c0, CurrentTime.Minutes%10);
-
+        }
     }
     
     
@@ -83,74 +81,67 @@ void SystemClock_Config(void)
     RCC_OscInit.APBPDivider = 0;                             
     RCC_OscInit.HSI32MCalibrationValue = 0;                  
     RCC_OscInit.LSI32KCalibrationValue = 0;
+    RCC_OscInit.RTCClockSelection = RCC_RTCCLKSOURCE_OSC32K;
+    RCC_OscInit.RTCClockCPUSelection = RCC_RTCCLKCPUSOURCE_OSC32K;
     HAL_RCC_OscConfig(&RCC_OscInit);
 
     PeriphClkInit.PMClockAHB = PMCLOCKAHB_DEFAULT;    
-    PeriphClkInit.PMClockAPB_M = PMCLOCKAPB_M_DEFAULT | PM_CLOCK_WU_M | PM_CLOCK_RTC_M;      
-    PeriphClkInit.PMClockAPB_P = PMCLOCKAPB_P_DEFAULT | PM_CLOCK_UART_0_M | PM_CLOCK_I2C_0_M;     
-    PeriphClkInit.RTCClockSelection = RCC_RTCCLKSOURCE_OSC32K;
-    PeriphClkInit.RTCClockCPUSelection = RCC_RTCCLKCPUSOURCE_NO_CLK;
+    PeriphClkInit.PMClockAPB_M = PMCLOCKAPB_M_DEFAULT | PM_CLOCK_WU_M | PM_CLOCK_RTC_M | PM_CLOCK_PAD_CONFIG_M;      
+    PeriphClkInit.PMClockAPB_P = PMCLOCKAPB_P_DEFAULT | PM_CLOCK_I2C_0_M;     
     HAL_RCC_ClockConfig(&PeriphClkInit);
 }
 
 static void I2C0_Init(void)
 {
-    //hi2c0.Init.ClockSpeed = 165;
-    
-    /*Общие настройки*/
+    /* Общие настройки */
     hi2c0.Instance = I2C_0;
-    hi2c0.Mode = HAL_I2C_MODE_MASTER;
-    hi2c0.ShiftAddress = SHIFT_ADDRESS_DISABLE;
-    hi2c0.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
-    hi2c0.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE; // При ENABLE в режиме ведущего значение AddressingMode не влияет
-    hi2c0.Init.Filter = I2C_FILTER_OFF;
 
-    /*Настройка частоты*/
+    hi2c0.Init.Mode = HAL_I2C_MODE_MASTER;
+
+    hi2c0.Init.DigitalFilter = I2C_DIGITALFILTER_OFF;
+    hi2c0.Init.AnalogFilter = I2C_ANALOGFILTER_DISABLE;
+    hi2c0.Init.AutoEnd = I2C_AUTOEND_ENABLE;
+
+    /* Настройка частоты */
     hi2c0.Clock.PRESC = 5;
     hi2c0.Clock.SCLDEL = 10;
     hi2c0.Clock.SDADEL = 10;
     hi2c0.Clock.SCLH = 16;
     hi2c0.Clock.SCLL = 16;
-    //hi2c0.Init.ClockSpeed = 175;
 
-    /*Настройки ведомого*/
-    hi2c0.Init.OwnAddress1 = 0;
-    hi2c0.Init.OwnAddress2 = 0;
-    hi2c0.Init.OwnAddress2Mask = I2C_OWNADDRESS2_MASK_DISABLE;
-    hi2c0.Init.SBCMode = I2C_SBC_DISABLE;
-    hi2c0.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
 
-    /*Нстройки ведущего*/
-    hi2c0.Init.AutoEnd = AUTOEND_DISABLE;
-
-    HAL_I2C_Init(&hi2c0);
+    if (HAL_I2C_Init(&hi2c0) != HAL_OK)
+    {
+        xprintf("I2C_Init error\n");
+    }
 
 }
 
 static void RTC_Init(void)
 {
+    
     RTC_TimeTypeDef sTime = {0};
     RTC_DateTypeDef sDate = {0};
 
     hrtc.Instance = RTC;
 
-    sTime.Dow = RTC_WEEKDAY_MONDAY;
-    sTime.Hours = 19;
-    sTime.Minutes = 26;
-    sTime.Seconds = 0;
-
-    // Выключение RTC для записи даты и времени
+    /* Выключение RTC для записи даты и времени */
     HAL_RTC_Disable(&hrtc);
 
+    /* Установка даты и времени RTC */
+    sTime.Dow       = RTC_WEEKDAY_FRIDAY;
+    sTime.Hours     = 12;
+    sTime.Minutes   = 0;
+    sTime.Seconds   = 0;
     HAL_RTC_SetTime(&hrtc, &sTime);
 
-    sDate.Century = 21;
-    sDate.Day = 26;
-    sDate.Month = RTC_MONTH_DECEMBER;
-    sDate.Year = 22;
-
+    sDate.Century   = 21;
+    sDate.Day       = 22;
+    sDate.Month     = RTC_MONTH_JUNE;
+    sDate.Year      = 23;
     HAL_RTC_SetDate(&hrtc, &sDate);
 
     HAL_RTC_Enable(&hrtc);
+
 
 }

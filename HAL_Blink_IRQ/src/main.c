@@ -107,12 +107,12 @@ void SystemClock_Config(void)
     RCC_OscInit.APBPDivider = 0;
     RCC_OscInit.HSI32MCalibrationValue = 0;
     RCC_OscInit.LSI32KCalibrationValue = 0;
+    RCC_OscInit.RTCClockSelection = RCC_RTCCLKSOURCE_NO_CLK;
+    RCC_OscInit.RTCClockCPUSelection = RCC_RTCCLKCPUSOURCE_NO_CLK;
     HAL_RCC_OscConfig(&RCC_OscInit);
 
     PeriphClkInit.PMClockAHB = PMCLOCKAHB_DEFAULT;
     PeriphClkInit.PMClockAPB_M = PMCLOCKAPB_M_DEFAULT | PM_CLOCK_WU_M | PM_CLOCK_PAD_CONFIG_M | PM_CLOCK_PM_M | PM_CLOCK_EPIC_M;
     PeriphClkInit.PMClockAPB_P = PMCLOCKAPB_P_DEFAULT | PM_CLOCK_UART_0_M | PM_CLOCK_GPIO_0_M | PM_CLOCK_GPIO_1_M | PM_CLOCK_GPIO_2_M | PM_CLOCK_GPIO_IRQ_M;
-    PeriphClkInit.RTCClockSelection = RCC_RTCCLKSOURCE_NO_CLK;
-    PeriphClkInit.RTCClockCPUSelection = RCC_RTCCLKCPUSOURCE_NO_CLK;
     HAL_RCC_ClockConfig(&PeriphClkInit);
 }
