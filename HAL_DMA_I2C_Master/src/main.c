@@ -19,81 +19,79 @@ static void DMA_CH1_Init(DMA_InitTypeDef* hdma);
 static void DMA_Init(void);
 
 
-/*
-* Передача более 255 байт не поддерживается 
-*/
 int main()
 {    
 
     SystemClock_Config();
 
+    DMA_Init();
+
     UART_Init(UART_0, 3333, UART_CONTROL1_TE_M | UART_CONTROL1_M_8BIT_M, 0, 0);
     
     I2C0_Init();
 
-    DMA_Init();
-
-    // Адрес ведомого
-    uint16_t slave_address = 0x2BB; //0x36 0x3FF 0x7F 0x2BB
-
-    uint8_t data[I2C_DATA_BYTES];
-    uint8_t data_input[I2C_DATA_BYTES];
-
-    for(int i = 0; i < sizeof(data); i++)
-    {
-        data[i] = (uint8_t)i;
-        data_input[i] = 0;
-
-        #ifdef MIK32_I2C_DEBUG
-        xprintf("data[%d] = %d\n", i, data[i]);
-        #endif
-    }
-
-
-    HAL_DMA_I2C_Enable(&hi2c0);
+    uint8_t data[10];
     
- 
+    HAL_StatusTypeDef error_code;
     while (1)
     {    
-        xprintf("Write\n");
-        /*Запись данных по адресу slave_address = 0x36 без сдвига адреса*/
-        HAL_DMA_Start(&hdma_ch0_tx, data, (void*)&hi2c0.Instance->TXDR, sizeof(data) - 1);
-        HAL_DMA_I2C_Master_Write(&hi2c0, 0x36, sizeof(data));
-        if (HAL_DMA_Wait(&hdma_ch0_tx, DMA_TIMEOUT_DEFAULT) != HAL_OK)
+        for(int i = 0; i < sizeof(data); i++)
         {
-            xprintf("Timeout CH0\n");
+            data[i] = (uint8_t)i;
         }
+        /* Отправка данных по адресу 0x36 */
+        xprintf("\nMaster_Transmit\n");
+        HAL_I2C_Reset(&hi2c0);
+        error_code = HAL_I2C_Master_Transmit_DMA(&hi2c0, 0x36, data, sizeof(data));
+        if (error_code != HAL_OK)
+        {
+            xprintf("Master_Transmit error #%d, code %d, ISR %d\n", error_code, hi2c0.ErrorCode, hi2c0.Instance->ISR);
+        }
+        else
+        {
+            if (HAL_DMA_Wait(&hdma_ch0_tx, DMA_TIMEOUT_DEFAULT) != HAL_OK)
+            {
+                xprintf("Timeout CH0, BusError %d, ISR %d\n", HAL_DMA_GetBusError(&hdma_ch0_tx), hi2c0.Instance->ISR);
+                HAL_DMA_ChannelDisable(&hdma_ch0_tx);
+            }
+            if (hi2c0.Init.AutoEnd == I2C_AUTOEND_DISABLE)
+            {
+                hi2c0.Instance->CR2 |= I2C_CR2_STOP_M;
+            }
+        }
+        for (volatile int i = 0; i < 1000000; i++); 
 
-        if(hi2c0.Init.AutoEnd == AUTOEND_DISABLE)
-        {
-            /*Формирование события STOP*/
-            HAL_I2C_Master_Stop(&hi2c0);
-        }
 
-        for(volatile int i = 0; i < 100000; i++);
-        xprintf("Read\n");
-        /* Чтение данных по адресу slave_address без сдвига адреса*/
-        HAL_DMA_Start(&hdma_ch1_rx, (void*)&hi2c0.Instance->RXDR, data_input, sizeof(data_input) - 1);
-        HAL_DMA_I2C_Master_Read(&hi2c0, slave_address, sizeof(data_input));
-        if (HAL_DMA_Wait(&hdma_ch1_rx, DMA_TIMEOUT_DEFAULT) != HAL_OK)
-        {
-            xprintf("Timeout CH1\n");
-        }
         
-        if(hi2c0.Init.AutoEnd == AUTOEND_DISABLE)
+        /* Прием данных по адресу 0x36 */
+        xprintf("\nMaster_Receive\n");
+        HAL_I2C_Reset(&hi2c0);
+        error_code = HAL_I2C_Master_Receive_DMA(&hi2c0, 0x36, data, sizeof(data));
+        if (error_code != HAL_OK)
         {
-            /*Формирование события STOP*/
-            HAL_I2C_Master_Stop(&hi2c0);
+            xprintf("Master_Transmit error #%d, code %d, ISR %d\n", error_code, hi2c0.ErrorCode, hi2c0.Instance->ISR);
         }
-        for(int i = 0; i < sizeof(data_input); i++)
+        else
         {
-            xprintf("data_input[%d] = 0x%02x\n", i, data_input[i]);
-            data_input[i] = 0;
+            if (HAL_DMA_Wait(&hdma_ch1_rx, DMA_TIMEOUT_DEFAULT) != HAL_OK)
+            {
+                xprintf("Timeout CH1, BusError %d, ISR %d\n", HAL_DMA_GetBusError(&hdma_ch1_rx), hi2c0.Instance->ISR);
+            }
+            else
+            {
+                if (hi2c0.Init.AutoEnd == I2C_AUTOEND_DISABLE)
+                {
+                    hi2c0.Instance->CR2 |= I2C_CR2_STOP_M;
+                }
+                
+                for(int i = 0; i < sizeof(data); i++)
+                {
+                    xprintf("Data_read[%d] = %d\n", i, data[i]);
+                    data[i] = 0;
+                }
+            }
         }
-        xprintf("\n");
-
-        for(volatile int i = 0; i < 100000; i++);
-
+        for (volatile int i = 0; i < 1000000; i++); 
 
     }
        
@@ -124,25 +122,31 @@ void SystemClock_Config(void)
 static void I2C0_Init(void)
 {
 
-    /*Общие настройки*/
+    /* Общие настройки */
     hi2c0.Instance = I2C_0;
-    hi2c0.Mode = HAL_I2C_MODE_MASTER;
-    hi2c0.ShiftAddress = SHIFT_ADDRESS_DISABLE;
-    hi2c0.Init.AddressingMode = I2C_ADDRESSINGMODE_10BIT;
-    hi2c0.Init.DualAddressMode = I2C_DUALADDRESS_ENABLE; // При ENABLE в режиме ведущего значение AddressingMode не влияет
-    hi2c0.Init.Filter = I2C_FILTER_OFF;
 
-    /*Настройка частоты*/
+    hi2c0.Init.Mode = HAL_I2C_MODE_MASTER;
+
+    hi2c0.Init.DigitalFilter = I2C_DIGITALFILTER_OFF;
+    hi2c0.Init.AnalogFilter = I2C_ANALOGFILTER_DISABLE;
+    hi2c0.Init.AutoEnd = I2C_AUTOEND_ENABLE;
+
+    /* Настройка частоты */
     hi2c0.Clock.PRESC = 5;
     hi2c0.Clock.SCLDEL = 10;
-    hi2c0.Clock.SDADEL = 10;
-    hi2c0.Clock.SCLH = 16;
-    hi2c0.Clock.SCLL = 16;
+    hi2c0.Clock.SDADEL = 15;
+    hi2c0.Clock.SCLH = 15;
+    hi2c0.Clock.SCLL = 15;
 
-    /*Настройки ведущего*/
-    hi2c0.Init.AutoEnd = AUTOEND_ENABLE;
+    /* Каналы DMA */
+    hi2c0.hdmatx = &hdma_ch0_tx;
+    hi2c0.hdmarx = &hdma_ch1_rx;
 
-    HAL_I2C_Init(&hi2c0);
+
+    if (HAL_I2C_Init(&hi2c0) != HAL_OK)
+    {
+        xprintf("I2C_Init error\n");
+    }
 
 }
 

@@ -5,18 +5,19 @@
 #include "uart_lib.h"
 #include "xprintf.h"
 
+
 I2C_HandleTypeDef hi2c0;
-uint8_t flag = 0;
 
 DMA_InitTypeDef hdma;
-DMA_ChannelHandleTypeDef hdma_ch0_rx;
-DMA_ChannelHandleTypeDef hdma_ch1_tx;
+DMA_ChannelHandleTypeDef hdma_ch0_tx;
+DMA_ChannelHandleTypeDef hdma_ch1_rx;
 
 void SystemClock_Config(void);
 static void I2C0_Init(void);
 static void DMA_CH0_Init(DMA_InitTypeDef* hdma);
 static void DMA_CH1_Init(DMA_InitTypeDef* hdma);
 static void DMA_Init(void);
+
 
 /*
 * При использовании DMA передача более 255 байт не поддерживается 
@@ -27,65 +28,66 @@ int main()
    
     SystemClock_Config();
 
-    UART_Init(UART_0, 3333, UART_CONTROL1_TE_M | UART_CONTROL1_M_8BIT_M, 0, 0);
-
-    I2C0_Init();
     DMA_Init();
 
-    // Массив с байтами для отправки / приема
-    uint8_t data[I2C_DATA_BYTES];
-    uint8_t data_input[I2C_DATA_BYTES];
+    UART_Init(UART_0, 3333, UART_CONTROL1_TE_M | UART_CONTROL1_M_8BIT_M, 0, 0);
+    
+    I2C0_Init();
 
-    for(int i = 0; i < sizeof(data); i++)
-    {
-        data[i] = (uint8_t)i+1; 
-        data_input[i] = 0;
-    }
-
-    HAL_DMA_I2C_Enable(&hi2c0);
-
+    uint8_t data[10];
+    
+    HAL_StatusTypeDef error_code;
     while (1)
     {
-        xprintf("slave_read\n");
-        /*Ведущий отправляет - ведомый принимает*/
-        HAL_DMA_Start(&hdma_ch0_rx, (void*)&hi2c0.Instance->RXDR, data_input, sizeof(data_input) - 1);
-        if (hi2c0.Init.NoStretchMode == I2C_NOSTRETCH_DISABLE)
+        /* Прием данных */
+        xprintf("\nSlave_Receive\n");
+        HAL_I2C_Reset(&hi2c0);
+        error_code = HAL_I2C_Slave_Receive_DMA(&hi2c0, data, sizeof(data), 5*I2C_TIMEOUT_DEFAULT);
+        if (error_code != HAL_OK)
         {
-            HAL_I2C_Slave_WaitADDR(&hi2c0);
-            if((HAL_I2C_Slave_GetRequestedAddress(&hi2c0) != hi2c0.Init.OwnAddress2) 
-                && (hi2c0.Init.AddressingMode == I2C_ADDRESSINGMODE_10BIT))
+            xprintf("Slave_Receive error #%d, code %d, ISR %d\n", error_code, hi2c0.ErrorCode, hi2c0.Instance->ISR);
+        }
+        else
+        {
+            if (HAL_DMA_Wait(&hdma_ch1_rx, 5*DMA_TIMEOUT_DEFAULT) != HAL_OK)
             {
-                HAL_I2C_Slave_WaitADDR(&hi2c0);
+                xprintf("Timeout CH1, BusError %d, ISR %d\n", HAL_DMA_GetBusError(&hdma_ch1_rx), hi2c0.Instance->ISR);
+                HAL_DMA_ChannelDisable(&hdma_ch1_rx);
+            }
+            else
+            {
+                for(int i = 0; i < sizeof(data); i++)
+                {
+                    xprintf("Data_read[%d] = %d\n", i, data[i]);
+                    data[i] = 0;
+                }
             }
         }
-        if (HAL_DMA_Wait(&hdma_ch0_rx, DMA_TIMEOUT_DEFAULT) != HAL_OK)
-        {
-            xprintf("Timeout CH0\n");
-        }
+        
+        
 
-        for(int i = 0; i < sizeof(data_input); i++)
+        
+        for(int i = 0; i < sizeof(data); i++)
         {
-            xprintf("data_input[%d] = 0x%02x\n", i, data_input[i]);
-            data_input[i] = 0;
+            data[i] = (uint8_t)i;
         }
-        xprintf("\n");
-
-        xprintf("slave_write\n");
-        /*Ведущий принимает - ведомый отправляет*/
-        HAL_DMA_Start(&hdma_ch1_tx, data, (void*)&hi2c0.Instance->TXDR, sizeof(data_input) - 1);
-        if (hi2c0.Init.NoStretchMode == I2C_NOSTRETCH_DISABLE)
+        /* Отправка данных по адресу 0x36 */
+        xprintf("\nSlave_Transmit\n");
+        HAL_I2C_Reset(&hi2c0);
+        error_code = HAL_I2C_Slave_Transmit_DMA(&hi2c0, data, sizeof(data), 5*I2C_TIMEOUT_DEFAULT);
+        if (error_code != HAL_OK)
         {
-            HAL_I2C_Slave_WaitADDR(&hi2c0);
-            if((HAL_I2C_Slave_GetRequestedAddress(&hi2c0) != hi2c0.Init.OwnAddress2) 
-                && (hi2c0.Init.AddressingMode == I2C_ADDRESSINGMODE_10BIT))
+            xprintf("Slave_Transmit error #%d, code %d, ISR %d\n", error_code, hi2c0.ErrorCode, hi2c0.Instance->ISR);
+        }
+        else
+        {
+            if (HAL_DMA_Wait(&hdma_ch0_tx, 5*DMA_TIMEOUT_DEFAULT) != HAL_OK)
             {
-                HAL_I2C_Slave_WaitADDR(&hi2c0);
+                xprintf("Timeout CH0, BusError %d, ISR %d\n", HAL_DMA_GetBusError(&hdma_ch0_tx), hi2c0.Instance->ISR);
+                HAL_DMA_ChannelDisable(&hdma_ch0_tx);
             }
         }
-        if (HAL_DMA_Wait(&hdma_ch1_tx, DMA_TIMEOUT_DEFAULT) != HAL_OK)
-        {
-            xprintf("Timeout CH0\n");
-        }
+
     }
     
 }
@@ -117,77 +119,87 @@ static void I2C0_Init(void)
 
     /*Общие настройки*/
     hi2c0.Instance = I2C_0;
-    hi2c0.Mode = HAL_I2C_MODE_SLAVE;
-    hi2c0.ShiftAddress = SHIFT_ADDRESS_ENABLE; 
-    hi2c0.Init.AddressingMode = I2C_ADDRESSINGMODE_10BIT;
-    hi2c0.Init.DualAddressMode = I2C_DUALADDRESS_ENABLE; // При ENABLE в режиме ведущего значение AddressingMode не влияет
-    hi2c0.Init.Filter = I2C_FILTER_OFF;
 
-    /*Настройка частоты*/
+    hi2c0.Init.Mode = HAL_I2C_MODE_SLAVE;
+    
+    hi2c0.Init.DigitalFilter = I2C_DIGITALFILTER_OFF;
+    hi2c0.Init.AnalogFilter = I2C_ANALOGFILTER_DISABLE;
+    hi2c0.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
+
+    hi2c0.Init.OwnAddress1 = 0x36;
+    hi2c0.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
+    hi2c0.Init.OwnAddress2Mask = I2C_OWNADDRESS2_MASK_DISABLE;
+    hi2c0.Init.OwnAddress2 = 0x55;
+    hi2c0.Init.GeneralCall = I2C_GENERALCALL_DISABLE;
+    hi2c0.Init.SBCMode = I2C_SBC_DISABLE; 
+
+
+    /* Настройка частоты */
     hi2c0.Clock.PRESC = 5;
     hi2c0.Clock.SCLDEL = 10;
-    hi2c0.Clock.SDADEL = 10;
-    hi2c0.Clock.SCLH = 16;
-    hi2c0.Clock.SCLL = 16;
+    hi2c0.Clock.SDADEL = 15;
+    hi2c0.Clock.SCLH = 15;
+    hi2c0.Clock.SCLL = 15;
 
-    /*Настройки ведомого*/
-    hi2c0.Init.OwnAddress1 = 0x2BB;
-    hi2c0.Init.OwnAddress2 = 0x36;
-    hi2c0.Init.OwnAddress2Mask = I2C_OWNADDRESS2_MASK_DISABLE;
-    hi2c0.Init.SBCMode = I2C_SBC_DISABLE;
-    hi2c0.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE; // Не совместим с режимом SBC. I2C_NOSTRETCH_ENABLE не работает. 
+    /* Каналы DMA */
+    hi2c0.hdmatx = &hdma_ch0_tx;
+    hi2c0.hdmarx = &hdma_ch1_rx;
 
-    HAL_I2C_Init(&hi2c0);
+
+    if (HAL_I2C_Init(&hi2c0) != HAL_OK)
+    {
+        xprintf("I2C_Init error\n");
+    }
 
 }
 
 static void DMA_CH0_Init(DMA_InitTypeDef* hdma)
 {
-    hdma_ch0_rx.dma = hdma;
-    hdma_ch0_rx.CFGWriteBuffer = 0;
+    hdma_ch0_tx.dma = hdma;
+    hdma_ch0_tx.CFGWriteBuffer = 0;
 
     /* Настройки канала */
-    hdma_ch0_rx.ChannelInit.Channel = DMA_CHANNEL_0;  
-    hdma_ch0_rx.ChannelInit.Priority = DMA_CHANNEL_PRIORITY_VERY_HIGH;  
+    hdma_ch0_tx.ChannelInit.Channel = DMA_CHANNEL_0;  
+    hdma_ch0_tx.ChannelInit.Priority = DMA_CHANNEL_PRIORITY_VERY_HIGH;  
 
-    hdma_ch0_rx.ChannelInit.ReadMode = DMA_CHANNEL_MODE_PERIPHERY;
-    hdma_ch0_rx.ChannelInit.ReadInc = DMA_CHANNEL_INC_DISABLE;
-    hdma_ch0_rx.ChannelInit.ReadSize = DMA_CHANNEL_SIZE_BYTE;       /* data_len должно быть кратно read_size */
-    hdma_ch0_rx.ChannelInit.ReadBurstSize = 0;                     /* read_burst_size должно быть кратно read_size */
-    hdma_ch0_rx.ChannelInit.ReadRequest = DMA_CHANNEL_I2C_0_REQUEST;
-    hdma_ch0_rx.ChannelInit.ReadAck = DMA_CHANNEL_ACK_DISABLE;
+    hdma_ch0_tx.ChannelInit.ReadMode = DMA_CHANNEL_MODE_MEMORY;
+    hdma_ch0_tx.ChannelInit.ReadInc = DMA_CHANNEL_INC_ENABLE;
+    hdma_ch0_tx.ChannelInit.ReadSize = DMA_CHANNEL_SIZE_BYTE;       /* data_len должно быть кратно read_size */
+    hdma_ch0_tx.ChannelInit.ReadBurstSize = 0;                     /* read_burst_size должно быть кратно read_size */
+    hdma_ch0_tx.ChannelInit.ReadRequest = DMA_CHANNEL_I2C_0_REQUEST;
+    hdma_ch0_tx.ChannelInit.ReadAck = DMA_CHANNEL_ACK_DISABLE;
 
-    hdma_ch0_rx.ChannelInit.WriteMode = DMA_CHANNEL_MODE_MEMORY;
-    hdma_ch0_rx.ChannelInit.WriteInc = DMA_CHANNEL_INC_ENABLE;
-    hdma_ch0_rx.ChannelInit.WriteSize = DMA_CHANNEL_SIZE_BYTE;     /* data_len должно быть кратно write_size */
-    hdma_ch0_rx.ChannelInit.WriteBurstSize = 0;                    /* write_burst_size должно быть кратно read_size */
-    hdma_ch0_rx.ChannelInit.WriteRequest = DMA_CHANNEL_I2C_0_REQUEST;
-    hdma_ch0_rx.ChannelInit.WriteAck = DMA_CHANNEL_ACK_DISABLE;  
+    hdma_ch0_tx.ChannelInit.WriteMode = DMA_CHANNEL_MODE_PERIPHERY;
+    hdma_ch0_tx.ChannelInit.WriteInc = DMA_CHANNEL_INC_DISABLE;
+    hdma_ch0_tx.ChannelInit.WriteSize = DMA_CHANNEL_SIZE_BYTE;     /* data_len должно быть кратно write_size */
+    hdma_ch0_tx.ChannelInit.WriteBurstSize = 0;                    /* write_burst_size должно быть кратно read_size */
+    hdma_ch0_tx.ChannelInit.WriteRequest = DMA_CHANNEL_I2C_0_REQUEST;
+    hdma_ch0_tx.ChannelInit.WriteAck = DMA_CHANNEL_ACK_DISABLE;  
 
 }
 
 static void DMA_CH1_Init(DMA_InitTypeDef* hdma)
 {
-    hdma_ch1_tx.dma = hdma;
-    hdma_ch1_tx.CFGWriteBuffer = 0;
+    hdma_ch1_rx.dma = hdma;
+    hdma_ch1_rx.CFGWriteBuffer = 0;
 
     /* Настройки канала */
-    hdma_ch1_tx.ChannelInit.Channel = DMA_CHANNEL_1;  
-    hdma_ch1_tx.ChannelInit.Priority = DMA_CHANNEL_PRIORITY_VERY_HIGH;  
+    hdma_ch1_rx.ChannelInit.Channel = DMA_CHANNEL_1;  
+    hdma_ch1_rx.ChannelInit.Priority = DMA_CHANNEL_PRIORITY_VERY_HIGH;  
 
-    hdma_ch1_tx.ChannelInit.ReadMode = DMA_CHANNEL_MODE_MEMORY;
-    hdma_ch1_tx.ChannelInit.ReadInc = DMA_CHANNEL_INC_ENABLE;
-    hdma_ch1_tx.ChannelInit.ReadSize = DMA_CHANNEL_SIZE_BYTE;       /* data_len должно быть кратно read_size */
-    hdma_ch1_tx.ChannelInit.ReadBurstSize = 0;                     /* read_burst_size должно быть кратно read_size */
-    hdma_ch1_tx.ChannelInit.ReadRequest = DMA_CHANNEL_I2C_0_REQUEST;
-    hdma_ch1_tx.ChannelInit.ReadAck = DMA_CHANNEL_ACK_DISABLE;
+    hdma_ch1_rx.ChannelInit.ReadMode = DMA_CHANNEL_MODE_PERIPHERY;
+    hdma_ch1_rx.ChannelInit.ReadInc = DMA_CHANNEL_INC_DISABLE;
+    hdma_ch1_rx.ChannelInit.ReadSize = DMA_CHANNEL_SIZE_BYTE;       /* data_len должно быть кратно read_size */
+    hdma_ch1_rx.ChannelInit.ReadBurstSize = 0;                     /* read_burst_size должно быть кратно read_size */
+    hdma_ch1_rx.ChannelInit.ReadRequest = DMA_CHANNEL_I2C_0_REQUEST;
+    hdma_ch1_rx.ChannelInit.ReadAck = DMA_CHANNEL_ACK_DISABLE;
 
-    hdma_ch1_tx.ChannelInit.WriteMode = DMA_CHANNEL_MODE_PERIPHERY;
-    hdma_ch1_tx.ChannelInit.WriteInc = DMA_CHANNEL_INC_DISABLE;
-    hdma_ch1_tx.ChannelInit.WriteSize = DMA_CHANNEL_SIZE_BYTE;     /* data_len должно быть кратно write_size */
-    hdma_ch1_tx.ChannelInit.WriteBurstSize = 0;                    /* write_burst_size должно быть кратно read_size */
-    hdma_ch1_tx.ChannelInit.WriteRequest = DMA_CHANNEL_I2C_0_REQUEST;
-    hdma_ch1_tx.ChannelInit.WriteAck = DMA_CHANNEL_ACK_DISABLE;  
+    hdma_ch1_rx.ChannelInit.WriteMode = DMA_CHANNEL_MODE_MEMORY;
+    hdma_ch1_rx.ChannelInit.WriteInc = DMA_CHANNEL_INC_ENABLE;
+    hdma_ch1_rx.ChannelInit.WriteSize = DMA_CHANNEL_SIZE_BYTE;     /* data_len должно быть кратно write_size */
+    hdma_ch1_rx.ChannelInit.WriteBurstSize = 0;                    /* write_burst_size должно быть кратно read_size */
+    hdma_ch1_rx.ChannelInit.WriteRequest = DMA_CHANNEL_I2C_0_REQUEST;
+    hdma_ch1_rx.ChannelInit.WriteAck = DMA_CHANNEL_ACK_DISABLE;  
 
 }
 
