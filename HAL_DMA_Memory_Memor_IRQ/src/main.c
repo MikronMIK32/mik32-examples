@@ -83,6 +83,7 @@ static void DMA_CH0_Init(DMA_InitTypeDef* hdma)
     hdma_ch0.ChannelInit.WriteRequest = 0; 
     hdma_ch0.ChannelInit.WriteAck = DMA_CHANNEL_ACK_DISABLE; 
 
+    /* Настройка локального прерывания */
     HAL_DMA_LocalIRQEnable(&hdma_ch0, DMA_IRQ_ENABLE);
 }
 
@@ -92,13 +93,15 @@ static void DMA_Init(void)
     
     /* Настройки DMA */
     hdma.Instance = DMA_CONFIG;
-    hdma.CurrentValue = DMA_CURRENT_VALUE_DISABLE;
+    hdma.CurrentValue = DMA_CURRENT_VALUE_ENABLE;
     if (HAL_DMA_Init(&hdma) != HAL_OK)
     {
         xprintf("DMA_Init Error\n");
     }
 
+    /* Настройка глобального прерывания DMA */
     HAL_DMA_GlobalIRQEnable(&hdma, DMA_IRQ_ENABLE);
+    /* Настройка прерывания DMA при возникновении ошибки */
     HAL_DMA_ErrorIRQEnable(&hdma, DMA_IRQ_ENABLE);
 
     /* Инициализация канала */
@@ -106,23 +109,6 @@ static void DMA_Init(void)
 
 }
 
-void DMA_CHANNELS_IRQHandler()
-{
-    xprintf("Local_IRQ\n");
-    HAL_DMA_ClearLocalIrq(&hdma);
-}
-
-void DMA_GLB_ERR_IRQHandler()
-{
-    xprintf("GLB_IRQ OR ERR_IRQ \n");
-    for (uint32_t i = 0; i < sizeof(word_src)/sizeof(*word_src); i++)
-    {
-        xprintf("word_dst[%d] = 0x%08x\n", i, word_dst[i]);
-    }
-
-    HAL_DMA_ClearGlobalIrq(&hdma);
-    HAL_DMA_ClearErrorIrq(&hdma);
-}
 
 void trap_handler()
 {
@@ -132,8 +118,27 @@ void trap_handler()
     xprintf("EPIC->STATUS = %d\n", EPIC->STATUS);
     #endif
 
-    DMA_CHANNELS_IT(); /* Локальное прерывание */
-    DMA_GLB_ERR_IT(); /* Глобальное прерывание и прерывание ошибки  */
+    /* Локальное прерывание */
+    if (EPIC_CHECK_DMA_CHANNELS())
+    {
+        xprintf("Local_IRQ\n");
+
+        HAL_DMA_ClearLocalIrq(&hdma);
+    }
+
+    /* Глобальное прерывание и прерывание ошибки  */
+    if (EPIC_CHECK_DMA_GLB_ERR())
+    {
+        xprintf("GLB_IRQ OR ERR_IRQ \n");
+        for (uint32_t i = 0; i < sizeof(word_src)/sizeof(*word_src); i++)
+        {
+            xprintf("word_dst[%d] = 0x%08x\n", i, word_dst[i]);
+        }
+
+        HAL_DMA_ClearGlobalIrq(&hdma);
+        HAL_DMA_ClearErrorIrq(&hdma);
+    }
+
     
 
     /* Сброс прерываний */

@@ -26,20 +26,12 @@ int main()
     
     ADC_Init();
 
-    /* Запуск однократного преобразования */
-    HAL_ADC_Single(&hadc);
-    
     while (1)
     {    
-        adc_value = HAL_ADC_GetValue(&hadc);
-
-        xprintf("ADC: %d (V = %d,%03d)\n", adc_value, ((adc_value*1200)/4095)/1000, ((adc_value*1200)/4095)%1000);
-
-        adc_value = 0;
-
+        /* Запуск однократного преобразования */
         HAL_ADC_Single(&hadc);
-
         for (volatile uint32_t i = 0; i < 100000; i++);
+        xprintf("ADC: %d (V = %d,%03d)\n", adc_value, ((adc_value*1200)/4095)/1000, ((adc_value*1200)/4095)%1000);
     }
        
 }
@@ -77,28 +69,27 @@ static void ADC_Init(void)
     HAL_ADC_Init(&hadc);
 }
 
-void ADC_IRQHandler()
-{
-    adc_value = HAL_ADC_GetValue(&hadc);
-}
 
 void trap_handler()
 {
-  #ifdef MIK32_IRQ_DEBUG
-  xprintf("\nTrap\n");
-  xprintf("EPIC->RAW_STATUS = %d\n", EPIC->RAW_STATUS);
-  xprintf("EPIC->STATUS = %d\n", EPIC->STATUS);
-  #endif
+    #ifdef MIK32_IRQ_DEBUG
+    xprintf("\nTrap\n");
+    xprintf("EPIC->RAW_STATUS = %d\n", EPIC->RAW_STATUS);
+    xprintf("EPIC->STATUS = %d\n", EPIC->STATUS);
+    #endif
 
-  ADC_IT();
+    if (EPIC_CHECK_ADC())
+    {
+        adc_value = HAL_ADC_GetValue(&hadc);
+    }
 
-  /* Сброс прерываний */
-  HAL_EPIC_Clear(0xFFFFFFFF);
+    /* Сброс прерываний */
+    HAL_EPIC_Clear(0xFFFFFFFF);
 
 
-  #ifdef MIK32_IRQ_DEBUG
-  xprintf("Clear\n");
-  xprintf("EPIC->RAW_STATUS = %d\n", EPIC->RAW_STATUS);
-  xprintf("EPIC->STATUS = %d\n", EPIC->STATUS);
-  #endif
+    #ifdef MIK32_IRQ_DEBUG
+    xprintf("Clear\n");
+    xprintf("EPIC->RAW_STATUS = %d\n", EPIC->RAW_STATUS);
+    xprintf("EPIC->STATUS = %d\n", EPIC->STATUS);
+    #endif
 }

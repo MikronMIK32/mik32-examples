@@ -73,7 +73,7 @@ void SystemClock_Config(void)
     RCC_OscInitTypeDef RCC_OscInit = {0};
     RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
 
-    RCC_OscInit.OscillatorEnable = RCC_OSCILLATORTYPE_OSC32K | RCC_OSCILLATORTYPE_OSC32M;   
+    RCC_OscInit.OscillatorEnable = RCC_OSCILLATORTYPE_OSC32K | RCC_OSCILLATORTYPE_OSC32M | RCC_OSCILLATORTYPE_LSI32K | RCC_OSCILLATORTYPE_HSI32M;   
     RCC_OscInit.OscillatorSystem = RCC_OSCILLATORTYPE_OSC32M;                          
     RCC_OscInit.AHBDivider = 0;                             
     RCC_OscInit.APBMDivider = 0;                             
@@ -138,34 +138,29 @@ static void RTC_Init(void)
     HAL_RTC_Enable(&hrtc);
 }
 
-void RTC_IRQHandler()
-{
-    xprintf("\nAlarm!\n");
-
-    HAL_RTC_AlarmDisable(&hrtc);
-    HAL_RTC_ClearAlrmFlag(&hrtc);
-}
-
-
-
 void trap_handler()
 {
-  #ifdef MIK32_IRQ_DEBUG
-  xprintf("\nTrap\n");
-  xprintf("EPIC->RAW_STATUS = %d\n", EPIC->RAW_STATUS);
-  xprintf("EPIC->STATUS = %d\n", EPIC->STATUS);
-  #endif
+    #ifdef MIK32_IRQ_DEBUG
+    xprintf("\nTrap\n");
+    xprintf("EPIC->RAW_STATUS = %d\n", EPIC->RAW_STATUS);
+    xprintf("EPIC->STATUS = %d\n", EPIC->STATUS);
+    #endif
 
-  RTC_IT();
+    if (EPIC_CHECK_RTC())
+    {
+        xprintf("\nAlarm!\n");
+        HAL_RTC_AlarmDisable(&hrtc);
+        HAL_RTC_ClearAlrmFlag(&hrtc);
+    }
 
-  /* Сброс прерываний */
-  HAL_EPIC_Clear(0xFFFFFFFF);
+    /* Сброс прерываний */
+    HAL_EPIC_Clear(0xFFFFFFFF);
 
 
-  #ifdef MIK32_IRQ_DEBUG
-  xprintf("Clear\n");
-  xprintf("EPIC->RAW_STATUS = %d\n", EPIC->RAW_STATUS);
-  xprintf("EPIC->STATUS = %d\n", EPIC->STATUS);
-  #endif
+    #ifdef MIK32_IRQ_DEBUG
+    xprintf("Clear\n");
+    xprintf("EPIC->RAW_STATUS = %d\n", EPIC->RAW_STATUS);
+    xprintf("EPIC->STATUS = %d\n", EPIC->STATUS);
+    #endif
 }
 
