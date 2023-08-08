@@ -114,7 +114,7 @@ static void I2C0_Init(void)
 
 
     /* Настройка частоты */
-    hi2c0.Clock.PRESC = 5;
+    hi2c0.Clock.PRESC = 15;
     hi2c0.Clock.SCLDEL = 10;
     hi2c0.Clock.SDADEL = 15;
     hi2c0.Clock.SCLH = 15;
