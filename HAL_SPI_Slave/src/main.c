@@ -18,6 +18,11 @@ int main()
     
     SPI0_Init();
 
+    /* Задержки для частоты SPI */
+    // HAL_SPI_SetDelayBTWN(&hspi0, 1);
+    // HAL_SPI_SetDelayAFTER(&hspi0, 255);
+    // HAL_SPI_SetDelayINIT(&hspi0, 255);
+
     uint8_t slave_output[] = {0xB0, 0xB1, 0xB2, 0xB3, 0xB4, 0xB5, 0xB6, 0xB7, 0xB8, 0xB9, 0xC0, 0xC1};
     uint8_t slave_input[sizeof(slave_output)]; 
     for (uint32_t i = 0; i < sizeof(slave_input); i++)
@@ -58,13 +63,13 @@ void SystemClock_Config(void)
     RCC_OscInit.APBPDivider = 0;                             
     RCC_OscInit.HSI32MCalibrationValue = 0;                  
     RCC_OscInit.LSI32KCalibrationValue = 0;
+    RCC_OscInit.RTCClockSelection = RCC_RTCCLKSOURCE_NO_CLK;
+    RCC_OscInit.RTCClockCPUSelection = RCC_RTCCLKCPUSOURCE_NO_CLK;
     HAL_RCC_OscConfig(&RCC_OscInit);
 
     PeriphClkInit.PMClockAHB = PMCLOCKAHB_DEFAULT;    
     PeriphClkInit.PMClockAPB_M = PMCLOCKAPB_M_DEFAULT | PM_CLOCK_WU_M;     
     PeriphClkInit.PMClockAPB_P = PMCLOCKAPB_P_DEFAULT | PM_CLOCK_UART_0_M | PM_CLOCK_SPI_0_M;
-    PeriphClkInit.RTCClockSelection = RCC_RTCCLKSOURCE_NO_CLK;
-    PeriphClkInit.RTCClockCPUSelection = RCC_RTCCLKCPUSOURCE_NO_CLK;
     HAL_RCC_ClockConfig(&PeriphClkInit);
 }
 
@@ -76,8 +81,9 @@ static void SPI0_Init(void)
     hspi0.Init.SPI_Mode = HAL_SPI_MODE_SLAVE;
 
     /* Настройки */                       
-    hspi0.Init.CLKPhase = SPI_PHASE_OFF;            
-    hspi0.Init.CLKPolarity = SPI_POLARITY_LOW;      
+    hspi0.Init.CLKPhase = SPI_PHASE_ON;            
+    hspi0.Init.CLKPolarity = SPI_POLARITY_LOW;  
+    hspi0.Init.ThresholdTX = 1;    
 
     if ( HAL_SPI_Init(&hspi0) != HAL_OK )
     {
