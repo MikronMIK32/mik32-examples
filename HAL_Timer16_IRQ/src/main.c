@@ -1,19 +1,11 @@
 #include "mik32_hal_rcc.h"
+#include "mik32_hal_pad_config.h"
+#include "mik32_hal_gpio.h"
 #include "mik32_hal_timer16.h"
 #include "mik32_hal_irq.h"
 
-#include <gpio.h>
-
 #include "uart_lib.h"
 #include "xprintf.h"
-
-/* Тип платы */
-#define BOARD_LITE_V0
-
-#ifdef BOARD_LITE_V0
-#define PIN_LED 	7 // Светодиод управляется выводом PORT_2_7
-#define PIN_BUTTON 	6 // Кнопка управляет сигналом на выводе PORT_2_6
-#endif 
 
 
 Timer16_HandleTypeDef htimer16_1;
@@ -21,6 +13,15 @@ Timer16_HandleTypeDef htimer16_1;
 void SystemClock_Config(void);
 static void Timer16_1_Init(void);
 
+/*
+ * Пример для платы BOARD_LITE
+ * В данном примере демонстрируется работа прерываний TIMER16_1. 
+ * Пользовательская кнопка на выводе PORT2_6 соединена с выводом PORT1_9, фронт на котором 
+ * является триггером для запуска отсчета TIMER16. При достижении значения сравнения или автозагрузки
+ * срабатывает прерывание. Светодиод, который подключен к выводу PORT2_7, меняет свое состояние при 
+ * совпадении счетчика со значением сравнения.
+ *
+ * */
 
 int main()
 {    
@@ -30,36 +31,20 @@ int main()
     UART_Init(UART_0, 3333, UART_CONTROL1_TE_M | UART_CONTROL1_M_8BIT_M, 0, 0);
 
     /* Настройка вывода светодиода */
-    #ifdef BOARD_LITE_V0
-	PAD_CONFIG->PORT_2_CFG |= (1 << (2 * PIN_LED)); 	// Установка вывода 7 порта 2 в режим GPIO
-	GPIO_2->DIRECTION_OUT = 1 << PIN_LED; 				// Установка направления вывода 7 порта 2 на выход
-	#endif 
+    HAL_PadConfig_PinMode(PORT2_7, PIN_MODE1); /* Установка вывода PORT2_7 в режим GPIO */
+    HAL_GPIO_PinDirection(PORT2_7, GPIO_PIN_OUTPUT); /* Установка направления вывода PORT2_7 на выход */
 
-    /************************Включить GPIO1.9 для триггера Timer16_1************************/
-    PAD_CONFIG->PORT_1_CFG |= (1 << (2 * 9)); // Установка вывода 9 порта 1 в режим GPIO
-	GPIO_1->DIRECTION_IN = 1 << 9; // Установка направления вывода 9 порта 1 на вход
+    /************************Настройка GPIO для триггера Timer16_1************************/
+    /* Настройка GPIO1_9 - вывод триггер */
+    HAL_PadConfig_PinMode(PORT1_9, PIN_MODE1); /* Установка вывода PORT1_9 в режим GPIO */
+    HAL_GPIO_PinDirection(PORT1_9, GPIO_PIN_INPUT); /* Установка направления вывода PORT1_9 на вход */
 
-    #ifdef BOARD_LITE_V0
-    /* Настройка Gpio2.6 на выход. При соединении Port2.6 и Port1.9 нажатие пользовательской кнопки активирует триггер */
-    PAD_CONFIG->PORT_2_CFG |= (1 << (2 * 6)); // Установка вывода 6 порта 2 в режим GPIO
-	GPIO_2->DIRECTION_OUT = 1 << 6; // Установка направления вывода 6 порта 2 на выход
-	#endif 
-    /***************************************************************************************/
-
-    /**************************Включить вывод Input1 для Timer16_1**************************/
-    /* Port0.8 */
-    // PAD_CONFIG->PORT_0_CFG |= (PORT_AS_TIMER << 2 * TIMER16_1_IN1);
-    /***************************************************************************************/
-
-    /**************************Включить вывод Input2 для Timer16_1**************************/
-    /* Port0.9 */
-    // PAD_CONFIG->PORT_0_CFG |= (PORT_AS_TIMER << 2 * TIMER16_1_IN2);
-    /***************************************************************************************/
-
-    /**************************Включить вывод Output для Timer16_1**************************/
-    /* Port0.10 */
-    // PAD_CONFIG->PORT_0_CFG |= (PORT_AS_TIMER << (2 * TIMER16_1_OUT)); 
-    /***************************************************************************************/
+    /* Настройка GPIO2_6 - пользовательская кнопка.
+     * При соединении выводов PORT2_6 и PORT1_9 нажатие пользовательской кнопки активирует триггер таймера.
+     */
+    HAL_PadConfig_PinMode(PORT2_6, PIN_MODE1); /* Установка вывода PORT2_6 в режим GPIO */
+    HAL_GPIO_PinDirection(PORT2_6, GPIO_PIN_INPUT); /* Установка направления вывода PORT2_6 на вход */
+    /*************************************************************************************/
 
     Timer16_1_Init();
 
@@ -71,17 +56,9 @@ int main()
     HAL_IRQ_EnableInterrupts();
 
     /*****************Запуск таймера в одиночном или продолжительном режиме*****************/
-    // HAL_Timer16_StartSingleMode(&htimer16_1);
-    HAL_Timer16_StartContinuousMode(&htimer16_1);
+    HAL_Timer16_StartSingleMode(&htimer16_1); /* Одиночный режим */
+    // HAL_Timer16_StartContinuousMode(&htimer16_1); /* Продолжительный режим */
     /***************************************************************************************/
-
-    /********************************Генерация волновой формы********************************/
-    /* При использовании данных функций совместно с прерываниями ARROK и CMPOK наличие обработчика TIMER16_1_IRQHandler 
-        и сброса соответствующих флагов обязательно */
-    // HAL_Timer16_StartPWM(&htimer16_1, 0xFFFF, 0xFFFF/2);
-    // HAL_Timer16_StartOneShot(&htimer16_1, 0xFFFF, 0xFFFF/2);
-    // HAL_Timer16_StartSetOnes(&htimer16_1, 0xFFFF, 0xFFFF/2);
-    /****************************************************************************************/
 
     uint32_t last_counter = 0;
     uint32_t counter = 0;
@@ -139,7 +116,7 @@ static void Timer16_1_Init(void)
 
     /* Настройка триггера */
     htimer16_1.Trigger.Source = TIMER16_TRIGGER_TIM1_GPIO1_9; 
-    htimer16_1.Trigger.ActiveEdge = TIMER16_TRIGGER_ACTIVEEDGE_SOFTWARE;    /* При использовании триггера значение должно быть отлично от software */
+    htimer16_1.Trigger.ActiveEdge = TIMER16_TRIGGER_ACTIVEEDGE_RISING;    /* При использовании триггера значение должно быть отлично от software */
     htimer16_1.Trigger.TimeOut = TIMER16_TIMEOUT_DISABLE;   /* Разрешить повторное срабатывание триггера */
 
     /* Настройки фильтра */
@@ -152,105 +129,88 @@ static void Timer16_1_Init(void)
     /* Разрешение прерываний */
     htimer16_1.Interrupts.DOWN = TIMER16_DOWN_IRQ_DISABLE;
     htimer16_1.Interrupts.UP = TIMER16_UP_IRQ_DISABLE;
-    htimer16_1.Interrupts.ARROK = TIMER16_ARROK_IRQ_ENABLE;
-    htimer16_1.Interrupts.CMPOK = TIMER16_CMPOK_IRQ_ENABLE;
-    htimer16_1.Interrupts.EXTTRIG = TIMER16_EXTTRIG_IRQ_DISABLE;
-    htimer16_1.Interrupts.ARRM = TIMER16_ARRM_IRQ_DISABLE;
+    htimer16_1.Interrupts.ARROK = TIMER16_ARROK_IRQ_DISABLE;
+    htimer16_1.Interrupts.CMPOK = TIMER16_CMPOK_IRQ_DISABLE;
+    htimer16_1.Interrupts.EXTTRIG = TIMER16_EXTTRIG_IRQ_ENABLE;
+    htimer16_1.Interrupts.ARRM = TIMER16_ARRM_IRQ_ENABLE;
     htimer16_1.Interrupts.CMPM = TIMER16_CMPM_IRQ_ENABLE;
     HAL_Timer16_InterruptInit(&htimer16_1);
 
     HAL_Timer16_Init(&htimer16_1);
 }
 
-void TIMER16_1_IRQHandler()
-{
-    if (HAL_Timer16_GetInterruptStatus(&htimer16_1, TIMER16_DOWN_IRQ, TIMER16_IRQ_MASK_ENABLE))
-    {
-        xprintf("\nDOWN_IRQ\n");
-
-        /* code */
-
-        // HAL_Timer16_ClearInterruptFlag(&htimer16_1, TIMER16_DOWN_IRQ); /* Сброс флага прерывания */
-    }
-
-    if (HAL_Timer16_GetInterruptStatus(&htimer16_1, TIMER16_UP_IRQ, TIMER16_IRQ_MASK_ENABLE))
-    {
-        xprintf("\nUP_IRQ\n");
-
-        /* code */
-
-        // HAL_Timer16_ClearInterruptFlag(&htimer16_1, TIMER16_UP_IRQ); /* Сброс флага прерывания */
-    }
-
-    if (HAL_Timer16_GetInterruptStatus(&htimer16_1, TIMER16_ARROK_IRQ, TIMER16_IRQ_MASK_ENABLE))
-    {
-        xprintf("\nARROK_IRQ\n");
-
-        /* code */
-
-        // HAL_Timer16_ClearInterruptFlag(&htimer16_1, TIMER16_ARROK_IRQ); /* Сброс флага прерывания */
-    }
-
-    if (HAL_Timer16_GetInterruptStatus(&htimer16_1, TIMER16_CMPOK_IRQ, TIMER16_IRQ_MASK_ENABLE))
-    {
-        xprintf("\nCMPOK_IRQ\n");
-
-        /* code */
-
-        // HAL_Timer16_ClearInterruptFlag(&htimer16_1, TIMER16_CMPOK_IRQ); /* Сброс флага прерывания */
-    }  
-
-    if (HAL_Timer16_GetInterruptStatus(&htimer16_1, TIMER16_EXTTRIG_IRQ, TIMER16_IRQ_MASK_ENABLE))
-    {
-        xprintf("\nEXTTRIG_IRQ\n");
-
-        /* code */
-
-        // HAL_Timer16_ClearInterruptFlag(&htimer16_1, TIMER16_EXTTRIG_IRQ); /* Сброс флага прерывания */
-    }  
-
-    if (HAL_Timer16_GetInterruptStatus(&htimer16_1, TIMER16_ARRM_IRQ, TIMER16_IRQ_MASK_ENABLE))
-    {
-        xprintf("\nARRM_IRQ\n");
-
-        /* code */
-
-        // HAL_Timer16_ClearInterruptFlag(&htimer16_1, TIMER16_ARRM_IRQ); /* Сброс флага прерывания */
-    }  
-
-    if (HAL_Timer16_GetInterruptStatus(&htimer16_1, TIMER16_CMPM_IRQ, TIMER16_IRQ_MASK_ENABLE))
-    {
-        xprintf("\nCMPM_IRQ\n");
-
-        #ifdef BOARD_LITE_V0
-        GPIO_2->OUTPUT ^= 1 << PIN_LED;   // Установка сигнала вывода 7 порта 2 в высокий уровень
-        #endif 
-
-        // HAL_Timer16_ClearInterruptFlag(&htimer16_1, TIMER16_CMPM_IRQ); /* Сброс флага прерывания */
-    }  
-
-    HAL_Timer16_SetClearInterruptMask(&htimer16_1, 0xFFFFFFFF); /* Сброс нескольких флагов прерывания */
-
-}
-
-
 void trap_handler()
 {
-  #ifdef MIK32_IRQ_DEBUG
-  xprintf("\nTrap\n");
-  xprintf("EPIC->RAW_STATUS = %d\n", EPIC->RAW_STATUS);
-  xprintf("EPIC->STATUS = %d\n", EPIC->STATUS);
-  #endif
+    #ifdef MIK32_IRQ_DEBUG
+        xprintf("\nTrap\n");
+        xprintf("EPIC->RAW_STATUS = %d\n", EPIC->RAW_STATUS);
+        xprintf("EPIC->STATUS = %d\n", EPIC->STATUS);
+    #endif
 
-  TIMER16_1_IT();
+    if (EPIC_CHECK_TIMER16_1())
+    {
+        uint32_t interrupt_status = HAL_Timer16_GetInterruptStatus(&htimer16_1);
 
-  /* Сброс прерываний */
-  HAL_EPIC_Clear(0xFFFFFFFF);
+        if (interrupt_status & TIMER16_ISR_DOWN_M)
+        {
+            xprintf("\nDOWN_IRQ\n");
+            /* code */
+            // HAL_Timer16_ClearInterruptFlag(&htimer16_1, TIMER16_DOWN_IRQ); /* Сброс флага прерывания */
+        }
+
+        if (interrupt_status & TIMER16_ISR_UP_M)
+        {
+            xprintf("\nUP_IRQ\n");
+            /* code */
+            // HAL_Timer16_ClearInterruptFlag(&htimer16_1, TIMER16_UP_IRQ); /* Сброс флага прерывания */
+        }
+
+        if (interrupt_status & TIMER16_ISR_ARR_OK_M)
+        {
+            xprintf("\nARROK_IRQ\n");
+            /* code */
+            // HAL_Timer16_ClearInterruptFlag(&htimer16_1, TIMER16_ARROK_IRQ); /* Сброс флага прерывания */
+        }
+
+        if (interrupt_status & TIMER16_ISR_CMP_OK_M)
+        {
+            xprintf("\nCMPOK_IRQ\n");
+            /* code */
+            // HAL_Timer16_ClearInterruptFlag(&htimer16_1, TIMER16_CMPOK_IRQ); /* Сброс флага прерывания */
+        }  
+
+        if (interrupt_status & TIMER16_ISR_EXT_TRIG_M)
+        {
+            xprintf("\nEXTTRIG_IRQ\n");
+            /* code */
+            // HAL_Timer16_ClearInterruptFlag(&htimer16_1, TIMER16_EXTTRIG_IRQ); /* Сброс флага прерывания */
+        }  
+
+        if (interrupt_status & TIMER16_ISR_ARR_MATCH_M)
+        {
+            xprintf("\nARRM_IRQ\n");
+            /* code */
+            // HAL_Timer16_ClearInterruptFlag(&htimer16_1, TIMER16_ARRM_IRQ); /* Сброс флага прерывания */
+        }  
+
+        if (interrupt_status & TIMER16_ISR_CMP_MATCH_M)
+        {
+            xprintf("\nCMPM_IRQ\n");
+            HAL_GPIO_PinToggle(PORT2_7); /* Смена сигнала PORT2_7 на противоположный */
+            // HAL_Timer16_ClearInterruptFlag(&htimer16_1, TIMER16_CMPM_IRQ); /* Сброс флага прерывания */
+        }  
+
+        HAL_Timer16_SetClearInterruptMask(&htimer16_1, 0xFFFFFFFF); /* Сброс нескольких флагов прерываний по маске */
+    }
 
 
-  #ifdef MIK32_IRQ_DEBUG
-  xprintf("Clear\n");
-  xprintf("EPIC->RAW_STATUS = %d\n", EPIC->RAW_STATUS);
-  xprintf("EPIC->STATUS = %d\n", EPIC->STATUS);
-  #endif
+    /* Сброс прерываний */
+    HAL_EPIC_Clear(0xFFFFFFFF);
+
+
+    #ifdef MIK32_IRQ_DEBUG
+        xprintf("Clear\n");
+        xprintf("EPIC->RAW_STATUS = %d\n", EPIC->RAW_STATUS);
+        xprintf("EPIC->STATUS = %d\n", EPIC->STATUS);
+    #endif
 }
