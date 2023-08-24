@@ -24,13 +24,13 @@ int main()
     uint32_t CRCValue = 0;
     
     /* Запись по байтам */
-    HAL_RTC_WriteData(&hcrc, message, sizeof(message));
-    CRCValue = HAL_RTC_ReadCRC(&hcrc);
+    HAL_CRC_WriteData(&hcrc, message, sizeof(message));
+    CRCValue = HAL_CRC_ReadCRC(&hcrc);
     xprintf("CRC32 = 0x%08x, ожидалось 0x3010BF7F\n", CRCValue);
     
     /* Запись по словам */
-    HAL_RTC_WriteData32(&hcrc, data, sizeof(data)/sizeof(*data));
-    CRCValue = HAL_RTC_ReadCRC(&hcrc);
+    HAL_CRC_WriteData32(&hcrc, data, sizeof(data)/sizeof(*data));
+    CRCValue = HAL_CRC_ReadCRC(&hcrc);
     xprintf("CRC32 = 0x%08x, ожидалось 0x6311BC18\n", CRCValue);
     
 
