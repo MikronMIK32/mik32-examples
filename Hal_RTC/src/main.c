@@ -1,5 +1,4 @@
 #include "mik32_hal_rtc.h"
-#include "mik32_hal_rcc.h"
 
 #include "uart_lib.h"
 #include "xprintf.h"
@@ -77,31 +76,25 @@ int main()
 
 void SystemClock_Config(void)
 {
-    RCC_OscInitTypeDef RCC_OscInit = {0};
-    RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
+    PCC_OscInitTypeDef PCC_OscInit = {0};
 
-    PeriphClkInit.PMClockAHB = PMCLOCKAHB_DEFAULT;    
-    PeriphClkInit.PMClockAPB_M = PMCLOCKAPB_M_DEFAULT | PM_CLOCK_PAD_CONFIG_M | PM_CLOCK_PM_M | PM_CLOCK_WU_M | PM_CLOCK_RTC_M;     
-    PeriphClkInit.PMClockAPB_P = PMCLOCKAPB_P_DEFAULT | PM_CLOCK_UART_0_M;     
-    HAL_RCC_ClockConfig(&PeriphClkInit);
-
-
-    RCC_OscInit.OscillatorEnable = RCC_OSCILLATORTYPE_OSC32K | RCC_OSCILLATORTYPE_OSC32M;
-    RCC_OscInit.OscillatorSystem = RCC_OSCILLATORTYPE_OSC32M;                          
-    RCC_OscInit.AHBDivider = 0;                             
-    RCC_OscInit.APBMDivider = 0;                             
-    RCC_OscInit.APBPDivider = 0;                             
-    RCC_OscInit.HSI32MCalibrationValue = 128;               
-    RCC_OscInit.LSI32KCalibrationValue = 0;
-    RCC_OscInit.RTCClockSelection = RCC_RTCCLKSOURCE_OSC32K;
-    RCC_OscInit.RTCClockCPUSelection = RCC_RTCCLKCPUSOURCE_OSC32K;
-    HAL_RCC_OscConfig(&RCC_OscInit);
+    PCC_OscInit.OscillatorEnable = PCC_OSCILLATORTYPE_OSC32K | PCC_OSCILLATORTYPE_OSC32M;
+    PCC_OscInit.OscillatorSystem = PCC_OSCILLATORTYPE_OSC32M;                          
+    PCC_OscInit.AHBDivider = 0;                             
+    PCC_OscInit.APBMDivider = 0;                             
+    PCC_OscInit.APBPDivider = 0;                             
+    PCC_OscInit.HSI32MCalibrationValue = 128;               
+    PCC_OscInit.LSI32KCalibrationValue = 0;
+    PCC_OscInit.RTCClockSelection = PCC_RTCCLKSOURCE_OSC32K;
+    PCC_OscInit.RTCClockCPUSelection = PCC_RTCCLKCPUSOURCE_OSC32K;
+    HAL_PCC_OscConfig(&PCC_OscInit);
 
 
 }
 
 static void RTC_Init(void)
 {
+    __HAL_PCC_RTC_CLK_ENABLE();
     
     RTC_TimeTypeDef sTime = {0};
     RTC_DateTypeDef sDate = {0};

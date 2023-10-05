@@ -1,7 +1,5 @@
-#include "mik32_hal_rcc.h"
+#include "mik32_hal.h"
 #include "mik32_hal_timer32.h"
-#include "mik32_hal_pad_config.h"
-#include "mik32_hal_gpio.h"
 #include "mik32_hal_irq.h"
 
 #include "uart_lib.h"
@@ -17,10 +15,10 @@ int main()
 {
     SystemClock_Config();
 
+    HAL_Init();
+
     UART_Init(UART_0, 3333, UART_CONTROL1_TE_M | UART_CONTROL1_M_8BIT_M, 0, 0);
 
-    HAL_PadConfig_PinMode(PORT1_4 | PORT1_3 | PORT1_2 | PORT1_1 | PORT1_0, PIN_MODE2); /* Timer32_2 */
-    HAL_PadConfig_PinMode(PORT0_4 | PORT0_3 | PORT0_2 | PORT0_1 | PORT0_0, PIN_MODE2); /* Timer32_1 */
     Timer32_Init();
 
     HAL_Timer32_Value_Clear(&htimer32);
@@ -28,8 +26,6 @@ int main()
     {
         xprintf("Error\n");
     }
-    
-    
 
     /* Включать прерывания Timer16 рекомендуется после его инициализации */
     HAL_EPIC_MaskLevelSet(HAL_EPIC_TIMER32_0_MASK | HAL_EPIC_TIMER32_1_MASK | HAL_EPIC_TIMER32_2_MASK);
@@ -43,24 +39,18 @@ int main()
 
 void SystemClock_Config(void)
 {
-    RCC_OscInitTypeDef RCC_OscInit = {0};
-    RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
+    PCC_OscInitTypeDef PCC_OscInit = {0};
 
-    RCC_OscInit.OscillatorEnable = RCC_OSCILLATORTYPE_OSC32K | RCC_OSCILLATORTYPE_OSC32M | RCC_OSCILLATORTYPE_LSI32K | RCC_OSCILLATORTYPE_HSI32M;
-    RCC_OscInit.OscillatorSystem = RCC_OSCILLATORTYPE_OSC32M;
-    RCC_OscInit.AHBDivider = 0;
-    RCC_OscInit.APBMDivider = 0;
-    RCC_OscInit.APBPDivider = 0;
-    RCC_OscInit.HSI32MCalibrationValue = 0;
-    RCC_OscInit.LSI32KCalibrationValue = 0;
-    RCC_OscInit.RTCClockSelection = RCC_RTCCLKSOURCE_NO_CLK;
-    RCC_OscInit.RTCClockCPUSelection = RCC_RTCCLKCPUSOURCE_NO_CLK;
-    HAL_RCC_OscConfig(&RCC_OscInit);
-
-    PeriphClkInit.PMClockAHB = PMCLOCKAHB_DEFAULT;
-    PeriphClkInit.PMClockAPB_M = PMCLOCKAPB_M_DEFAULT | PM_CLOCK_WU_M | PM_CLOCK_PAD_CONFIG_M | PM_CLOCK_TIMER32_0_M | PM_CLOCK_EPIC_M;
-    PeriphClkInit.PMClockAPB_P = PMCLOCKAPB_P_DEFAULT | PM_CLOCK_UART_0_M | PM_CLOCK_TIMER32_1_M | PM_CLOCK_TIMER32_2_M;
-    HAL_RCC_ClockConfig(&PeriphClkInit);
+    PCC_OscInit.OscillatorEnable = PCC_OSCILLATORTYPE_OSC32K | PCC_OSCILLATORTYPE_OSC32M | PCC_OSCILLATORTYPE_LSI32K | PCC_OSCILLATORTYPE_HSI32M;
+    PCC_OscInit.OscillatorSystem = PCC_OSCILLATORTYPE_OSC32M;
+    PCC_OscInit.AHBDivider = 0;
+    PCC_OscInit.APBMDivider = 0;
+    PCC_OscInit.APBPDivider = 0;
+    PCC_OscInit.HSI32MCalibrationValue = 0;
+    PCC_OscInit.LSI32KCalibrationValue = 0;
+    PCC_OscInit.RTCClockSelection = PCC_RTCCLKSOURCE_NO_CLK;
+    PCC_OscInit.RTCClockCPUSelection = PCC_RTCCLKCPUSOURCE_NO_CLK;
+    HAL_PCC_OscConfig(&PCC_OscInit);
 }
 
 static void Timer32_Init(void)
@@ -75,7 +65,6 @@ static void Timer32_Init(void)
     {
         xprintf("Timer32_Init error\n");
     }
-
 
     htimer32_channel.TimerInstance = htimer32.Instance;
     htimer32_channel.ChannelIndex = TIMER32_CHANNEL_0;
@@ -95,7 +84,7 @@ void trap_handler()
     if (EPIC_CHECK_TIMER32_0())
     {
         uint32_t interrupt_status = HAL_Timer32_InterruptFlags_Get(&htimer32);
-        uint32_t interrupt_mask = htimer32.Instance->IntMask;
+        uint32_t interrupt_mask = htimer32.Instance->INT_MASK;
 
         if ((interrupt_status & TIMER32_INT_OVERFLOW_M) & interrupt_mask)
         {
@@ -115,7 +104,7 @@ void trap_handler()
     if (EPIC_CHECK_TIMER32_1())
     {
         uint32_t interrupt_status = HAL_Timer32_InterruptFlags_Get(&htimer32);
-        uint32_t interrupt_mask = htimer32.Instance->IntMask;
+        uint32_t interrupt_mask = htimer32.Instance->INT_MASK;
 
         if ((interrupt_status & TIMER32_INT_OVERFLOW_M) & interrupt_mask)
         {
@@ -147,7 +136,7 @@ void trap_handler()
     if (EPIC_CHECK_TIMER32_2())
     {
         uint32_t interrupt_status = HAL_Timer32_InterruptFlags_Get(&htimer32);
-        uint32_t interrupt_mask = htimer32.Instance->IntMask;
+        uint32_t interrupt_mask = htimer32.Instance->INT_MASK;
 
         if ((interrupt_status & TIMER32_INT_OVERFLOW_M) & interrupt_mask)
         {

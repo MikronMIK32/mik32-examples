@@ -17,8 +17,8 @@ int main()
 
     SystemClock_Config();
 
-    HAL_PadConfig_PinMode(PORT0_5 | PORT0_6, PIN_MODE0);    /* Режим работы выводов UART0 */
-    HAL_PadConfig_PinMode(PORT0_9 | PORT0_10, PIN_MODE0);   /* Режим работы выводов I2C */
+    HAL_PadConfig_PinMode(PORT0_5 | PORT0_6, PIN_MODE_SERIAL);    /* Режим работы выводов UART0 */
+    HAL_PadConfig_PinMode(PORT0_9 | PORT0_10, PIN_MODE_SERIAL);   /* Режим работы выводов I2C */
 
     UART_Init(UART_0, 3333, UART_CONTROL1_TE_M | UART_CONTROL1_M_8BIT_M, 0, 0);
     I2C0_Init();
@@ -96,8 +96,8 @@ void SystemClock_Config(void)
     HAL_RCC_OscConfig(&RCC_OscInit);
 
     PeriphClkInit.PMClockAHB = PMCLOCKAHB_DEFAULT;    
-    PeriphClkInit.PMClockAPB_M = PMCLOCKAPB_M_DEFAULT | PM_CLOCK_WU_M;     
-    PeriphClkInit.PMClockAPB_P = PMCLOCKAPB_P_DEFAULT | PM_CLOCK_UART_0_M | PM_CLOCK_I2C_0_M;     
+    PeriphClkInit.PMClockAPB_M = PMCLOCKAPB_M_DEFAULT | PM_CLOCK_APB_M_WU_M;     
+    PeriphClkInit.PMClockAPB_P = PMCLOCKAPB_P_DEFAULT | PM_CLOCK_APB_P_UART_0_M | PM_CLOCK_APB_P_I2C_0_M;     
     HAL_RCC_ClockConfig(&PeriphClkInit);
 }
 

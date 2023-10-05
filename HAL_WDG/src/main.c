@@ -1,4 +1,4 @@
-#include "mik32_hal_rcc.h"
+#include "mik32_hal_pcc.h"
 #include "wdt.h"
 #include "mcu32_memory_map.h"
 
@@ -17,14 +17,17 @@ int main()
 
     UART_Init(UART_0, 3333, UART_CONTROL1_TE_M | UART_CONTROL1_M_8BIT_M, 0, 0);
 
-    WDT->Key = WDT_KEY_UNLOCK;
-    WDT->Key = WDT_KEY_STOP;
+    /* Тактирование WDT */
+    __HAL_PCC_WDT_CLK_ENABLE(); 
 
-    WDT->Key = WDT_KEY_UNLOCK;
-    WDT->Con = WDT_CON_PRESCALE_4096_M | WDT_CON_PRELOAD(0x000); /* Делитель на 4096 */
+    WDT->KEY = WDT_KEY_UNLOCK;
+    WDT->KEY = WDT_KEY_STOP;
 
-    WDT->Key = WDT_KEY_UNLOCK;
-    WDT->Key = WDT_KEY_START;
+    WDT->KEY = WDT_KEY_UNLOCK;
+    WDT->CON = WDT_CON_PRESCALE_4096_M | WDT_CON_PRELOAD(0x000); /* Делитель на 4096 */
+
+    WDT->KEY = WDT_KEY_UNLOCK;
+    WDT->KEY = WDT_KEY_START;
 
     xprintf("Start\n");
 
@@ -37,22 +40,16 @@ int main()
 
 void SystemClock_Config(void)
 {
-    RCC_OscInitTypeDef RCC_OscInit = {0};
-    RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
+    PCC_OscInitTypeDef PCC_OscInit = {0};
 
-    RCC_OscInit.OscillatorEnable = RCC_OSCILLATORTYPE_OSC32K | RCC_OSCILLATORTYPE_OSC32M;   
-    RCC_OscInit.OscillatorSystem = RCC_OSCILLATORTYPE_OSC32M;                          
-    RCC_OscInit.AHBDivider = 0;                             
-    RCC_OscInit.APBMDivider = 0;                             
-    RCC_OscInit.APBPDivider = 0;                             
-    RCC_OscInit.HSI32MCalibrationValue = 0;                  
-    RCC_OscInit.LSI32KCalibrationValue = 0;
-    RCC_OscInit.RTCClockSelection = RCC_RTCCLKSOURCE_NO_CLK;
-    RCC_OscInit.RTCClockCPUSelection = RCC_RTCCLKCPUSOURCE_NO_CLK;
-    HAL_RCC_OscConfig(&RCC_OscInit);
-
-    PeriphClkInit.PMClockAHB = PMCLOCKAHB_DEFAULT;    
-    PeriphClkInit.PMClockAPB_M = PMCLOCKAPB_M_DEFAULT | PM_CLOCK_WU_M | PM_CLOCK_PAD_CONFIG_M;     
-    PeriphClkInit.PMClockAPB_P = PMCLOCKAPB_P_DEFAULT | PM_CLOCK_UART_0_M | PM_CLOCK_ANALOG_REG_M | PM_CLOCK_WDT_M;     
-    HAL_RCC_ClockConfig(&PeriphClkInit);
+    PCC_OscInit.OscillatorEnable = PCC_OSCILLATORTYPE_ALL;   
+    PCC_OscInit.OscillatorSystem = PCC_OSCILLATORTYPE_OSC32M;                          
+    PCC_OscInit.AHBDivider = 0;                             
+    PCC_OscInit.APBMDivider = 0;                             
+    PCC_OscInit.APBPDivider = 0;                             
+    PCC_OscInit.HSI32MCalibrationValue = 0;                  
+    PCC_OscInit.LSI32KCalibrationValue = 0;
+    PCC_OscInit.RTCClockSelection = PCC_RTCCLKSOURCE_NO_CLK;
+    PCC_OscInit.RTCClockCPUSelection = PCC_RTCCLKCPUSOURCE_NO_CLK;
+    HAL_PCC_OscConfig(&PCC_OscInit);
 }

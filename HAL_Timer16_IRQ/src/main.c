@@ -1,6 +1,4 @@
-#include "mik32_hal_rcc.h"
-#include "mik32_hal_pad_config.h"
-#include "mik32_hal_gpio.h"
+#include "mik32_hal.h"
 #include "mik32_hal_timer16.h"
 #include "mik32_hal_irq.h"
 
@@ -12,6 +10,7 @@ Timer16_HandleTypeDef htimer16_1;
 
 void SystemClock_Config(void);
 static void Timer16_1_Init(void);
+void GPIO_Init();
 
 /*
  * Пример для платы BOARD_LITE
@@ -25,26 +24,13 @@ static void Timer16_1_Init(void);
 
 int main()
 {    
-
+    HAL_Init();
+    
     SystemClock_Config();
 
+    GPIO_Init();
+
     UART_Init(UART_0, 3333, UART_CONTROL1_TE_M | UART_CONTROL1_M_8BIT_M, 0, 0);
-
-    /* Настройка вывода светодиода */
-    HAL_PadConfig_PinMode(PORT2_7, PIN_MODE1); /* Установка вывода PORT2_7 в режим GPIO */
-    HAL_GPIO_PinDirection(PORT2_7, GPIO_PIN_OUTPUT); /* Установка направления вывода PORT2_7 на выход */
-
-    /************************Настройка GPIO для триггера Timer16_1************************/
-    /* Настройка GPIO1_9 - вывод триггер */
-    HAL_PadConfig_PinMode(PORT1_9, PIN_MODE1); /* Установка вывода PORT1_9 в режим GPIO */
-    HAL_GPIO_PinDirection(PORT1_9, GPIO_PIN_INPUT); /* Установка направления вывода PORT1_9 на вход */
-
-    /* Настройка GPIO2_6 - пользовательская кнопка.
-     * При соединении выводов PORT2_6 и PORT1_9 нажатие пользовательской кнопки активирует триггер таймера.
-     */
-    HAL_PadConfig_PinMode(PORT2_6, PIN_MODE1); /* Установка вывода PORT2_6 в режим GPIO */
-    HAL_GPIO_PinDirection(PORT2_6, GPIO_PIN_INPUT); /* Установка направления вывода PORT2_6 на вход */
-    /*************************************************************************************/
 
     Timer16_1_Init();
 
@@ -79,24 +65,18 @@ int main()
 
 void SystemClock_Config(void)
 {
-    RCC_OscInitTypeDef RCC_OscInit = {0};
-    RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
+    PCC_OscInitTypeDef PCC_OscInit = {0};
 
-    RCC_OscInit.OscillatorEnable = RCC_OSCILLATORTYPE_OSC32K | RCC_OSCILLATORTYPE_OSC32M;   
-    RCC_OscInit.OscillatorSystem = RCC_OSCILLATORTYPE_OSC32M;                          
-    RCC_OscInit.AHBDivider = 0;                             
-    RCC_OscInit.APBMDivider = 0;                             
-    RCC_OscInit.APBPDivider = 0;                             
-    RCC_OscInit.HSI32MCalibrationValue = 0;                  
-    RCC_OscInit.LSI32KCalibrationValue = 0;
-    RCC_OscInit.RTCClockSelection = RCC_RTCCLKSOURCE_NO_CLK;
-    RCC_OscInit.RTCClockCPUSelection = RCC_RTCCLKCPUSOURCE_NO_CLK;
-    HAL_RCC_OscConfig(&RCC_OscInit);
-
-    PeriphClkInit.PMClockAHB = PMCLOCKAHB_DEFAULT;    
-    PeriphClkInit.PMClockAPB_M = PMCLOCKAPB_M_DEFAULT | PM_CLOCK_WU_M | PM_CLOCK_PAD_CONFIG_M | PM_CLOCK_EPIC_M;     
-    PeriphClkInit.PMClockAPB_P = PMCLOCKAPB_P_DEFAULT | PM_CLOCK_UART_0_M | PM_CLOCK_TIMER16_1_M | PM_CLOCK_GPIO_0_M | PM_CLOCK_GPIO_1_M | PM_CLOCK_GPIO_2_M;    
-    HAL_RCC_ClockConfig(&PeriphClkInit);
+    PCC_OscInit.OscillatorEnable = PCC_OSCILLATORTYPE_OSC32K | PCC_OSCILLATORTYPE_OSC32M;   
+    PCC_OscInit.OscillatorSystem = PCC_OSCILLATORTYPE_OSC32M;                          
+    PCC_OscInit.AHBDivider = 0;                             
+    PCC_OscInit.APBMDivider = 0;                             
+    PCC_OscInit.APBPDivider = 0;                             
+    PCC_OscInit.HSI32MCalibrationValue = 0;                  
+    PCC_OscInit.LSI32KCalibrationValue = 0;
+    PCC_OscInit.RTCClockSelection = PCC_RTCCLKSOURCE_NO_CLK;
+    PCC_OscInit.RTCClockCPUSelection = PCC_RTCCLKCPUSOURCE_NO_CLK;
+    HAL_PCC_OscConfig(&PCC_OscInit);
 }
 
 static void Timer16_1_Init(void)
@@ -104,7 +84,7 @@ static void Timer16_1_Init(void)
     htimer16_1.Instance = TIMER16_1;
 
     /* Настройка тактирования */
-    htimer16_1.Clock.Source = TIMER16_SOURCE_INTERNAL_OSC32M;
+    htimer16_1.Clock.Source = TIMER16_SOURCE_INTERNAL_SYSTEM;
     htimer16_1.CountMode = TIMER16_COUNTMODE_INTERNAL;  /* При тактировании от Input1 не имеет значения */
     htimer16_1.Clock.Prescaler = TIMER16_PRESCALER_128;
     htimer16_1.ActiveEdge = TIMER16_ACTIVEEDGE_RISING;  /* Выбирается при тактировании от Input1 */
@@ -141,12 +121,6 @@ static void Timer16_1_Init(void)
 
 void trap_handler()
 {
-    #ifdef MIK32_IRQ_DEBUG
-        xprintf("\nTrap\n");
-        xprintf("EPIC->RAW_STATUS = %d\n", EPIC->RAW_STATUS);
-        xprintf("EPIC->STATUS = %d\n", EPIC->STATUS);
-    #endif
-
     if (EPIC_CHECK_TIMER16_1())
     {
         uint32_t interrupt_status = HAL_Timer16_GetInterruptStatus(&htimer16_1);
@@ -196,7 +170,7 @@ void trap_handler()
         if (interrupt_status & TIMER16_ISR_CMP_MATCH_M)
         {
             xprintf("\nCMPM_IRQ\n");
-            HAL_GPIO_PinToggle(PORT2_7); /* Смена сигнала PORT2_7 на противоположный */
+            HAL_GPIO_TogglePin(GPIO_2, PORT2_7); /* Смена сигнала PORT2_7 на противоположный */
             // HAL_Timer16_ClearInterruptFlag(&htimer16_1, TIMER16_CMPM_IRQ); /* Сброс флага прерывания */
         }  
 
@@ -213,4 +187,25 @@ void trap_handler()
         xprintf("EPIC->RAW_STATUS = %d\n", EPIC->RAW_STATUS);
         xprintf("EPIC->STATUS = %d\n", EPIC->STATUS);
     #endif
+}
+
+void GPIO_Init()
+{
+    GPIO_InitTypeDef GPIO_InitStruct = {0};
+    __HAL_PCC_GPIO_0_CLK_ENABLE();
+    __HAL_PCC_GPIO_1_CLK_ENABLE();
+    __HAL_PCC_GPIO_2_CLK_ENABLE();
+
+    GPIO_InitStruct.Pin = PORT2_7;
+    GPIO_InitStruct.Mode = HAL_GPIO_MODE_GPIO_OUTPUT;
+    GPIO_InitStruct.Pull = HAL_GPIO_PULL_NONE;
+    HAL_GPIO_Init(GPIO_2, &GPIO_InitStruct);
+
+    GPIO_InitStruct.Pin = PORT1_9;
+    GPIO_InitStruct.Mode = HAL_GPIO_MODE_GPIO_INPUT;
+    HAL_GPIO_Init(GPIO_1, &GPIO_InitStruct);
+
+    GPIO_InitStruct.Pin = PORT2_6;
+    GPIO_InitStruct.Mode = HAL_GPIO_MODE_GPIO_INPUT;
+    HAL_GPIO_Init(GPIO_2, &GPIO_InitStruct);
 }

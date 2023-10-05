@@ -1,7 +1,5 @@
-#include "mik32_hal_rcc.h"
+#include "mik32_hal.h"
 #include "mik32_hal_timer32.h"
-#include "mik32_hal_pad_config.h"
-#include "mik32_hal_gpio.h"
 #include "mik32_hal_dma.h"
 #include "mik32_hal_dac.h"
 
@@ -47,6 +45,7 @@ uint32_t word_src[] = {
 
 int main()
 {
+    HAL_Init();
 
     SystemClock_Config();
 
@@ -56,8 +55,6 @@ int main()
 
     DAC_Init();
 
-    HAL_PadConfig_PinMode(PORT1_4 | PORT1_3 | PORT1_2 | PORT1_1 | PORT1_0, PIN_MODE2); /* Timer32_2 */
-    HAL_PadConfig_PinMode(PORT0_4 | PORT0_3 | PORT0_2 | PORT0_1 | PORT0_0, PIN_MODE2); /* Timer32_1 */
     Timer32_Init();
 
     HAL_Timer32_Channel_Enable(&htimer32_channel);
@@ -76,24 +73,18 @@ int main()
 
 void SystemClock_Config(void)
 {
-    RCC_OscInitTypeDef RCC_OscInit = {0};
-    RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
+    PCC_OscInitTypeDef PCC_OscInit = {0};
 
-    RCC_OscInit.OscillatorEnable = RCC_OSCILLATORTYPE_OSC32K | RCC_OSCILLATORTYPE_OSC32M;
-    RCC_OscInit.OscillatorSystem = RCC_OSCILLATORTYPE_OSC32M;
-    RCC_OscInit.AHBDivider = 0;
-    RCC_OscInit.APBMDivider = 0;
-    RCC_OscInit.APBPDivider = 0;
-    RCC_OscInit.HSI32MCalibrationValue = 0;
-    RCC_OscInit.LSI32KCalibrationValue = 0;
-    RCC_OscInit.RTCClockSelection = RCC_RTCCLKSOURCE_NO_CLK;
-    RCC_OscInit.RTCClockCPUSelection = RCC_RTCCLKCPUSOURCE_NO_CLK;
-    HAL_RCC_OscConfig(&RCC_OscInit);
-
-    PeriphClkInit.PMClockAHB = PMCLOCKAHB_DEFAULT | PM_CLOCK_DMA_M;
-    PeriphClkInit.PMClockAPB_M = PMCLOCKAPB_M_DEFAULT | PM_CLOCK_WU_M | PM_CLOCK_PAD_CONFIG_M | PM_CLOCK_TIMER32_0_M;
-    PeriphClkInit.PMClockAPB_P = PMCLOCKAPB_P_DEFAULT | PM_CLOCK_UART_0_M | PM_CLOCK_TIMER32_1_M | PM_CLOCK_TIMER32_2_M | PM_CLOCK_ANALOG_REG_M;
-    HAL_RCC_ClockConfig(&PeriphClkInit);
+    PCC_OscInit.OscillatorEnable = PCC_OSCILLATORTYPE_OSC32K | PCC_OSCILLATORTYPE_OSC32M | PCC_OSCILLATORTYPE_HSI32M | PCC_OSCILLATORTYPE_LSI32K;
+    PCC_OscInit.OscillatorSystem = PCC_OSCILLATORTYPE_OSC32M;
+    PCC_OscInit.AHBDivider = 0;
+    PCC_OscInit.APBMDivider = 0;
+    PCC_OscInit.APBPDivider = 0;
+    PCC_OscInit.HSI32MCalibrationValue = 0;
+    PCC_OscInit.LSI32KCalibrationValue = 0;
+    PCC_OscInit.RTCClockSelection = PCC_RTCCLKSOURCE_NO_CLK;
+    PCC_OscInit.RTCClockCPUSelection = PCC_RTCCLKCPUSOURCE_NO_CLK;
+    HAL_PCC_OscConfig(&PCC_OscInit);
 }
 
 static void Timer32_Init(void)
@@ -138,7 +129,7 @@ static void DMA_CH0_Init(DMA_InitTypeDef *hdma)
     hdma_ch0.ChannelInit.WriteSize = DMA_CHANNEL_SIZE_WORD; /* data_len должно быть кратно write_size */
     hdma_ch0.ChannelInit.WriteBurstSize = 2;                /* write_burst_size должно быть кратно read_size */
     hdma_ch0.ChannelInit.WriteRequest = DMA_CHANNEL_TIMER32_1_REQUEST;
-    hdma_ch0.ChannelInit.WriteAck = DMA_CHANNEL_ACK_DISABLE;
+    hdma_ch0.ChannelInit.WriteAck = DMA_CHANNEL_ACK_ENABLE;
 }
 
 static void DMA_Init(void)

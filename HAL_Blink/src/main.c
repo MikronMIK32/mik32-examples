@@ -8,7 +8,7 @@
 #include <limits.h>
 
 /* Тип платы */
-#define BOARD_DIP
+#define BOARD_LITE
 
 #ifdef BOARD_LITE
 #define PIN_LED 	PORT2_7
@@ -32,11 +32,11 @@ void ledBlink()
 	#ifdef BOARD_LITE
 
     HAL_GPIO_PinWrite(PIN_LED, GPIO_PIN_HIGH);
-	xprintf("ON \n");
+	// xprintf("ON \n");
 	for (volatile int i = 0; i < BLINK_LOOP_ITERS; i++);
 
     HAL_GPIO_PinWrite(PIN_LED, GPIO_PIN_LOW);  
-	xprintf("OFF \n");
+	// xprintf("OFF \n");
 	for (volatile int i = 0; i < BLINK_LOOP_ITERS; i++);
 
 	#endif 
@@ -56,9 +56,14 @@ void ledButton()
         HAL_GPIO_PinWrite(PIN_LED, GPIO_PIN_HIGH);
         return;
 	}
+    else
+    {
+        HAL_GPIO_PinWrite(PIN_LED, GPIO_PIN_LOW);
+        return;
+    }
 	#endif 
 
-    ledBlink();
+    // ledBlink();
 }
 
 
@@ -68,10 +73,12 @@ int main()
     SystemClock_Config();
     GPIO_Config();
 
+    HAL_PadConfig_PinMode(PORT0_5 | PORT0_6, PIN_MODE_SERIAL);
 	UART_Init(UART_0, 3333, UART_CONTROL1_TE_M | UART_CONTROL1_M_8BIT_M, 0, 0);
 
 	while (1) {
-		ledButton();
+		// ledButton();
+        ledBlink();
 	}
        
 }
@@ -81,7 +88,7 @@ void SystemClock_Config()
     RCC_OscInitTypeDef RCC_OscInit = {0};
     RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
 
-    RCC_OscInit.OscillatorEnable = RCC_OSCILLATORTYPE_OSC32K | RCC_OSCILLATORTYPE_OSC32M;   
+    RCC_OscInit.OscillatorEnable = RCC_OSCILLATORTYPE_OSC32K | RCC_OSCILLATORTYPE_OSC32M;// | RCC_OSCILLATORTYPE_LSI32K | RCC_OSCILLATORTYPE_HSI32M;   
     RCC_OscInit.OscillatorSystem = RCC_OSCILLATORTYPE_OSC32M;                          
     RCC_OscInit.AHBDivider = 0;                             
     RCC_OscInit.APBMDivider = 0;                             
@@ -93,16 +100,17 @@ void SystemClock_Config()
     HAL_RCC_OscConfig(&RCC_OscInit);
 
     PeriphClkInit.PMClockAHB = PMCLOCKAHB_DEFAULT;    
-    PeriphClkInit.PMClockAPB_M = PMCLOCKAPB_M_DEFAULT | PM_CLOCK_WU_M | PM_CLOCK_PAD_CONFIG_M | PM_CLOCK_PM_M;     
-    PeriphClkInit.PMClockAPB_P = PMCLOCKAPB_P_DEFAULT | PM_CLOCK_UART_0_M | PM_CLOCK_GPIO_0_M | PM_CLOCK_GPIO_1_M | PM_CLOCK_GPIO_2_M; 
+    PeriphClkInit.PMClockAPB_M = PMCLOCKAPB_M_DEFAULT | PM_CLOCK_APB_M_WU_M | PM_CLOCK_APB_M_PAD_CONFIG_M | PM_CLOCK_APB_M_PM_M;     
+    PeriphClkInit.PMClockAPB_P = PMCLOCKAPB_P_DEFAULT | PM_CLOCK_APB_P_UART_0_M | PM_CLOCK_APB_P_GPIO_0_M | PM_CLOCK_APB_P_GPIO_1_M | PM_CLOCK_APB_P_GPIO_2_M; 
     HAL_RCC_ClockConfig(&PeriphClkInit);
 }
 
 void GPIO_Config()
 {
     #ifdef BOARD_LITE
-    HAL_PadConfig_PinMode(PIN_LED, PIN_MODE1);
-    HAL_PadConfig_PinMode(PIN_BUTTON, PIN_MODE1);
+    HAL_PadConfig_PinMode(PIN_LED, PIN_MODE_GPIO);
+    HAL_PadConfig_PinMode(PIN_BUTTON, PIN_MODE_GPIO);
+
     HAL_PadConfig_PinPull(PIN_BUTTON, PIN_PULL_DOWN);
 
     HAL_GPIO_PinDirection(PIN_LED, GPIO_PIN_OUTPUT);
@@ -111,8 +119,8 @@ void GPIO_Config()
     #endif
 
     #ifdef BOARD_DIP
-    HAL_PadConfig_PinMode(PIN_LED1, PIN_MODE1);
-    HAL_PadConfig_PinMode(PIN_LED2, PIN_MODE1);
+    HAL_PadConfig_PinMode(PIN_LED1, PIN_MODE_GPIO);
+    HAL_PadConfig_PinMode(PIN_LED2, PIN_MODE_GPIO);
 
     HAL_GPIO_PinDirection(PIN_LED1, GPIO_PIN_OUTPUT);
     HAL_GPIO_PinDirection(PIN_LED2, GPIO_PIN_OUTPUT);
