@@ -1,4 +1,4 @@
-#include "mik32_hal_PCC.h"
+#include "mik32_hal_pcc.h"
 #include "mik32_hal_gpio.h"
 
 #include "uart_lib.h"
@@ -12,8 +12,8 @@
  */
 
 /* Тип платы */
-// #define BOARD_LITE
-#define BOARD_DIP
+#define BOARD_LITE
+// #define BOARD_DIP
 
 void SystemClock_Config();
 void GPIO_Init();
