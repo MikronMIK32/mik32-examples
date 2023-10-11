@@ -47,7 +47,7 @@ void SystemClock_Config(void)
 {
     PCC_OscInitTypeDef PCC_OscInit = {0};
 
-    PCC_OscInit.OscillatorEnable = PCC_OSCILLATORTYPE_OSC32K | PCC_OSCILLATORTYPE_OSC32M;
+    PCC_OscInit.OscillatorEnable = PCC_OSCILLATORTYPE_ALL;
     PCC_OscInit.OscillatorSystem = PCC_OSCILLATORTYPE_OSC32M;
     PCC_OscInit.AHBDivider = 0;
     PCC_OscInit.APBMDivider = 0;

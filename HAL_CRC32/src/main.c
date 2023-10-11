@@ -3,6 +3,14 @@
 #include "uart_lib.h"
 #include "xprintf.h"
 
+/*
+* В примере демонстрируется работа с CRC32 (алгоритм CRC-32Q)
+*
+* Вычисляется контрольная сумма для массива байт message и для массива слов data.
+* Результат выводится по UART0
+*
+*/
+
 
 CRC_HandleTypeDef hcrc;
 

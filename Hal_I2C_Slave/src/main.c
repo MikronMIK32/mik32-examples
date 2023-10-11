@@ -1,11 +1,15 @@
-#include "mik32_hal_rcc.h"
-#include "mik32_hal_pad_config.h"
 #include "mik32_hal_i2c.h"
-
 
 #include "uart_lib.h"
 #include "xprintf.h"
 
+/*
+* В данном примере демонстрируется работа I2C в режиме ведомого.
+* Ведомый считывает 10 байт от ведущего, а затем записывает.
+* Используется растягивание сигнала SCL
+*
+* Данный пример может быть использован совместно с ведущим из примера Hal_I2C_Master.
+*/
 
 I2C_HandleTypeDef hi2c0;
 
@@ -16,9 +20,6 @@ int main()
 {    
 
     SystemClock_Config();
-
-    HAL_PadConfig_PinMode(PORT0_5 | PORT0_6, PIN_MODE_SERIAL);    /* Режим работы выводов UART0 */
-    HAL_PadConfig_PinMode(PORT0_9 | PORT0_10, PIN_MODE_SERIAL);   /* Режим работы выводов I2C */
 
     UART_Init(UART_0, 3333, UART_CONTROL1_TE_M | UART_CONTROL1_M_8BIT_M, 0, 0);
     I2C0_Init();
@@ -73,24 +74,18 @@ int main()
 
 void SystemClock_Config(void)
 {
-    RCC_OscInitTypeDef RCC_OscInit = {0};
-    RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
+    PCC_OscInitTypeDef PCC_OscInit = {0};
 
-    RCC_OscInit.OscillatorEnable = RCC_OSCILLATORTYPE_OSC32K | RCC_OSCILLATORTYPE_OSC32M;   
-    RCC_OscInit.OscillatorSystem = RCC_OSCILLATORTYPE_OSC32M;                          
-    RCC_OscInit.AHBDivider = 0;                             
-    RCC_OscInit.APBMDivider = 0;                             
-    RCC_OscInit.APBPDivider = 0;                             
-    RCC_OscInit.HSI32MCalibrationValue = 0;                  
-    RCC_OscInit.LSI32KCalibrationValue = 0;
-    RCC_OscInit.RTCClockSelection = RCC_RTCCLKSOURCE_NO_CLK;
-    RCC_OscInit.RTCClockCPUSelection = RCC_RTCCLKCPUSOURCE_NO_CLK;
-    HAL_RCC_OscConfig(&RCC_OscInit);
-
-    PeriphClkInit.PMClockAHB = PMCLOCKAHB_DEFAULT;    
-    PeriphClkInit.PMClockAPB_M = PMCLOCKAPB_M_DEFAULT | PM_CLOCK_APB_M_WU_M;     
-    PeriphClkInit.PMClockAPB_P = PMCLOCKAPB_P_DEFAULT | PM_CLOCK_APB_P_UART_0_M | PM_CLOCK_APB_P_I2C_0_M;     
-    HAL_RCC_ClockConfig(&PeriphClkInit);
+    PCC_OscInit.OscillatorEnable = PCC_OSCILLATORTYPE_ALL;   
+    PCC_OscInit.OscillatorSystem = PCC_OSCILLATORTYPE_OSC32M;                          
+    PCC_OscInit.AHBDivider = 0;                             
+    PCC_OscInit.APBMDivider = 0;                             
+    PCC_OscInit.APBPDivider = 0;                             
+    PCC_OscInit.HSI32MCalibrationValue = 0;                  
+    PCC_OscInit.LSI32KCalibrationValue = 0;
+    PCC_OscInit.RTCClockSelection = PCC_RTCCLKSOURCE_NO_CLK;
+    PCC_OscInit.RTCClockCPUSelection = PCC_RTCCLKCPUSOURCE_NO_CLK;
+    HAL_PCC_OscConfig(&PCC_OscInit);
 }
 
 static void I2C0_Init(void)
@@ -114,11 +109,11 @@ static void I2C0_Init(void)
 
 
     /* Настройка частоты */
-    hi2c0.Clock.PRESC = 15;
-    hi2c0.Clock.SCLDEL = 10;
-    hi2c0.Clock.SDADEL = 15;
-    hi2c0.Clock.SCLH = 15;
-    hi2c0.Clock.SCLL = 15;
+    hi2c0.Clock.PRESC = 1;
+    hi2c0.Clock.SCLDEL = 1;
+    hi2c0.Clock.SDADEL = 1;
+    hi2c0.Clock.SCLH = 1;
+    hi2c0.Clock.SCLL = 1;
 
 
     if (HAL_I2C_Init(&hi2c0) != HAL_OK)

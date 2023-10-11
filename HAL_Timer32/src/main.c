@@ -11,8 +11,8 @@ static void Timer32_1_Init(void);
 void GPIO_Init();
 
 /*
- * В данном примере демонстрируется работа таймера32. 
- * Нулевой канал таймера используется в режиме захвата. На Port0_0 подается периодичный сигнал (ШИМ), частота которого измеряется и выводится в UART.
+ * В данном примере демонстрируется работа таймера32.
+ * Нулевой канал таймера используется в режиме захвата. На Port0_0 подается периодичный сигнал (ШИМ), частота которого измеряется и выводится в UART0.
  *
  * */
 
@@ -62,13 +62,13 @@ void SystemClock_Config(void)
 {
     PCC_OscInitTypeDef PCC_OscInit = {0};
 
-    PCC_OscInit.OscillatorEnable = PCC_OSCILLATORTYPE_OSC32K | PCC_OSCILLATORTYPE_OSC32M;
+    PCC_OscInit.OscillatorEnable = PCC_OSCILLATORTYPE_ALL;
     PCC_OscInit.OscillatorSystem = PCC_OSCILLATORTYPE_OSC32M;
     PCC_OscInit.AHBDivider = 0;
     PCC_OscInit.APBMDivider = 0;
     PCC_OscInit.APBPDivider = 0;
-    PCC_OscInit.HSI32MCalibrationValue = 0;
-    PCC_OscInit.LSI32KCalibrationValue = 0;
+    PCC_OscInit.HSI32MCalibrationValue = 128;
+    PCC_OscInit.LSI32KCalibrationValue = 128;
     PCC_OscInit.RTCClockSelection = PCC_RTCCLKSOURCE_NO_CLK;
     PCC_OscInit.RTCClockCPUSelection = PCC_RTCCLKCPUSOURCE_NO_CLK;
     HAL_PCC_OscConfig(&PCC_OscInit);

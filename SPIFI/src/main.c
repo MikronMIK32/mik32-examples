@@ -1,9 +1,20 @@
 #include "power_manager.h"
 #include "spifi.h"
-#include "uart_lib.h"
-#include "xprintf.h"
 #include "mcu32_memory_map.h"
 #include "array.h"
+
+#include "uart_lib.h"
+#include "xprintf.h"
+
+/*
+* Данный пример демонстрирует работу с SPIFI.
+* Прошивка из пример Blink для платы lite, на которой пользовательский светодиод подключен к выводу PORT2_7 преобразован в
+* массив байт в файле array.h. Эти данные загружаются во внешнюю флеш по SPIFI.
+* Процесс выполнения загрузки выводится по UART0. После успешной записи внешней флеш можно сменить режим загрузки перемычками BOOT
+* на загрузку из внешней флеш. В этом случае светодиод начнет мигать.
+*
+* Работа с внешней флеш памятью идет в режиме Single spifi. 
+*/
 
 #define SREG1_BUSY                1
 
@@ -27,7 +38,7 @@
 
 void spifi_init()
 {
-    PM->CLK_AHB_SET |= PM_CLOCK_AHB_SPIFI_M;
+    __HAL_PCC_SPIFI_CLK_ENABLE();
 
     GPIO_InitTypeDef GPIO_InitStruct = {0};
     __HAL_PCC_GPIO_2_CLK_ENABLE();

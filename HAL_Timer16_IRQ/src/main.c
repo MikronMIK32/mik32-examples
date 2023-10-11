@@ -67,13 +67,13 @@ void SystemClock_Config(void)
 {
     PCC_OscInitTypeDef PCC_OscInit = {0};
 
-    PCC_OscInit.OscillatorEnable = PCC_OSCILLATORTYPE_OSC32K | PCC_OSCILLATORTYPE_OSC32M;   
+    PCC_OscInit.OscillatorEnable = PCC_OSCILLATORTYPE_ALL; 
     PCC_OscInit.OscillatorSystem = PCC_OSCILLATORTYPE_OSC32M;                          
     PCC_OscInit.AHBDivider = 0;                             
     PCC_OscInit.APBMDivider = 0;                             
     PCC_OscInit.APBPDivider = 0;                             
-    PCC_OscInit.HSI32MCalibrationValue = 0;                  
-    PCC_OscInit.LSI32KCalibrationValue = 0;
+    PCC_OscInit.HSI32MCalibrationValue = 128;                  
+    PCC_OscInit.LSI32KCalibrationValue = 128;
     PCC_OscInit.RTCClockSelection = PCC_RTCCLKSOURCE_NO_CLK;
     PCC_OscInit.RTCClockCPUSelection = PCC_RTCCLKCPUSOURCE_NO_CLK;
     HAL_PCC_OscConfig(&PCC_OscInit);
@@ -106,6 +106,8 @@ static void Timer16_1_Init(void)
     /* Настройка режима энкодера */
     htimer16_1.EncoderMode = TIMER16_ENCODER_DISABLE;
 
+    HAL_Timer16_Init(&htimer16_1);
+
     /* Разрешение прерываний */
     htimer16_1.Interrupts.DOWN = TIMER16_DOWN_IRQ_DISABLE;
     htimer16_1.Interrupts.UP = TIMER16_UP_IRQ_DISABLE;
@@ -115,8 +117,6 @@ static void Timer16_1_Init(void)
     htimer16_1.Interrupts.ARRM = TIMER16_ARRM_IRQ_ENABLE;
     htimer16_1.Interrupts.CMPM = TIMER16_CMPM_IRQ_ENABLE;
     HAL_Timer16_InterruptInit(&htimer16_1);
-
-    HAL_Timer16_Init(&htimer16_1);
 }
 
 void trap_handler()
@@ -180,13 +180,6 @@ void trap_handler()
 
     /* Сброс прерываний */
     HAL_EPIC_Clear(0xFFFFFFFF);
-
-
-    #ifdef MIK32_IRQ_DEBUG
-        xprintf("Clear\n");
-        xprintf("EPIC->RAW_STATUS = %d\n", EPIC->RAW_STATUS);
-        xprintf("EPIC->STATUS = %d\n", EPIC->STATUS);
-    #endif
 }
 
 void GPIO_Init()

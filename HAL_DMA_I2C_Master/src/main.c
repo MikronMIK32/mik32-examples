@@ -1,10 +1,19 @@
-#include "mik32_hal_rcc.h"
 #include "mik32_hal_i2c.h"
 #include "mik32_hal_dma.h"
 
 #include "uart_lib.h"
 #include "xprintf.h"
 
+/*
+ * В данном примере демонстрируется работа DMA с I2C в режиме ведущего.
+ * Можно использовать вместе с ведущим из примера HAL_DMA_I2C_Slave.
+ *
+ * Ведущий передает 10 байт ведомому по адресу 0x36, а затем читает столько же байт.
+ * Канал 0 DMA записывает из массива data в регистр I2C TXDR.
+ * Канал 1 DMA считывает из регистра I2C RXDR в массив data.
+ *
+ * Результат выводится в UART0.
+ */
 
 I2C_HandleTypeDef hi2c0;
 
@@ -14,28 +23,27 @@ DMA_ChannelHandleTypeDef hdma_ch1_rx;
 
 void SystemClock_Config(void);
 static void I2C0_Init(void);
-static void DMA_CH0_Init(DMA_InitTypeDef* hdma);
-static void DMA_CH1_Init(DMA_InitTypeDef* hdma);
+static void DMA_CH0_Init(DMA_InitTypeDef *hdma);
+static void DMA_CH1_Init(DMA_InitTypeDef *hdma);
 static void DMA_Init(void);
 
-
 int main()
-{    
+{
 
     SystemClock_Config();
 
     DMA_Init();
 
     UART_Init(UART_0, 3333, UART_CONTROL1_TE_M | UART_CONTROL1_M_8BIT_M, 0, 0);
-    
+
     I2C0_Init();
 
     uint8_t data[10];
-    
+
     HAL_StatusTypeDef error_code;
     while (1)
-    {    
-        for(int i = 0; i < sizeof(data); i++)
+    {
+        for (int i = 0; i < sizeof(data); i++)
         {
             data[i] = (uint8_t)i;
         }
@@ -59,10 +67,9 @@ int main()
                 hi2c0.Instance->CR2 |= I2C_CR2_STOP_M;
             }
         }
-        for (volatile int i = 0; i < 1000000; i++); 
+        for (volatile int i = 0; i < 1000000; i++)
+            ;
 
-
-        
         /* Прием данных по адресу 0x36 */
         xprintf("\nMaster_Receive\n");
         HAL_I2C_Reset(&hi2c0);
@@ -83,40 +90,33 @@ int main()
                 {
                     hi2c0.Instance->CR2 |= I2C_CR2_STOP_M;
                 }
-                
-                for(int i = 0; i < sizeof(data); i++)
+
+                for (int i = 0; i < sizeof(data); i++)
                 {
                     xprintf("Data_read[%d] = %d\n", i, data[i]);
                     data[i] = 0;
                 }
             }
         }
-        for (volatile int i = 0; i < 1000000; i++); 
-
+        for (volatile int i = 0; i < 1000000; i++)
+            ;
     }
-       
 }
 
 void SystemClock_Config(void)
 {
-    RCC_OscInitTypeDef RCC_OscInit = {0};
-    RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
+    PCC_OscInitTypeDef PCC_OscInit = {0};
 
-    RCC_OscInit.OscillatorEnable = RCC_OSCILLATORTYPE_OSC32K | RCC_OSCILLATORTYPE_OSC32M;   
-    RCC_OscInit.OscillatorSystem = RCC_OSCILLATORTYPE_OSC32M;                          
-    RCC_OscInit.AHBDivider = 0;                             
-    RCC_OscInit.APBMDivider = 0;                             
-    RCC_OscInit.APBPDivider = 0;                             
-    RCC_OscInit.HSI32MCalibrationValue = 0;                  
-    RCC_OscInit.LSI32KCalibrationValue = 0;
-    RCC_OscInit.RTCClockSelection = RCC_RTCCLKSOURCE_NO_CLK;
-    RCC_OscInit.RTCClockCPUSelection = RCC_RTCCLKCPUSOURCE_NO_CLK;
-    HAL_RCC_OscConfig(&RCC_OscInit);
-
-    PeriphClkInit.PMClockAHB = PMCLOCKAHB_DEFAULT | PM_CLOCK_DMA_M;    
-    PeriphClkInit.PMClockAPB_M = PMCLOCKAPB_M_DEFAULT | PM_CLOCK_WU_M;     
-    PeriphClkInit.PMClockAPB_P = PMCLOCKAPB_P_DEFAULT | PM_CLOCK_UART_0_M | PM_CLOCK_I2C_0_M;     
-    HAL_RCC_ClockConfig(&PeriphClkInit);
+    PCC_OscInit.OscillatorEnable = PCC_OSCILLATORTYPE_ALL;
+    PCC_OscInit.OscillatorSystem = PCC_OSCILLATORTYPE_OSC32M;
+    PCC_OscInit.AHBDivider = 0;
+    PCC_OscInit.APBMDivider = 0;
+    PCC_OscInit.APBPDivider = 0;
+    PCC_OscInit.HSI32MCalibrationValue = 128;
+    PCC_OscInit.LSI32KCalibrationValue = 128;
+    PCC_OscInit.RTCClockSelection = PCC_RTCCLKSOURCE_NO_CLK;
+    PCC_OscInit.RTCClockCPUSelection = PCC_RTCCLKCPUSOURCE_NO_CLK;
+    HAL_PCC_OscConfig(&PCC_OscInit);
 }
 
 static void I2C0_Init(void)
@@ -133,7 +133,7 @@ static void I2C0_Init(void)
 
     /* Настройка частоты */
     hi2c0.Clock.PRESC = 5;
-    hi2c0.Clock.SCLDEL = 10;
+    hi2c0.Clock.SCLDEL = 15;
     hi2c0.Clock.SDADEL = 15;
     hi2c0.Clock.SCLH = 15;
     hi2c0.Clock.SCLL = 15;
@@ -142,67 +142,63 @@ static void I2C0_Init(void)
     hi2c0.hdmatx = &hdma_ch0_tx;
     hi2c0.hdmarx = &hdma_ch1_rx;
 
-
     if (HAL_I2C_Init(&hi2c0) != HAL_OK)
     {
         xprintf("I2C_Init error\n");
     }
-
 }
 
-static void DMA_CH0_Init(DMA_InitTypeDef* hdma)
+static void DMA_CH0_Init(DMA_InitTypeDef *hdma)
 {
     hdma_ch0_tx.dma = hdma;
     hdma_ch0_tx.CFGWriteBuffer = 0;
 
     /* Настройки канала */
-    hdma_ch0_tx.ChannelInit.Channel = DMA_CHANNEL_0;  
-    hdma_ch0_tx.ChannelInit.Priority = DMA_CHANNEL_PRIORITY_VERY_HIGH;  
+    hdma_ch0_tx.ChannelInit.Channel = DMA_CHANNEL_0;
+    hdma_ch0_tx.ChannelInit.Priority = DMA_CHANNEL_PRIORITY_VERY_HIGH;
 
     hdma_ch0_tx.ChannelInit.ReadMode = DMA_CHANNEL_MODE_MEMORY;
     hdma_ch0_tx.ChannelInit.ReadInc = DMA_CHANNEL_INC_ENABLE;
-    hdma_ch0_tx.ChannelInit.ReadSize = DMA_CHANNEL_SIZE_BYTE;       /* data_len должно быть кратно read_size */
-    hdma_ch0_tx.ChannelInit.ReadBurstSize = 0;                     /* read_burst_size должно быть кратно read_size */
+    hdma_ch0_tx.ChannelInit.ReadSize = DMA_CHANNEL_SIZE_BYTE; /* data_len должно быть кратно read_size */
+    hdma_ch0_tx.ChannelInit.ReadBurstSize = 0;                /* read_burst_size должно быть кратно read_size */
     hdma_ch0_tx.ChannelInit.ReadRequest = DMA_CHANNEL_I2C_0_REQUEST;
     hdma_ch0_tx.ChannelInit.ReadAck = DMA_CHANNEL_ACK_DISABLE;
 
     hdma_ch0_tx.ChannelInit.WriteMode = DMA_CHANNEL_MODE_PERIPHERY;
     hdma_ch0_tx.ChannelInit.WriteInc = DMA_CHANNEL_INC_DISABLE;
-    hdma_ch0_tx.ChannelInit.WriteSize = DMA_CHANNEL_SIZE_BYTE;     /* data_len должно быть кратно write_size */
-    hdma_ch0_tx.ChannelInit.WriteBurstSize = 0;                    /* write_burst_size должно быть кратно read_size */
+    hdma_ch0_tx.ChannelInit.WriteSize = DMA_CHANNEL_SIZE_BYTE; /* data_len должно быть кратно write_size */
+    hdma_ch0_tx.ChannelInit.WriteBurstSize = 0;                /* write_burst_size должно быть кратно read_size */
     hdma_ch0_tx.ChannelInit.WriteRequest = DMA_CHANNEL_I2C_0_REQUEST;
-    hdma_ch0_tx.ChannelInit.WriteAck = DMA_CHANNEL_ACK_DISABLE;  
-
+    hdma_ch0_tx.ChannelInit.WriteAck = DMA_CHANNEL_ACK_DISABLE;
 }
 
-static void DMA_CH1_Init(DMA_InitTypeDef* hdma)
+static void DMA_CH1_Init(DMA_InitTypeDef *hdma)
 {
     hdma_ch1_rx.dma = hdma;
     hdma_ch1_rx.CFGWriteBuffer = 0;
 
     /* Настройки канала */
-    hdma_ch1_rx.ChannelInit.Channel = DMA_CHANNEL_1;  
-    hdma_ch1_rx.ChannelInit.Priority = DMA_CHANNEL_PRIORITY_VERY_HIGH;  
+    hdma_ch1_rx.ChannelInit.Channel = DMA_CHANNEL_1;
+    hdma_ch1_rx.ChannelInit.Priority = DMA_CHANNEL_PRIORITY_VERY_HIGH;
 
     hdma_ch1_rx.ChannelInit.ReadMode = DMA_CHANNEL_MODE_PERIPHERY;
     hdma_ch1_rx.ChannelInit.ReadInc = DMA_CHANNEL_INC_DISABLE;
-    hdma_ch1_rx.ChannelInit.ReadSize = DMA_CHANNEL_SIZE_BYTE;       /* data_len должно быть кратно read_size */
-    hdma_ch1_rx.ChannelInit.ReadBurstSize = 0;                     /* read_burst_size должно быть кратно read_size */
+    hdma_ch1_rx.ChannelInit.ReadSize = DMA_CHANNEL_SIZE_BYTE; /* data_len должно быть кратно read_size */
+    hdma_ch1_rx.ChannelInit.ReadBurstSize = 0;                /* read_burst_size должно быть кратно read_size */
     hdma_ch1_rx.ChannelInit.ReadRequest = DMA_CHANNEL_I2C_0_REQUEST;
     hdma_ch1_rx.ChannelInit.ReadAck = DMA_CHANNEL_ACK_DISABLE;
 
     hdma_ch1_rx.ChannelInit.WriteMode = DMA_CHANNEL_MODE_MEMORY;
     hdma_ch1_rx.ChannelInit.WriteInc = DMA_CHANNEL_INC_ENABLE;
-    hdma_ch1_rx.ChannelInit.WriteSize = DMA_CHANNEL_SIZE_BYTE;     /* data_len должно быть кратно write_size */
-    hdma_ch1_rx.ChannelInit.WriteBurstSize = 0;                    /* write_burst_size должно быть кратно read_size */
+    hdma_ch1_rx.ChannelInit.WriteSize = DMA_CHANNEL_SIZE_BYTE; /* data_len должно быть кратно write_size */
+    hdma_ch1_rx.ChannelInit.WriteBurstSize = 0;                /* write_burst_size должно быть кратно read_size */
     hdma_ch1_rx.ChannelInit.WriteRequest = DMA_CHANNEL_I2C_0_REQUEST;
-    hdma_ch1_rx.ChannelInit.WriteAck = DMA_CHANNEL_ACK_DISABLE;  
-
+    hdma_ch1_rx.ChannelInit.WriteAck = DMA_CHANNEL_ACK_DISABLE;
 }
 
 static void DMA_Init(void)
 {
-    
+
     /* Настройки DMA */
     hdma.Instance = DMA_CONFIG;
     hdma.CurrentValue = DMA_CURRENT_VALUE_ENABLE;
@@ -214,5 +210,4 @@ static void DMA_Init(void)
     /* Инициализация канала */
     DMA_CH0_Init(&hdma);
     DMA_CH1_Init(&hdma);
-
 }

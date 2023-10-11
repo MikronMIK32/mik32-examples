@@ -2,6 +2,12 @@
 #include "mik32_hal_gpio.h"
 #include "mik32_hal_pcc.h"
 
+/*
+ * Данный пример демонстрирует работу с системным таймером
+ * Системный таймер используется для задержки между сменой сигнала на выводе GPIO.
+ * В функции HAL_DelayMs задается время задержки в миллисекундах, по которому рассчитывается значение сравнение таймера.
+ */
+
 /* Тип платы */
 #define BOARD_LITE
 
@@ -34,7 +40,7 @@ int main()
 #endif
 
 #ifdef BOARD_DIP
-        HAL_GPIO_TogglePin(GPIO_0, PIN_LED);    
+        HAL_GPIO_TogglePin(GPIO_0, PIN_LED);
 #endif
         HAL_DelayMs(&hscr1_timer, 1000);
     }
@@ -44,13 +50,13 @@ void SystemClock_Config(void)
 {
     PCC_OscInitTypeDef PCC_OscInit = {0};
 
-    PCC_OscInit.OscillatorEnable = PCC_OSCILLATORTYPE_OSC32K | PCC_OSCILLATORTYPE_OSC32M;
+    PCC_OscInit.OscillatorEnable = PCC_OSCILLATORTYPE_ALL;
     PCC_OscInit.OscillatorSystem = PCC_OSCILLATORTYPE_OSC32M;
     PCC_OscInit.AHBDivider = 0;
     PCC_OscInit.APBMDivider = 0;
     PCC_OscInit.APBPDivider = 0;
-    PCC_OscInit.HSI32MCalibrationValue = 0;
-    PCC_OscInit.LSI32KCalibrationValue = 0;
+    PCC_OscInit.HSI32MCalibrationValue = 128;
+    PCC_OscInit.LSI32KCalibrationValue = 128;
     PCC_OscInit.RTCClockSelection = PCC_RTCCLKSOURCE_NO_CLK;
     PCC_OscInit.RTCClockCPUSelection = PCC_RTCCLKCPUSOURCE_NO_CLK;
     HAL_PCC_OscConfig(&PCC_OscInit);

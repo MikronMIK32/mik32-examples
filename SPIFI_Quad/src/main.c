@@ -1,8 +1,14 @@
-#include <mcu32_memory_map.h>
-#include <power_manager.h>
-#include <spifi.h>
-#include <uart_lib.h>
+#include "mcu32_memory_map.h"
+#include "power_manager.h"
+#include "spifi.h"
 #include "array.h"
+
+#include "uart_lib.h"
+#include "xprintf.h"
+
+/*
+* Пример находится в разработке и может работать некорректно.
+*/
 
 #define SREG1_BUSY                1
 
@@ -34,7 +40,15 @@
 
 void spifi_init()
 {
-    PM->CLK_AHB_SET |= PM_CLOCK_SPIFI_M;
+    __HAL_PCC_SPIFI_CLK_ENABLE();
+
+    GPIO_InitTypeDef GPIO_InitStruct = {0};
+    __HAL_PCC_GPIO_2_CLK_ENABLE();
+
+    GPIO_InitStruct.Pin = PORT2_0 | PORT2_1 | PORT2_2 | PORT2_3 | PORT2_4 | PORT2_5;
+    GPIO_InitStruct.Mode = HAL_GPIO_MODE_SERIAL;
+    GPIO_InitStruct.Pull = HAL_GPIO_PULL_NONE;
+    HAL_GPIO_Init(GPIO_2, &GPIO_InitStruct);
 
     /*
     *
@@ -513,7 +527,6 @@ void read_data_quad_io(unsigned int address, int byte_count)
 
 int main()
 {
-    PM->CLK_APB_P_SET |= PM_CLOCK_UART_0_M;
     UART_Init(UART_0, 3333, UART_CONTROL1_TE_M | UART_CONTROL1_M_8BIT_M, 0, 0);
     spifi_init();
     erase();

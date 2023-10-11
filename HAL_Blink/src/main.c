@@ -1,130 +1,89 @@
-#include "mik32_hal_rcc.h"
-#include "mik32_hal_pad_config.h"
+#include "mik32_hal_PCC.h"
 #include "mik32_hal_gpio.h"
 
 #include "uart_lib.h"
 #include "xprintf.h"
 
-#include <limits.h>
+/*
+ * Данный пример демонстрирует работу с GPIO и PAD_CONFIG.
+ * В примере настраивается вывод, который подключенный к светодиоду, в режим GPIO.
+ *
+ * Плата выбирается ниже в #define
+ */
 
 /* Тип платы */
-#define BOARD_LITE
-
-#ifdef BOARD_LITE
-#define PIN_LED 	PORT2_7
-#define PIN_BUTTON 	PORT2_6
-#endif 
-
-#ifdef BOARD_DIP
-#define PIN_LED1 	PORT0_3
-#define PIN_LED2 	PORT1_3
-#endif 
-
+// #define BOARD_LITE
+#define BOARD_DIP
 
 void SystemClock_Config();
-void GPIO_Config();
-
-
-#define BLINK_LOOP_ITERS 1000000
-
-void ledBlink() 
-{
-	#ifdef BOARD_LITE
-
-    HAL_GPIO_PinWrite(PIN_LED, GPIO_PIN_HIGH);
-	// xprintf("ON \n");
-	for (volatile int i = 0; i < BLINK_LOOP_ITERS; i++);
-
-    HAL_GPIO_PinWrite(PIN_LED, GPIO_PIN_LOW);  
-	// xprintf("OFF \n");
-	for (volatile int i = 0; i < BLINK_LOOP_ITERS; i++);
-
-	#endif 
-
-    #ifdef BOARD_DIP
-    HAL_GPIO_PinToggle(PIN_LED1);
-    HAL_GPIO_PinToggle(PIN_LED2);
-    for (volatile int i = 0; i < BLINK_LOOP_ITERS; i++);
-    #endif
-}
-
-void ledButton() 
-{
-	#ifdef BOARD_LITE
-	if(HAL_GPIO_PinRead(PIN_BUTTON))
-	{
-        HAL_GPIO_PinWrite(PIN_LED, GPIO_PIN_HIGH);
-        return;
-	}
-    else
-    {
-        HAL_GPIO_PinWrite(PIN_LED, GPIO_PIN_LOW);
-        return;
-    }
-	#endif 
-
-    // ledBlink();
-}
-
+void GPIO_Init();
 
 int main()
-{    
-
+{
     SystemClock_Config();
-    GPIO_Config();
 
-    HAL_PadConfig_PinMode(PORT0_5 | PORT0_6, PIN_MODE_SERIAL);
-	UART_Init(UART_0, 3333, UART_CONTROL1_TE_M | UART_CONTROL1_M_8BIT_M, 0, 0);
+    UART_Init(UART_0, 3333, UART_CONTROL1_TE_M | UART_CONTROL1_M_8BIT_M, 0, 0);
 
-	while (1) {
-		// ledButton();
-        ledBlink();
-	}
-       
+    GPIO_Init();
+
+    while (1)
+    {
+
+#ifdef BOARD_LITE
+        HAL_GPIO_TogglePin(GPIO_2, PORT2_7);
+#endif
+
+#ifdef BOARD_DIP
+        HAL_GPIO_TogglePin(GPIO_0, PORT0_3);
+        HAL_GPIO_TogglePin(GPIO_1, PORT1_3);
+#endif
+        for (volatile int i = 0; i < 100000; i++)
+            ;
+    }
 }
 
 void SystemClock_Config()
 {
-    RCC_OscInitTypeDef RCC_OscInit = {0};
-    RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
+    __HAL_PCC_PM_CLK_ENABLE();
+    __HAL_PCC_WU_CLK_ENABLE();
+    __HAL_PCC_PAD_CONFIG_CLK_ENABLE();
 
-    RCC_OscInit.OscillatorEnable = RCC_OSCILLATORTYPE_OSC32K | RCC_OSCILLATORTYPE_OSC32M;// | RCC_OSCILLATORTYPE_LSI32K | RCC_OSCILLATORTYPE_HSI32M;   
-    RCC_OscInit.OscillatorSystem = RCC_OSCILLATORTYPE_OSC32M;                          
-    RCC_OscInit.AHBDivider = 0;                             
-    RCC_OscInit.APBMDivider = 0;                             
-    RCC_OscInit.APBPDivider = 0;                             
-    RCC_OscInit.HSI32MCalibrationValue = 0;                  
-    RCC_OscInit.LSI32KCalibrationValue = 0;
-    RCC_OscInit.RTCClockSelection = RCC_RTCCLKSOURCE_NO_CLK;
-    RCC_OscInit.RTCClockCPUSelection = RCC_RTCCLKCPUSOURCE_NO_CLK;
-    HAL_RCC_OscConfig(&RCC_OscInit);
-
-    PeriphClkInit.PMClockAHB = PMCLOCKAHB_DEFAULT;    
-    PeriphClkInit.PMClockAPB_M = PMCLOCKAPB_M_DEFAULT | PM_CLOCK_APB_M_WU_M | PM_CLOCK_APB_M_PAD_CONFIG_M | PM_CLOCK_APB_M_PM_M;     
-    PeriphClkInit.PMClockAPB_P = PMCLOCKAPB_P_DEFAULT | PM_CLOCK_APB_P_UART_0_M | PM_CLOCK_APB_P_GPIO_0_M | PM_CLOCK_APB_P_GPIO_1_M | PM_CLOCK_APB_P_GPIO_2_M; 
-    HAL_RCC_ClockConfig(&PeriphClkInit);
+    PCC_OscInitTypeDef PCC_OscInit = {0};
+    PCC_OscInit.OscillatorEnable = PCC_OSCILLATORTYPE_ALL;
+    PCC_OscInit.OscillatorSystem = PCC_OSCILLATORTYPE_OSC32M;
+    PCC_OscInit.AHBDivider = 0;
+    PCC_OscInit.APBMDivider = 0;
+    PCC_OscInit.APBPDivider = 0;
+    PCC_OscInit.HSI32MCalibrationValue = 128;
+    PCC_OscInit.LSI32KCalibrationValue = 128;
+    PCC_OscInit.RTCClockSelection = PCC_RTCCLKSOURCE_NO_CLK;
+    PCC_OscInit.RTCClockCPUSelection = PCC_RTCCLKCPUSOURCE_NO_CLK;
+    HAL_PCC_OscConfig(&PCC_OscInit);
 }
 
-void GPIO_Config()
+void GPIO_Init()
 {
-    #ifdef BOARD_LITE
-    HAL_PadConfig_PinMode(PIN_LED, PIN_MODE_GPIO);
-    HAL_PadConfig_PinMode(PIN_BUTTON, PIN_MODE_GPIO);
+    GPIO_InitTypeDef GPIO_InitStruct = {0};
 
-    HAL_PadConfig_PinPull(PIN_BUTTON, PIN_PULL_DOWN);
+    __HAL_PCC_GPIO_0_CLK_ENABLE();
+    __HAL_PCC_GPIO_1_CLK_ENABLE();
+    __HAL_PCC_GPIO_2_CLK_ENABLE();
+    __HAL_PCC_GPIO_IRQ_CLK_ENABLE();
 
-    HAL_GPIO_PinDirection(PIN_LED, GPIO_PIN_OUTPUT);
-    HAL_GPIO_PinDirection(PIN_BUTTON, GPIO_PIN_INPUT);
-    HAL_GPIO_PinWrite(PIN_LED, GPIO_PIN_LOW);
-    #endif
+#ifdef BOARD_LITE
+    GPIO_InitStruct.Pin = PORT2_7;
+    GPIO_InitStruct.Mode = HAL_GPIO_MODE_GPIO_OUTPUT;
+    GPIO_InitStruct.Pull = HAL_GPIO_PULL_NONE;
+    HAL_GPIO_Init(GPIO_2, &GPIO_InitStruct);
+#endif
 
-    #ifdef BOARD_DIP
-    HAL_PadConfig_PinMode(PIN_LED1, PIN_MODE_GPIO);
-    HAL_PadConfig_PinMode(PIN_LED2, PIN_MODE_GPIO);
+#ifdef BOARD_DIP
+    GPIO_InitStruct.Pin = PORT0_3;
+    GPIO_InitStruct.Mode = HAL_GPIO_MODE_GPIO_OUTPUT;
+    GPIO_InitStruct.Pull = HAL_GPIO_PULL_NONE;
+    HAL_GPIO_Init(GPIO_0, &GPIO_InitStruct);
 
-    HAL_GPIO_PinDirection(PIN_LED1, GPIO_PIN_OUTPUT);
-    HAL_GPIO_PinDirection(PIN_LED2, GPIO_PIN_OUTPUT);
-    HAL_GPIO_PinWrite(PIN_LED1, GPIO_PIN_LOW);
-    HAL_GPIO_PinWrite(PIN_LED2, GPIO_PIN_LOW);
-    #endif
+    GPIO_InitStruct.Pin = PORT1_3;
+    HAL_GPIO_Init(GPIO_1, &GPIO_InitStruct);
+#endif
 }

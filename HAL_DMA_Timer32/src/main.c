@@ -75,13 +75,13 @@ void SystemClock_Config(void)
 {
     PCC_OscInitTypeDef PCC_OscInit = {0};
 
-    PCC_OscInit.OscillatorEnable = PCC_OSCILLATORTYPE_OSC32K | PCC_OSCILLATORTYPE_OSC32M | PCC_OSCILLATORTYPE_HSI32M | PCC_OSCILLATORTYPE_LSI32K;
+    PCC_OscInit.OscillatorEnable = PCC_OSCILLATORTYPE_ALL;
     PCC_OscInit.OscillatorSystem = PCC_OSCILLATORTYPE_OSC32M;
     PCC_OscInit.AHBDivider = 0;
     PCC_OscInit.APBMDivider = 0;
     PCC_OscInit.APBPDivider = 0;
-    PCC_OscInit.HSI32MCalibrationValue = 0;
-    PCC_OscInit.LSI32KCalibrationValue = 0;
+    PCC_OscInit.HSI32MCalibrationValue = 128;
+    PCC_OscInit.LSI32KCalibrationValue = 128;
     PCC_OscInit.RTCClockSelection = PCC_RTCCLKSOURCE_NO_CLK;
     PCC_OscInit.RTCClockCPUSelection = PCC_RTCCLKCPUSOURCE_NO_CLK;
     HAL_PCC_OscConfig(&PCC_OscInit);
@@ -103,7 +103,7 @@ static void Timer32_Init(void)
     htimer32_channel.PWM_Invert = TIMER32_CHANNEL_NON_INVERTED_PWM;
     htimer32_channel.Mode = TIMER32_CHANNEL_MODE_COMPARE;
     htimer32_channel.CaptureEdge = TIMER32_CHANNEL_CAPTUREEDGE_RISING;
-    htimer32_channel.OCR = htimer32.Top / 2; // htimer32.Top / 2;
+    htimer32_channel.OCR = htimer32.Top / 2;
     htimer32_channel.Noise = TIMER32_CHANNEL_FILTER_OFF;
     HAL_Timer32_Channel_Init(&htimer32_channel);
 }

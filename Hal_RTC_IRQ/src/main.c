@@ -5,6 +5,15 @@
 #include "uart_lib.h"
 #include "xprintf.h"
 
+/*
+ * В данном примере демонстрируется работа RTC с использованием прерывания.
+ * В RTC настраивается текущее время и время срабатывания будильника, которое отличается от текущего на 5 секунд.
+ * Будильник проводит сравнение времени и даты по всем полям.
+ *
+ * Текущее время RTC выводится по UART0. На 5й секунде должен сработать будильник и вызвать прерывание,
+ * в обработчике которого выводится "Alarm!" по UART0.
+ */
+
 RTC_HandleTypeDef hrtc;
 
 RTC_TimeTypeDef LastTime = {0};
@@ -102,7 +111,7 @@ static void RTC_Init(void)
     sTime.Minutes = 54;
     sTime.Seconds = 0;
     HAL_RTC_SetTime(&hrtc, &sTime);
-    
+
     sDate.Century = 21;
     sDate.Day = 9;
     sDate.Month = RTC_MONTH_OCTOBER;

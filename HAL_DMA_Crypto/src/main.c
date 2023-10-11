@@ -1,9 +1,19 @@
-#include "mik32_hal_PCC.h"
 #include "mik32_hal_crypto.h"
 #include "mik32_hal_dma.h"
 
 #include "uart_lib.h"
 #include "xprintf.h"
+
+/*
+* В данном примере демонстрируется работа DMA с крипто-блоком.
+*
+* Канал 0 DMA передает массив данных plain_text в крипто-блок, а канал 1 записывает зашифрованные данные в массив cipher_text.
+* Затем зашифрованные данные сравниваются с ожидаемыми данными. 
+* 
+* Результат выводится по UART0.
+* При шифровании используется алгоритм "Кузнечик" в режиме шифрования ECB.
+* Ключ и открытый текст взяты из контрольных примеров ГОСТ 34.13—2015 приложение А.
+*/
 
 Crypto_HandleTypeDef hcrypto;
 DMA_InitTypeDef hdma;
@@ -113,7 +123,6 @@ void dma_kuznechik_ECB_code()
 }
 
 
-
 int main()
 {    
     SystemClock_Config();
@@ -138,7 +147,7 @@ void SystemClock_Config(void)
 {
     PCC_OscInitTypeDef PCC_OscInit = {0};
 
-    PCC_OscInit.OscillatorEnable = PCC_OSCILLATORTYPE_OSC32K | PCC_OSCILLATORTYPE_OSC32M;   
+    PCC_OscInit.OscillatorEnable = PCC_OSCILLATORTYPE_ALL;   
     PCC_OscInit.OscillatorSystem = PCC_OSCILLATORTYPE_OSC32M;                          
     PCC_OscInit.AHBDivider = 0;                             
     PCC_OscInit.APBMDivider = 0;                             

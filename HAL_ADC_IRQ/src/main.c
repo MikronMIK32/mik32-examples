@@ -1,10 +1,23 @@
-#include "mik32_hal_rcc.h"
+#include "mik32_hal.h"
 #include "mik32_hal_adc.h"
 #include "mik32_hal_irq.h"
 
 #include "uart_lib.h"
 #include "xprintf.h"
 
+/*
+* В данном примере демонстрируется работа с прерыванием АЦП.
+* 
+* Канал АЦП переключается не сразу после записи в регистр, а в конце преобразования.
+* Для одиночных измерений с разных каналов рекомендуется записывать следующий канал сразу 
+* после старта преобразования на текущем канале.
+*
+* При многократных измерениях на одном канале, после переключения канала рекомендуется сделать одно дополнительное измерение
+* для переключения на выбранный канал.
+*
+* Так как АЦП не имеет флага прерывания, который можно сбросить, то в EPIC прерывание АЦП должно быть разрешено по фронту.
+*
+*/
 
 ADC_HandleTypeDef hadc;
 uint16_t adc_value = 0;
@@ -16,6 +29,7 @@ static void ADC_Init(void);
 
 int main()
 {    
+    HAL_Init();
 
     SystemClock_Config();
 
@@ -38,24 +52,18 @@ int main()
 
 void SystemClock_Config(void)
 {
-    RCC_OscInitTypeDef RCC_OscInit = {0};
-    RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
+    PCC_OscInitTypeDef PCC_OscInit = {0};
 
-    RCC_OscInit.OscillatorEnable = RCC_OSCILLATORTYPE_OSC32K | RCC_OSCILLATORTYPE_OSC32M;   
-    RCC_OscInit.OscillatorSystem = RCC_OSCILLATORTYPE_OSC32M;                          
-    RCC_OscInit.AHBDivider = 0;                             
-    RCC_OscInit.APBMDivider = 0;                             
-    RCC_OscInit.APBPDivider = 0;                             
-    RCC_OscInit.HSI32MCalibrationValue = 0;                  
-    RCC_OscInit.LSI32KCalibrationValue = 0;
-    RCC_OscInit.RTCClockSelection = RCC_RTCCLKSOURCE_NO_CLK;
-    RCC_OscInit.RTCClockCPUSelection = RCC_RTCCLKCPUSOURCE_NO_CLK;
-    HAL_RCC_OscConfig(&RCC_OscInit);
-
-    PeriphClkInit.PMClockAHB = PMCLOCKAHB_DEFAULT;    
-    PeriphClkInit.PMClockAPB_M = PMCLOCKAPB_M_DEFAULT | PM_CLOCK_WU_M | PM_CLOCK_PAD_CONFIG_M | PM_CLOCK_EPIC_M;     
-    PeriphClkInit.PMClockAPB_P = PMCLOCKAPB_P_DEFAULT | PM_CLOCK_UART_0_M | PM_CLOCK_ANALOG_REG_M;     
-    HAL_RCC_ClockConfig(&PeriphClkInit);
+    PCC_OscInit.OscillatorEnable = PCC_OSCILLATORTYPE_ALL;   
+    PCC_OscInit.OscillatorSystem = PCC_OSCILLATORTYPE_OSC32M;                          
+    PCC_OscInit.AHBDivider = 0;                             
+    PCC_OscInit.APBMDivider = 0;                             
+    PCC_OscInit.APBPDivider = 0;                             
+    PCC_OscInit.HSI32MCalibrationValue = 0;                  
+    PCC_OscInit.LSI32KCalibrationValue = 0;
+    PCC_OscInit.RTCClockSelection = PCC_RTCCLKSOURCE_NO_CLK;
+    PCC_OscInit.RTCClockCPUSelection = PCC_RTCCLKCPUSOURCE_NO_CLK;
+    HAL_PCC_OscConfig(&PCC_OscInit);
 }
 
 static void ADC_Init(void)
@@ -72,12 +80,6 @@ static void ADC_Init(void)
 
 void trap_handler()
 {
-    #ifdef MIK32_IRQ_DEBUG
-    xprintf("\nTrap\n");
-    xprintf("EPIC->RAW_STATUS = %d\n", EPIC->RAW_STATUS);
-    xprintf("EPIC->STATUS = %d\n", EPIC->STATUS);
-    #endif
-
     if (EPIC_CHECK_ADC())
     {
         adc_value = HAL_ADC_GetValue(&hadc);
@@ -85,11 +87,4 @@ void trap_handler()
 
     /* Сброс прерываний */
     HAL_EPIC_Clear(0xFFFFFFFF);
-
-
-    #ifdef MIK32_IRQ_DEBUG
-    xprintf("Clear\n");
-    xprintf("EPIC->RAW_STATUS = %d\n", EPIC->RAW_STATUS);
-    xprintf("EPIC->STATUS = %d\n", EPIC->STATUS);
-    #endif
 }

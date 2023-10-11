@@ -3,6 +3,13 @@
 #include "uart_lib.h"
 #include "xprintf.h"
 
+/*
+ * В данном примере демонстрируется работа RTC.
+ * В RTC настраивается текущее время и время срабатывания будильника, которое отличается от текущего на 5 секунд.
+ * Будильник проводит сравнение времени и даты по всем полям.
+ *
+ * Текущее время RTC выводится по UART0. На 5й секунде должен сработать будильник и отправить "Alarm!" по UART0.
+ */
 
 RTC_HandleTypeDef hrtc;
 
@@ -27,7 +34,7 @@ int main()
     while (1)
     {
         CurrentTime = HAL_RTC_GetTime(&hrtc);
-        
+
         if (CurrentTime.Seconds != LastTime.Seconds)
         {
             LastTime = CurrentTime;
@@ -65,7 +72,7 @@ int main()
 
         if (HAL_RTC_GetAlrmFlag(&hrtc))
         {
-             
+
             xprintf("\nAlarm!\n");
 
             HAL_RTC_AlarmDisable(&hrtc);
@@ -78,24 +85,22 @@ void SystemClock_Config(void)
 {
     PCC_OscInitTypeDef PCC_OscInit = {0};
 
-    PCC_OscInit.OscillatorEnable = PCC_OSCILLATORTYPE_OSC32K | PCC_OSCILLATORTYPE_OSC32M;
-    PCC_OscInit.OscillatorSystem = PCC_OSCILLATORTYPE_OSC32M;                          
-    PCC_OscInit.AHBDivider = 0;                             
-    PCC_OscInit.APBMDivider = 0;                             
-    PCC_OscInit.APBPDivider = 0;                             
-    PCC_OscInit.HSI32MCalibrationValue = 128;               
-    PCC_OscInit.LSI32KCalibrationValue = 0;
+    PCC_OscInit.OscillatorEnable = PCC_OSCILLATORTYPE_ALL;
+    PCC_OscInit.OscillatorSystem = PCC_OSCILLATORTYPE_OSC32M;
+    PCC_OscInit.AHBDivider = 0;
+    PCC_OscInit.APBMDivider = 0;
+    PCC_OscInit.APBPDivider = 0;
+    PCC_OscInit.HSI32MCalibrationValue = 128;
+    PCC_OscInit.LSI32KCalibrationValue = 128;
     PCC_OscInit.RTCClockSelection = PCC_RTCCLKSOURCE_OSC32K;
     PCC_OscInit.RTCClockCPUSelection = PCC_RTCCLKCPUSOURCE_OSC32K;
     HAL_PCC_OscConfig(&PCC_OscInit);
-
-
 }
 
 static void RTC_Init(void)
 {
     __HAL_PCC_RTC_CLK_ENABLE();
-    
+
     RTC_TimeTypeDef sTime = {0};
     RTC_DateTypeDef sDate = {0};
     RTC_AlarmTypeDef sAlarm = {0};
@@ -106,28 +111,28 @@ static void RTC_Init(void)
     HAL_RTC_Disable(&hrtc);
 
     /* Установка даты и времени RTC */
-    sTime.Dow       = RTC_WEEKDAY_TUESDAY;
-    sTime.Hours     = 20;
-    sTime.Minutes   = 30;
-    sTime.Seconds   = 0;
+    sTime.Dow = RTC_WEEKDAY_TUESDAY;
+    sTime.Hours = 20;
+    sTime.Minutes = 30;
+    sTime.Seconds = 0;
     HAL_RTC_SetTime(&hrtc, &sTime);
 
-    sDate.Century   = 21;
-    sDate.Day       = 19;
-    sDate.Month     = RTC_MONTH_JULY;
-    sDate.Year      = 22;
+    sDate.Century = 21;
+    sDate.Day = 19;
+    sDate.Month = RTC_MONTH_JULY;
+    sDate.Year = 22;
     HAL_RTC_SetDate(&hrtc, &sDate);
 
     /* Включение будильника. Настройка даты и времени будильника */
-    sAlarm.AlarmTime.Dow       = RTC_WEEKDAY_TUESDAY;
-    sAlarm.AlarmTime.Hours     = 20;
-    sAlarm.AlarmTime.Minutes   = 30;
-    sAlarm.AlarmTime.Seconds   = 5;
+    sAlarm.AlarmTime.Dow = RTC_WEEKDAY_TUESDAY;
+    sAlarm.AlarmTime.Hours = 20;
+    sAlarm.AlarmTime.Minutes = 30;
+    sAlarm.AlarmTime.Seconds = 5;
 
-    sAlarm.AlarmDate.Century   = 21;
-    sAlarm.AlarmDate.Day       = 19;
-    sAlarm.AlarmDate.Month     = RTC_MONTH_JULY;
-    sAlarm.AlarmDate.Year      = 22;
+    sAlarm.AlarmDate.Century = 21;
+    sAlarm.AlarmDate.Day = 19;
+    sAlarm.AlarmDate.Month = RTC_MONTH_JULY;
+    sAlarm.AlarmDate.Year = 22;
 
     sAlarm.MaskAlarmTime = RTC_TALRM_CDOW_M | RTC_TALRM_CH_M | RTC_TALRM_CM_M | RTC_TALRM_CS_M;
     sAlarm.MaskAlarmDate = RTC_DALRM_CC_M | RTC_DALRM_CD_M | RTC_DALRM_CM_M | RTC_DALRM_CY_M;
@@ -135,6 +140,4 @@ static void RTC_Init(void)
     HAL_RTC_SetAlarm(&hrtc, &sAlarm);
 
     HAL_RTC_Enable(&hrtc);
-
-
 }

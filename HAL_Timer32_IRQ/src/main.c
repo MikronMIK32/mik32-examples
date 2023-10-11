@@ -5,6 +5,12 @@
 #include "uart_lib.h"
 #include "xprintf.h"
 
+/*
+ * В данном примере демонстрируется работа таймера32 с использованием прерываний.
+ * Нулевой канал таймера используется в режиме захвата. На Port0_0 подается периодичный сигнал (ШИМ), частота которого измеряется и выводится в UART0.
+ *
+ * */
+
 TIMER32_HandleTypeDef htimer32;
 TIMER32_CHANNEL_HandleTypeDef htimer32_channel;
 
@@ -41,13 +47,13 @@ void SystemClock_Config(void)
 {
     PCC_OscInitTypeDef PCC_OscInit = {0};
 
-    PCC_OscInit.OscillatorEnable = PCC_OSCILLATORTYPE_OSC32K | PCC_OSCILLATORTYPE_OSC32M | PCC_OSCILLATORTYPE_LSI32K | PCC_OSCILLATORTYPE_HSI32M;
+    PCC_OscInit.OscillatorEnable = PCC_OSCILLATORTYPE_ALL;
     PCC_OscInit.OscillatorSystem = PCC_OSCILLATORTYPE_OSC32M;
     PCC_OscInit.AHBDivider = 0;
     PCC_OscInit.APBMDivider = 0;
     PCC_OscInit.APBPDivider = 0;
-    PCC_OscInit.HSI32MCalibrationValue = 0;
-    PCC_OscInit.LSI32KCalibrationValue = 0;
+    PCC_OscInit.HSI32MCalibrationValue = 128;
+    PCC_OscInit.LSI32KCalibrationValue = 128;
     PCC_OscInit.RTCClockSelection = PCC_RTCCLKSOURCE_NO_CLK;
     PCC_OscInit.RTCClockCPUSelection = PCC_RTCCLKCPUSOURCE_NO_CLK;
     HAL_PCC_OscConfig(&PCC_OscInit);
