@@ -6,7 +6,7 @@
 /*
  * Данный пример демонстрирует работу с Timer16.
  * Таймер тактируется и считает от внутреннего источника (sys_clk - системная частота) и запускается в непрерывном режиме.
- * Значения счетчика периодически выводятся по UART0.
+ * Значения счетчика периодически выводятся по UART0. На выводе PORT0_10 генерируется ШИМ сигнал. 
  *
  */
 
@@ -25,25 +25,22 @@ int main()
 
     UART_Init(UART_0, 3333, UART_CONTROL1_TE_M | UART_CONTROL1_M_8BIT_M, 0, 0);
 
-    /**************************Включить вывод Output для Timer16_1**************************/
-    // /* Port0.10 */
-    // PAD_CONFIG->PORT_0_CFG |= (PORT_AS_TIMER << (2 * TIMER16_1_OUT));
-
     Timer16_1_Init();
 
     /* Задать значение для сравнения */
     // HAL_Timer16_SetCMP(&htimer16_1, 0xFFFF/2);
 
-    /*****************Запуск таймера в одиночном или продолжительном режиме*****************/
-    // HAL_Timer16_StartSingleMode(&htimer16_1);
-    HAL_Timer16_StartContinuousMode(&htimer16_1);
-    /***************************************************************************************/
+    /* Запуск таймера в одиночном или продолжительном режиме */
+    HAL_Timer16_Counter_Start(&htimer16_1, 0xFFFF);
 
     /********************************Генерация волновой формы********************************/
-    // HAL_Timer16_StartPWM(&htimer16_1, 0xFFFF, 0xFFFF/2);
+    // HAL_Timer16_StartPWM(&htimer16_1, 0xFFFF, 0xFFFF/3);
     // HAL_Timer16_StartOneShot(&htimer16_1, 0xFFFF, 0xFFFF/2);
     // HAL_Timer16_StartSetOnes(&htimer16_1, 0xFFFF, 0xFFFF/2);
     /****************************************************************************************/
+
+    /* Запуск таймера в режиме энкодера */
+    // HAL_Timer16_Encoder_Start(&htimer16_1, 0xFFFF);
 
     /* Ожидание флага триггера */
     // HAL_Timer16_WaitTrigger(&htimer16_1);
@@ -67,19 +64,22 @@ int main()
 
 void SystemClock_Config(void)
 {
-    PCC_OscInitTypeDef PCC_OscInit = {0};
+    PCC_InitTypeDef PCC_OscInit = {0};
 
     PCC_OscInit.OscillatorEnable = PCC_OSCILLATORTYPE_ALL;
-    PCC_OscInit.OscillatorSystem = PCC_OSCILLATORTYPE_OSC32M;
+    PCC_OscInit.FreqMon.OscillatorSystem = PCC_OSCILLATORTYPE_OSC32M;
+    PCC_OscInit.FreqMon.ForceOscSys = PCC_FORCE_OSC_SYS_UNFIXED;
+    PCC_OscInit.FreqMon.Force32KClk = PCC_FREQ_MONITOR_SOURCE_OSC32K;
     PCC_OscInit.AHBDivider = 0;
     PCC_OscInit.APBMDivider = 0;
     PCC_OscInit.APBPDivider = 0;
     PCC_OscInit.HSI32MCalibrationValue = 128;
     PCC_OscInit.LSI32KCalibrationValue = 128;
-    PCC_OscInit.RTCClockSelection = PCC_RTCCLKSOURCE_NO_CLK;
-    PCC_OscInit.RTCClockCPUSelection = PCC_RTCCLKCPUSOURCE_NO_CLK;
-    HAL_PCC_OscConfig(&PCC_OscInit);
+    PCC_OscInit.RTCClockSelection = PCC_RTC_CLOCK_SOURCE_AUTO;
+    PCC_OscInit.RTCClockCPUSelection = PCC_CPU_RTC_CLOCK_SOURCE_OSC32K;
+    HAL_PCC_Config(&PCC_OscInit);
 }
+
 
 static void Timer16_1_Init(void)
 {
@@ -91,8 +91,6 @@ static void Timer16_1_Init(void)
     htimer16_1.Clock.Prescaler = TIMER16_PRESCALER_1;
     htimer16_1.ActiveEdge = TIMER16_ACTIVEEDGE_RISING; /* Выбирается при тактировании от Input1 */
 
-    /* Настройка верхнего предела счета */
-    htimer16_1.Period = 0xFFFF;
     /* Настройка режима обновления регистра ARR и CMP */
     htimer16_1.Preload = TIMER16_PRELOAD_AFTERWRITE;
 
@@ -102,11 +100,14 @@ static void Timer16_1_Init(void)
     htimer16_1.Trigger.TimeOut = TIMER16_TIMEOUT_DISABLE;                /* Разрешить повторное срабатывание триггера */
 
     /* Настройки фильтра */
-    htimer16_1.Filter.ExternalClock = TIMER16_FILTER_NONE;
+    htimer16_1.Filter.ExternalClock = TIMER16_FILTER_8CLOCK;
     htimer16_1.Filter.Trigger = TIMER16_FILTER_NONE;
 
     /* Настройка режима энкодера */
-    htimer16_1.EncoderMode = TIMER16_ENCODER_DISABLE;
+    htimer16_1.EncoderMode = TIMER16_ENCODER_ENABLE;
+
+    htimer16_1.Waveform.Enable = TIMER16_WAVEFORM_GENERATION_ENABLE;
+    htimer16_1.Waveform.Polarity = TIMER16_WAVEFORM_POLARITY_NONINVERTED;
 
     HAL_Timer16_Init(&htimer16_1);
 }

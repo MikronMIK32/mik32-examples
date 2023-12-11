@@ -30,7 +30,7 @@ int main()
     // HAL_SPI_SetDelayAFTER(&hspi0, 255);
     // HAL_SPI_SetDelayINIT(&hspi0, 255);
 
-    uint8_t slave_output[] = {0xB0, 0xB1, 0xB2, 0xB3, 0xB4, 0xB5, 0xB6, 0xB7, 0xB8, 0xB9, 0xC0, 0xC1};
+    uint8_t slave_output[] = {0xB0, 0xB1, 0xB2, 0xB3, 0xB4, 0xB5, 0xB6, 0xB7, 0xB8, 0xB9, 0xC0, 0xC1, 0xC2, 0xC3, 0xC4, 0xC5, 0xC6, 0xC7, 0xC8, 0xC9};
     uint8_t slave_input[sizeof(slave_output)];
     for (uint32_t i = 0; i < sizeof(slave_input); i++)
     {
@@ -44,7 +44,8 @@ int main()
         if (SPI_Status != HAL_OK)
         {
             xprintf("SPI_Error %d, OVR %d, MODF %d\n", SPI_Status, hspi0.Error.RXOVR, hspi0.Error.ModeFail);
-            HAL_SPI_ClearError(&hspi0);
+            // HAL_SPI_ClearError(&hspi0);
+            HAL_SPI_Disable(&hspi0);
         }
 
         /* Вывод принятый данных и обнуление массива slave_input */
@@ -54,24 +55,31 @@ int main()
             slave_input[i] = 0;
         }
         xprintf("\n");
+
+        
+        
+        
     }
 }
 
 void SystemClock_Config(void)
 {
-    PCC_OscInitTypeDef PCC_OscInit = {0};
+    PCC_InitTypeDef PCC_OscInit = {0};
 
     PCC_OscInit.OscillatorEnable = PCC_OSCILLATORTYPE_ALL;
-    PCC_OscInit.OscillatorSystem = PCC_OSCILLATORTYPE_OSC32M;
+    PCC_OscInit.FreqMon.OscillatorSystem = PCC_OSCILLATORTYPE_OSC32M;
+    PCC_OscInit.FreqMon.ForceOscSys = PCC_FORCE_OSC_SYS_UNFIXED;
+    PCC_OscInit.FreqMon.Force32KClk = PCC_FREQ_MONITOR_SOURCE_OSC32K;
     PCC_OscInit.AHBDivider = 0;
     PCC_OscInit.APBMDivider = 0;
     PCC_OscInit.APBPDivider = 0;
     PCC_OscInit.HSI32MCalibrationValue = 128;
     PCC_OscInit.LSI32KCalibrationValue = 128;
-    PCC_OscInit.RTCClockSelection = PCC_RTCCLKSOURCE_NO_CLK;
-    PCC_OscInit.RTCClockCPUSelection = PCC_RTCCLKCPUSOURCE_NO_CLK;
-    HAL_PCC_OscConfig(&PCC_OscInit);
+    PCC_OscInit.RTCClockSelection = PCC_RTC_CLOCK_SOURCE_AUTO;
+    PCC_OscInit.RTCClockCPUSelection = PCC_CPU_RTC_CLOCK_SOURCE_OSC32K;
+    HAL_PCC_Config(&PCC_OscInit);
 }
+
 
 static void SPI0_Init(void)
 {
@@ -81,9 +89,9 @@ static void SPI0_Init(void)
     hspi0.Init.SPI_Mode = HAL_SPI_MODE_SLAVE;
 
     /* Настройки */
-    hspi0.Init.CLKPhase = SPI_PHASE_OFF;
+    hspi0.Init.CLKPhase = SPI_PHASE_ON;
     hspi0.Init.CLKPolarity = SPI_POLARITY_LOW;
-    hspi0.Init.ThresholdTX = 1;
+    hspi0.Init.ThresholdTX = 4;
 
     if (HAL_SPI_Init(&hspi0) != HAL_OK)
     {

@@ -18,7 +18,7 @@ void GPIO_Init();
  * Пользовательская кнопка на выводе PORT2_6 соединена с выводом PORT1_9, фронт на котором 
  * является триггером для запуска отсчета TIMER16. При достижении значения сравнения или автозагрузки
  * срабатывает прерывание. Светодиод, который подключен к выводу PORT2_7, меняет свое состояние при 
- * совпадении счетчика со значением сравнения.
+ * совпадении счетчика со значением сравнения. На выводе PORT0_10 генерируется ШИМ сигнал.
  *
  * */
 
@@ -34,50 +34,49 @@ int main()
 
     Timer16_1_Init();
 
-    /* Задать значение для сравнения */
-    HAL_Timer16_SetCMP(&htimer16_1, htimer16_1.Period/2); 
+    // /* Задать значение для сравнения */
+    // HAL_Timer16_SetCMP(&htimer16_1, htimer16_1.Period/2); 
 
     /* Включать прерывания Timer16 рекомендуется после его инициализации */
     HAL_EPIC_MaskLevelSet(HAL_EPIC_TIMER16_1_MASK); 
     HAL_IRQ_EnableInterrupts();
 
+    /* Запуск таймера в одиночном или продолжительном режиме */
+    HAL_Timer16_Counter_Start(&htimer16_1, 0xFFFF);
+
     /*****************Запуск таймера в одиночном или продолжительном режиме*****************/
-    HAL_Timer16_StartSingleMode(&htimer16_1); /* Одиночный режим */
+    // HAL_Timer16_StartSingleMode(&htimer16_1); /* Одиночный режим */
     // HAL_Timer16_StartContinuousMode(&htimer16_1); /* Продолжительный режим */
     /***************************************************************************************/
 
-    uint32_t last_counter = 0;
-    uint32_t counter = 0;
+    /* Запуск таймера с ШИМ сигналом */
+    // HAL_Timer16_StartPWM_IT(&htimer16_1, 0xFFFF, 0xFFFF/3);
     
     while (1)
     {    
-        counter = HAL_Timer16_GetCounterValue(&htimer16_1);
-        
-        if(counter != last_counter)
-        {
-            last_counter = counter;
-            /* Вывод значения счетчика */
-            xprintf("Counter = %d\n", counter);
-        }
+        // xprintf("Counter = %d\n", HAL_Timer16_GetCounterValue(&htimer16_1));
     }
        
 }
 
 void SystemClock_Config(void)
 {
-    PCC_OscInitTypeDef PCC_OscInit = {0};
+    PCC_InitTypeDef PCC_OscInit = {0};
 
-    PCC_OscInit.OscillatorEnable = PCC_OSCILLATORTYPE_ALL; 
-    PCC_OscInit.OscillatorSystem = PCC_OSCILLATORTYPE_OSC32M;                          
-    PCC_OscInit.AHBDivider = 0;                             
-    PCC_OscInit.APBMDivider = 0;                             
-    PCC_OscInit.APBPDivider = 0;                             
-    PCC_OscInit.HSI32MCalibrationValue = 128;                  
+    PCC_OscInit.OscillatorEnable = PCC_OSCILLATORTYPE_ALL;
+    PCC_OscInit.FreqMon.OscillatorSystem = PCC_OSCILLATORTYPE_OSC32M;
+    PCC_OscInit.FreqMon.ForceOscSys = PCC_FORCE_OSC_SYS_UNFIXED;
+    PCC_OscInit.FreqMon.Force32KClk = PCC_FREQ_MONITOR_SOURCE_OSC32K;
+    PCC_OscInit.AHBDivider = 0;
+    PCC_OscInit.APBMDivider = 0;
+    PCC_OscInit.APBPDivider = 0;
+    PCC_OscInit.HSI32MCalibrationValue = 128;
     PCC_OscInit.LSI32KCalibrationValue = 128;
-    PCC_OscInit.RTCClockSelection = PCC_RTCCLKSOURCE_NO_CLK;
-    PCC_OscInit.RTCClockCPUSelection = PCC_RTCCLKCPUSOURCE_NO_CLK;
-    HAL_PCC_OscConfig(&PCC_OscInit);
+    PCC_OscInit.RTCClockSelection = PCC_RTC_CLOCK_SOURCE_AUTO;
+    PCC_OscInit.RTCClockCPUSelection = PCC_CPU_RTC_CLOCK_SOURCE_OSC32K;
+    HAL_PCC_Config(&PCC_OscInit);
 }
+
 
 static void Timer16_1_Init(void)
 {
@@ -89,8 +88,6 @@ static void Timer16_1_Init(void)
     htimer16_1.Clock.Prescaler = TIMER16_PRESCALER_128;
     htimer16_1.ActiveEdge = TIMER16_ACTIVEEDGE_RISING;  /* Выбирается при тактировании от Input1 */
 
-    /* Настройка верхнего предела счета */
-    htimer16_1.Period = 0xFFFF;
     /* Настройка режима обновления регистра ARR и CMP */
     htimer16_1.Preload = TIMER16_PRELOAD_AFTERWRITE;
 
@@ -106,17 +103,11 @@ static void Timer16_1_Init(void)
     /* Настройка режима энкодера */
     htimer16_1.EncoderMode = TIMER16_ENCODER_DISABLE;
 
-    HAL_Timer16_Init(&htimer16_1);
+    /* Выходной сигнал */
+    htimer16_1.Waveform.Enable = TIMER16_WAVEFORM_GENERATION_DISABLE;
+    htimer16_1.Waveform.Polarity = TIMER16_WAVEFORM_POLARITY_NONINVERTED;
 
-    /* Разрешение прерываний */
-    htimer16_1.Interrupts.DOWN = TIMER16_DOWN_IRQ_DISABLE;
-    htimer16_1.Interrupts.UP = TIMER16_UP_IRQ_DISABLE;
-    htimer16_1.Interrupts.ARROK = TIMER16_ARROK_IRQ_DISABLE;
-    htimer16_1.Interrupts.CMPOK = TIMER16_CMPOK_IRQ_DISABLE;
-    htimer16_1.Interrupts.EXTTRIG = TIMER16_EXTTRIG_IRQ_ENABLE;
-    htimer16_1.Interrupts.ARRM = TIMER16_ARRM_IRQ_ENABLE;
-    htimer16_1.Interrupts.CMPM = TIMER16_CMPM_IRQ_ENABLE;
-    HAL_Timer16_InterruptInit(&htimer16_1);
+    HAL_Timer16_Init(&htimer16_1);
 }
 
 void trap_handler()
