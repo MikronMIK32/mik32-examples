@@ -80,8 +80,8 @@ int main()
 #endif
 
 #ifdef MIK32V2
-	PAD_CONFIG->PORT_2_CFG &= (11 << (2 * PIN_LED));	// Установка вывода 7 порта 2 в режим GPIO
-	PAD_CONFIG->PORT_2_CFG &= (11 << (2 * PIN_BUTTON)); // Установка вывода 6 порта 2 в режим GPIO
+	PAD_CONFIG->PORT_2_CFG &= ~(0b11 << (2 * PIN_LED));	// Установка вывода 7 порта 2 в режим GPIO
+	PAD_CONFIG->PORT_2_CFG &= ~(0b11 << (2 * PIN_BUTTON)); // Установка вывода 6 порта 2 в режим GPIO
 
 	GPIO_2->DIRECTION_OUT = 1 << PIN_LED;	// Установка направления вывода 7 порта 2 на выход
 	GPIO_2->DIRECTION_IN = 1 << PIN_BUTTON; // Установка направления вывода 6 порта 2 на вход
@@ -100,8 +100,8 @@ int main()
 #endif
 
 #ifdef MIK32V2
-	PAD_CONFIG->PORT_0_CFG &= ~(11 << (2 * PIN_LED1));	// Установка вывода 3 порта 0 в режим GPIO
-	PAD_CONFIG->PORT_1_CFG &= ~(11 << (2 * PIN_LED2)); 	// Установка вывода 3 порта 1 в режим GPIO
+	PAD_CONFIG->PORT_0_CFG &= ~(0b11 << (2 * PIN_LED1));	// Установка вывода 3 порта 0 в режим GPIO
+	PAD_CONFIG->PORT_1_CFG &= ~(0b11 << (2 * PIN_LED2)); 	// Установка вывода 3 порта 1 в режим GPIO
 
 	GPIO_0->DIRECTION_OUT = 1 << PIN_LED1;	// Установка направления вывода 3 порта 0 на выход
 	GPIO_1->DIRECTION_OUT = 1 << PIN_LED2;	// Установка направления вывода 3 порта 1 на выход
