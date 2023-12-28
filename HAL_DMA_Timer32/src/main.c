@@ -8,7 +8,7 @@
 
 /*
  *
- * В данном примере по переполнению Timer32 в регистр входных данных для преобразования DAC с помощью DMA записываются значения,
+ * В данном примере по переполнению Timer32 в регистр входных данных для преобразования DAC1 с помощью DMA записываются значения,
  * которые  находятся в массиве word_src. Массив word_src содержит 100 значений внутри периода синуса, который равен 1 секунде.
  * y = 0.5 * sin(2 * pi * x) + 0.5
  *
@@ -113,7 +113,6 @@ static void Timer32_Init(void)
 static void DMA_CH0_Init(DMA_InitTypeDef *hdma)
 {
     hdma_ch0.dma = hdma;
-    hdma_ch0.CFGWriteBuffer = 0;
 
     /* Настройки канала */
     hdma_ch0.ChannelInit.Channel = DMA_CHANNEL_0;

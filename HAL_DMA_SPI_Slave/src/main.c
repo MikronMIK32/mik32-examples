@@ -114,7 +114,6 @@ static void SPI0_Init(void)
 static void DMA_CH0_Init(DMA_InitTypeDef *hdma)
 {
     hdma_ch0.dma = hdma;
-    hdma_ch0.CFGWriteBuffer = 0;
 
     /* Настройки канала */
     hdma_ch0.ChannelInit.Channel = DMA_CHANNEL_0;
@@ -138,7 +137,6 @@ static void DMA_CH0_Init(DMA_InitTypeDef *hdma)
 static void DMA_CH1_Init(DMA_InitTypeDef *hdma)
 {
     hdma_ch1.dma = hdma;
-    hdma_ch1.CFGWriteBuffer = 0;
 
     /* Настройки канала */
     hdma_ch1.ChannelInit.Channel = DMA_CHANNEL_1;

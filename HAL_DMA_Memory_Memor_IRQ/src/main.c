@@ -64,7 +64,6 @@ void SystemClock_Config(void)
 static void DMA_CH0_Init(DMA_InitTypeDef *hdma)
 {
     hdma_ch0.dma = hdma;
-    hdma_ch0.CFGWriteBuffer = 0;
 
     /* Настройки канала */
     hdma_ch0.ChannelInit.Channel = DMA_CHANNEL_0;

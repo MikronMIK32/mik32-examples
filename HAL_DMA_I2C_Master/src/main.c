@@ -153,7 +153,6 @@ static void I2C0_Init(void)
 static void DMA_CH0_Init(DMA_InitTypeDef *hdma)
 {
     hdma_ch0_tx.dma = hdma;
-    hdma_ch0_tx.CFGWriteBuffer = 0;
 
     /* Настройки канала */
     hdma_ch0_tx.ChannelInit.Channel = DMA_CHANNEL_0;
@@ -177,7 +176,6 @@ static void DMA_CH0_Init(DMA_InitTypeDef *hdma)
 static void DMA_CH1_Init(DMA_InitTypeDef *hdma)
 {
     hdma_ch1_rx.dma = hdma;
-    hdma_ch1_rx.CFGWriteBuffer = 0;
 
     /* Настройки канала */
     hdma_ch1_rx.ChannelInit.Channel = DMA_CHANNEL_1;
