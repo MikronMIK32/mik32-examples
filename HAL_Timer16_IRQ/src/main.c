@@ -42,7 +42,7 @@ int main()
     HAL_IRQ_EnableInterrupts();
 
     /* Запуск таймера в одиночном или продолжительном режиме */
-    HAL_Timer16_Counter_Start(&htimer16_1, 0xFFFF);
+    // HAL_Timer16_Counter_Start(&htimer16_1, 0xFFFF);
 
     /*****************Запуск таймера в одиночном или продолжительном режиме*****************/
     // HAL_Timer16_StartSingleMode(&htimer16_1); /* Одиночный режим */
@@ -50,11 +50,11 @@ int main()
     /***************************************************************************************/
 
     /* Запуск таймера с ШИМ сигналом */
-    // HAL_Timer16_StartPWM_IT(&htimer16_1, 0xFFFF, 0xFFFF/3);
+    HAL_Timer16_StartPWM_IT(&htimer16_1, 0xFFFF, 0xFFFF/3);
     
     while (1)
     {    
-        // xprintf("Counter = %d\n", HAL_Timer16_GetCounterValue(&htimer16_1));
+        xprintf("Counter = %d\n", HAL_Timer16_GetCounterValue(&htimer16_1));
     }
        
 }
@@ -101,10 +101,11 @@ static void Timer16_1_Init(void)
     htimer16_1.Filter.Trigger = TIMER16_FILTER_NONE;
 
     /* Настройка режима энкодера */
+
     htimer16_1.EncoderMode = TIMER16_ENCODER_DISABLE;
 
     /* Выходной сигнал */
-    htimer16_1.Waveform.Enable = TIMER16_WAVEFORM_GENERATION_DISABLE;
+    htimer16_1.Waveform.Enable = TIMER16_WAVEFORM_GENERATION_ENABLE;
     htimer16_1.Waveform.Polarity = TIMER16_WAVEFORM_POLARITY_NONINVERTED;
 
     HAL_Timer16_Init(&htimer16_1);
@@ -165,7 +166,7 @@ void trap_handler()
             // HAL_Timer16_ClearInterruptFlag(&htimer16_1, TIMER16_CMPM_IRQ); /* Сброс флага прерывания */
         }  
 
-        HAL_Timer16_SetClearInterruptMask(&htimer16_1, 0xFFFFFFFF); /* Сброс нескольких флагов прерываний по маске */
+        HAL_Timer16_ClearInterruptMask(&htimer16_1, 0xFFFFFFFF); /* Сброс нескольких флагов прерываний по маске */
     }
 
 
