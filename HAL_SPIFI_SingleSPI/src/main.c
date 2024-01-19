@@ -36,16 +36,16 @@ int main()
 
     HAL_SPIFI_W25_SectorErase4K(&spifi, 0);
 
-    uint8_t write_values[5] = {1, 2, 3, 4, 5};
+    uint8_t write_values[10] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
     xprintf("\nWrite values = ");
     for (int i = 0; i < sizeof(write_values); i++)
     {
-        xprintf("0x%02x ", write_values[i]);
+        xprintf("0x%02X ", write_values[i]);
     }
     HAL_SPIFI_W25_PageProgram(&spifi, 0, sizeof(write_values), write_values);
 
 
-    uint8_t read_values[5] = {0};
+    uint8_t read_values[10] = {0};
     HAL_SPIFI_W25_ReadData(&spifi, 0, sizeof(read_values), read_values);
 
     xprintf("\nRead values =  ");

@@ -39,11 +39,11 @@ int main()
     HAL_SPIFI_W25_SectorErase4K(&spifi, 0);
     read_flash();
 
-    uint8_t write_values[5] = {1, 2, 3, 4, 5};
+    uint8_t write_values[10] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
     xprintf("Write values = ");
     for (int i = 0; i < sizeof(write_values); i++)
     {
-        xprintf("0x%02x ", write_values[i]);
+        xprintf("0x%02X ", write_values[i]);
     }
 
     xprintf("\n");
@@ -56,7 +56,7 @@ int main()
 
 void read_flash()
 {
-    uint8_t read_values[5] = {0};
+    uint8_t read_values[10] = {0};
     HAL_SPIFI_W25_ReadData_Quad_IO(&spifi, 0, sizeof(read_values), read_values);
     xprintf("Read values =  ");
     for (uint8_t i = 0; i < sizeof(read_values); i++)
