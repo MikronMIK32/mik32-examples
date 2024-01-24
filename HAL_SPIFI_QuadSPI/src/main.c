@@ -12,7 +12,7 @@
  */
 
 void SystemClock_Config(void);
-void read_flash();
+void read_flash(SPIFI_HandleTypeDef *spifi, uint32_t address, uint8_t dataLength, uint8_t *dataBytes);
 
 SPIFI_HandleTypeDef spifi = {
     .Instance = SPIFI_CONFIG,
@@ -28,6 +28,9 @@ int main()
 
     HAL_SPIFI_Reset(&spifi);
 
+    uint8_t write_values[10] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+    uint8_t read_values[sizeof(write_values)] = {0};
+
     W25_ManufacturerDeviceIDTypeDef id = HAL_SPIFI_W25_ReadManufacturerDeviceID(&spifi);
     xprintf("\n\nManufacturer ID: 0x%02x    DeviceID: 0x%02x\n\n", id.Manufacturer, id.Device);
 
@@ -37,9 +40,8 @@ int main()
 
     xprintf("ERASE SECTOR\n");
     HAL_SPIFI_W25_SectorErase4K(&spifi, 0);
-    read_flash();
+    read_flash(&spifi, 0, sizeof(read_values), read_values);
 
-    uint8_t write_values[10] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
     xprintf("Write values = ");
     for (int i = 0; i < sizeof(write_values); i++)
     {
@@ -48,20 +50,19 @@ int main()
 
     xprintf("\n");
     HAL_SPIFI_W25_PageProgram_Quad(&spifi, 0, sizeof(write_values), write_values);
-    read_flash();
+    read_flash(&spifi, 0, sizeof(read_values), read_values);
 
     while (1)
         ;
 }
 
-void read_flash()
+void read_flash(SPIFI_HandleTypeDef *spifi, uint32_t address, uint8_t dataLength, uint8_t *dataBytes)
 {
-    uint8_t read_values[10] = {0};
-    HAL_SPIFI_W25_ReadData_Quad_IO(&spifi, 0, sizeof(read_values), read_values);
+    HAL_SPIFI_W25_ReadData_Quad_IO(spifi, address, dataLength, dataBytes);
     xprintf("Read values =  ");
-    for (uint8_t i = 0; i < sizeof(read_values); i++)
+    for (uint8_t i = 0; i < dataLength; i++)
     {
-        xprintf("0x%02X ", read_values[i]);
+        xprintf("0x%02X ", dataBytes[i]);
     }
     xprintf("\n\n");
 }

@@ -34,7 +34,7 @@ int main()
 
     HAL_SPIFI_Reset(&spifi);
 
-    // DMA_Init();
+    DMA_Init();
 
     uint8_t write_values[10] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
     uint8_t read_values[sizeof(write_values)] = {0};
