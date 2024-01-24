@@ -5,7 +5,7 @@
 
 /*
  * Данный пример демонстрирует работу с SPI в режиме ведомого.
- * Ведомый передает и принимает от ведущего 12 байт.
+ * Ведомый передает и принимает от ведущего 20 байт.
  *
  * Результат передачи выводится по UART0.
  * Данный пример можно использовать совместно с ведущим из примера HAL_SPI_Master.
@@ -25,11 +25,6 @@ int main()
 
     SPI0_Init();
 
-    /* Задержки для частоты SPI */
-    // HAL_SPI_SetDelayBTWN(&hspi0, 1);
-    // HAL_SPI_SetDelayAFTER(&hspi0, 255);
-    // HAL_SPI_SetDelayINIT(&hspi0, 255);
-
     uint8_t slave_output[] = {0xB0, 0xB1, 0xB2, 0xB3, 0xB4, 0xB5, 0xB6, 0xB7, 0xB8, 0xB9, 0xC0, 0xC1, 0xC2, 0xC3, 0xC4, 0xC5, 0xC6, 0xC7, 0xC8, 0xC9};
     uint8_t slave_input[sizeof(slave_output)];
     for (uint32_t i = 0; i < sizeof(slave_input); i++)
@@ -40,11 +35,10 @@ int main()
     while (1)
     {
         /* Передача и прием данных */
-        HAL_StatusTypeDef SPI_Status = HAL_SPI_Exchange(&hspi0, slave_output, slave_input, sizeof(slave_output), SPI_TIMEOUT_DEFAULT);
+        HAL_StatusTypeDef SPI_Status = HAL_SPI_Exchange(&hspi0, slave_output, slave_input, sizeof(slave_output), SPI_TIMEOUT_DEFAULT*10);
         if (SPI_Status != HAL_OK)
         {
-            xprintf("SPI_Error %d, OVR %d, MODF %d\n", SPI_Status, hspi0.Error.RXOVR, hspi0.Error.ModeFail);
-            // HAL_SPI_ClearError(&hspi0);
+            xprintf("SPI_Error %d, OVR %d, MODF %d\n", SPI_Status, hspi0.ErrorCode & HAL_SPI_ERROR_OVR, hspi0.ErrorCode & HAL_SPI_ERROR_MODF);
             HAL_SPI_Disable(&hspi0);
         }
 
@@ -55,10 +49,6 @@ int main()
             slave_input[i] = 0;
         }
         xprintf("\n");
-
-        
-        
-        
     }
 }
 

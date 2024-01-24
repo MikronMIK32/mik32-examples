@@ -7,10 +7,11 @@
 
 /*
  * Данный пример демонстрирует работу с SPI в режиме ведущего с использованием прерываний.
- * Ведущий передает и принимает от ведомого на выводе CS0 12 байт.
+ * Ведущий передает и принимает от ведомого на выводе CS0 20 байт. Сигнал CS управляются вручную 
+ * с помощью функций HAL_SPI_CS_Enable и HAL_SPI_CS_Disable.
  *
  * Результат передачи выводится по UART0.
- * Данный пример можно использовать совместно с ведомым из примера HAL_SPI_Slave.
+ * Данный пример можно использовать совместно с ведомым из примера HAL_SPI_Slave_IRQ.
  */
 
 SPI_HandleTypeDef hspi0;
@@ -30,11 +31,8 @@ int main()
     UART_Init(UART_0, 3333, UART_CONTROL1_TE_M | UART_CONTROL1_M_8BIT_M, 0, 0);
 
     SPI0_Init();
-    // HAL_SPI_SetDelayBTWN(&hspi0, 1);
-    // HAL_SPI_SetDelayAFTER(&hspi0, 0);
-    // HAL_SPI_SetDelayINIT(&hspi0, 100);
 
-    uint8_t master_output[] = {0xA0, 0xA1, 0xA2, 0xA3, 0xA4, 0xA5, 0xA6, 0xA7, 0xA8, 0xA9, 0xB0, 0xB1};
+    uint8_t master_output[] = {0xA0, 0xA1, 0xA2, 0xA3, 0xA4, 0xA5, 0xA6, 0xA7, 0xA8, 0xA9, 0xB0, 0xB1, 0xB2, 0xB3, 0xB4, 0xB5, 0xB6, 0xB7, 0xB8, 0xB9};
     uint8_t master_input[sizeof(master_output)];
     for (uint32_t i = 0; i < sizeof(master_input); i++)
     {
@@ -43,13 +41,17 @@ int main()
 
     while (1)
     {
-
         if (hspi0.State == HAL_SPI_STATE_READY)
         {
+            /* Обнуление массива master_input */
+            for (uint32_t i = 0; i < sizeof(master_input); i++)
+            {
+                master_input[i] = 0;
+            }
+
             /* Начало передачи в ручном режиме управления CS */
             if (hspi0.Init.ManualCS == SPI_MANUALCS_ON)
             {
-                HAL_SPI_Enable(&hspi0);
                 HAL_SPI_CS_Enable(&hspi0, SPI_CS_0);
             }
 
@@ -68,14 +70,12 @@ int main()
             if (hspi0.Init.ManualCS == SPI_MANUALCS_ON)
             {
                 HAL_SPI_CS_Disable(&hspi0);
-                HAL_SPI_Disable(&hspi0);
             }
 
             /* Вывод принятый данных и обнуление массива master_input */
             for (uint32_t i = 0; i < sizeof(master_input); i++)
             {
                 xprintf("master_input[%d] = 0x%02x\n", i, master_input[i]);
-                master_input[i] = 0;
             }
 
             xprintf("\n");
@@ -85,13 +85,12 @@ int main()
 
         if (hspi0.State == HAL_SPI_STATE_ERROR)
         {
-            xprintf("SPI_Error: OVR %d, MODF %d\n", hspi0.Error.RXOVR, hspi0.Error.ModeFail);
+            xprintf("SPI_Error: OVR %d, MODF %d\n", hspi0.ErrorCode & HAL_SPI_ERROR_OVR, hspi0.ErrorCode & HAL_SPI_ERROR_MODF);
             if (hspi0.Init.ManualCS == SPI_MANUALCS_ON)
             {
                 HAL_SPI_CS_Disable(&hspi0);
             }
             HAL_SPI_Disable(&hspi0);
-
             hspi0.State = HAL_SPI_STATE_READY;
         }
     }
@@ -124,15 +123,16 @@ static void SPI0_Init(void)
     hspi0.Init.SPI_Mode = HAL_SPI_MODE_MASTER;
 
     /* Настройки */
-    hspi0.Init.CLKPhase = SPI_PHASE_OFF;
+    hspi0.Init.CLKPhase = SPI_PHASE_ON;
     hspi0.Init.CLKPolarity = SPI_POLARITY_LOW;
+    hspi0.Init.ThresholdTX = 4;
 
     /* Настройки для ведущего */
     hspi0.Init.BaudRateDiv = SPI_BAUDRATE_DIV64;
     hspi0.Init.Decoder = SPI_DECODER_NONE;
-    hspi0.Init.ManualCS = SPI_MANUALCS_OFF; /* Настройки ручного режима управления сигналом CS */
-    hspi0.Init.ChipSelect = SPI_CS_0;       /* Выбор ведомого устройства в автоматическом режиме управления CS */
-    hspi0.Init.ThresholdTX = 1;
+    hspi0.Init.ManualCS = SPI_MANUALCS_ON;
+    hspi0.Init.ChipSelect = SPI_CS_0;     
+    
 
     if (HAL_SPI_Init(&hspi0) != HAL_OK)
     {
