@@ -58,7 +58,7 @@ int main()
 void read_flash(SPIFI_HandleTypeDef *spifi, uint32_t address, uint8_t dataLength, uint8_t *dataBytes)
 {
     HAL_SPIFI_W25_ReadData(spifi, address, dataLength, dataBytes);
-    xprintf("Read values =  ");
+    xprintf("Read values  = ");
     for (uint8_t i = 0; i < dataLength; i++)
     {
         xprintf("0x%02X ", dataBytes[i]);
