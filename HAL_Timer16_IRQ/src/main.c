@@ -162,7 +162,7 @@ void trap_handler()
         if (interrupt_status & TIMER16_ISR_CMP_MATCH_M)
         {
             xprintf("\nCMPM_IRQ\n");
-            HAL_GPIO_TogglePin(GPIO_2, PORT2_7); /* Смена сигнала PORT2_7 на противоположный */
+            HAL_GPIO_TogglePin(GPIO_2, GPIO_PIN_7); /* Смена сигнала PORT2_7 на противоположный */
             // HAL_Timer16_ClearInterruptFlag(&htimer16_1, TIMER16_CMPM_IRQ); /* Сброс флага прерывания */
         }  
 
@@ -181,16 +181,16 @@ void GPIO_Init()
     __HAL_PCC_GPIO_1_CLK_ENABLE();
     __HAL_PCC_GPIO_2_CLK_ENABLE();
 
-    GPIO_InitStruct.Pin = PORT2_7;
+    GPIO_InitStruct.Pin = GPIO_PIN_7;
     GPIO_InitStruct.Mode = HAL_GPIO_MODE_GPIO_OUTPUT;
     GPIO_InitStruct.Pull = HAL_GPIO_PULL_NONE;
     HAL_GPIO_Init(GPIO_2, &GPIO_InitStruct);
 
-    GPIO_InitStruct.Pin = PORT1_9;
+    GPIO_InitStruct.Pin = GPIO_PIN_9;
     GPIO_InitStruct.Mode = HAL_GPIO_MODE_GPIO_INPUT;
     HAL_GPIO_Init(GPIO_1, &GPIO_InitStruct);
 
-    GPIO_InitStruct.Pin = PORT2_6;
+    GPIO_InitStruct.Pin = GPIO_PIN_6;
     GPIO_InitStruct.Mode = HAL_GPIO_MODE_GPIO_INPUT;
     HAL_GPIO_Init(GPIO_2, &GPIO_InitStruct);
 }

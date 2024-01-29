@@ -22,12 +22,10 @@ static void RTC_Init(void);
 
 int main()
 {
-        __HAL_PCC_ANALOG_REGS_CLK_ENABLE();
     UART_Init(UART_0, 3333, UART_CONTROL1_TE_M | UART_CONTROL1_M_8BIT_M, 0, 0);
-    xprintf("Strt\n");
-    SystemClock_Config();
+    xprintf("Start\n");
 
-    // UART_Init(UART_0, 3333, UART_CONTROL1_TE_M | UART_CONTROL1_M_8BIT_M, 0, 0);
+    SystemClock_Config();
 
     RTC_Init();
 

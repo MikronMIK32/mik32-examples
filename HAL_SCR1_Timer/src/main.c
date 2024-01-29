@@ -12,10 +12,10 @@
 #define BOARD_LITE
 
 #ifdef BOARD_DIP
-#define PIN_LED PORT0_3
+#define PIN_LED GPIO_PIN_3
 #endif
 #ifdef BOARD_LITE
-#define PIN_LED PORT2_7
+#define PIN_LED GPIO_PIN_7
 #endif
 
 SCR1_TIMER_HandleTypeDef hscr1_timer;

@@ -95,11 +95,11 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef *hadc)
     if ((hadc->Init.EXTClb == ADC_EXTCLB_ADCREF) && (hadc->Init.EXTRef == ADC_EXTREF_ON))
     {
 #ifdef MIK32V0
-        GPIO_InitStruct.Pin = PORT1_10;
+        GPIO_InitStruct.Pin = GPIO_PIN_10;
 #endif
 
 #ifdef MIK32V2
-        GPIO_InitStruct.Pin = PORT1_11;
+        GPIO_InitStruct.Pin = GPIO_PIN_11;
 #endif
     }
 
@@ -108,9 +108,9 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef *hadc)
     HAL_GPIO_Init(GPIO_1, &GPIO_InitStruct);
 
     /* Настройка выводов АЦП */
-    GPIO_InitStruct.Pin = PORT1_5 | PORT1_7;
+    GPIO_InitStruct.Pin = GPIO_PIN_5 | GPIO_PIN_7;
     HAL_GPIO_Init(GPIO_1, &GPIO_InitStruct);
 
-    GPIO_InitStruct.Pin = PORT0_2 | PORT0_4 | PORT0_7 | PORT0_9;
+    GPIO_InitStruct.Pin = GPIO_PIN_2 | GPIO_PIN_4 | GPIO_PIN_7 | GPIO_PIN_9;
     HAL_GPIO_Init(GPIO_0, &GPIO_InitStruct);
 }

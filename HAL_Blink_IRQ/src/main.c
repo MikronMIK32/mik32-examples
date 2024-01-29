@@ -18,8 +18,8 @@
  */
 
 /* Тип платы */
-// #define BOARD_LITE
-#define BOARD_DIP
+#define BOARD_LITE
+// #define BOARD_DIP
 
 void SystemClock_Config();
 void GPIO_Init();
@@ -42,30 +42,30 @@ int main()
 
     while (1)
     {
-        HAL_GPIO_TogglePin(GPIO_2, PORT2_5);
+        HAL_GPIO_TogglePin(GPIO_2, GPIO_PIN_5);
         for (volatile int i = 0; i < 100000; i++)
             ;
 
         if (flag)
         {
 #ifdef BOARD_LITE
-            HAL_GPIO_WritePin(GPIO_2, PORT2_7, GPIO_PIN_HIGH);
+            HAL_GPIO_WritePin(GPIO_2, GPIO_PIN_7, GPIO_PIN_HIGH);
 #endif
 
 #ifdef BOARD_DIP
-            HAL_GPIO_WritePin(GPIO_0, PORT0_3, GPIO_PIN_HIGH);
-            HAL_GPIO_WritePin(GPIO_1, PORT1_3, GPIO_PIN_HIGH);
+            HAL_GPIO_WritePin(GPIO_0, GPIO_PIN_3, GPIO_PIN_HIGH);
+            HAL_GPIO_WritePin(GPIO_1, GPIO_PIN_3, GPIO_PIN_HIGH);
 #endif
         }
         else
         {
 #ifdef BOARD_LITE
-            HAL_GPIO_WritePin(GPIO_2, PORT2_7, GPIO_PIN_LOW);
+            HAL_GPIO_WritePin(GPIO_2, GPIO_PIN_7, GPIO_PIN_LOW);
 #endif
 
 #ifdef BOARD_DIP
-            HAL_GPIO_WritePin(GPIO_0, PORT0_3, GPIO_PIN_LOW);
-            HAL_GPIO_WritePin(GPIO_1, PORT1_3, GPIO_PIN_LOW);
+            HAL_GPIO_WritePin(GPIO_0, GPIO_PIN_3, GPIO_PIN_LOW);
+            HAL_GPIO_WritePin(GPIO_1, GPIO_PIN_3, GPIO_PIN_LOW);
 #endif
         }
     }
@@ -99,28 +99,28 @@ void GPIO_Init()
     __HAL_PCC_GPIO_IRQ_CLK_ENABLE();
 
 #ifdef BOARD_LITE
-    GPIO_InitStruct.Pin = PORT2_7;
+    GPIO_InitStruct.Pin = GPIO_PIN_7;
     GPIO_InitStruct.Mode = HAL_GPIO_MODE_GPIO_OUTPUT;
     GPIO_InitStruct.Pull = HAL_GPIO_PULL_NONE;
     HAL_GPIO_Init(GPIO_2, &GPIO_InitStruct);
 #endif
 
 #ifdef BOARD_DIP
-    GPIO_InitStruct.Pin = PORT0_3;
+    GPIO_InitStruct.Pin = GPIO_PIN_3;
     GPIO_InitStruct.Mode = HAL_GPIO_MODE_GPIO_OUTPUT;
     GPIO_InitStruct.Pull = HAL_GPIO_PULL_NONE;
     HAL_GPIO_Init(GPIO_0, &GPIO_InitStruct);
 
-    GPIO_InitStruct.Pin = PORT1_3;
+    GPIO_InitStruct.Pin = GPIO_PIN_3;
     HAL_GPIO_Init(GPIO_1, &GPIO_InitStruct);
 #endif
 
-    GPIO_InitStruct.Pin = PORT2_5;
+    GPIO_InitStruct.Pin = GPIO_PIN_5;
     GPIO_InitStruct.Mode = HAL_GPIO_MODE_GPIO_OUTPUT;
     GPIO_InitStruct.Pull = HAL_GPIO_PULL_NONE;
     HAL_GPIO_Init(GPIO_2, &GPIO_InitStruct);
 
-    GPIO_InitStruct.Pin = PORT2_6;
+    GPIO_InitStruct.Pin = GPIO_PIN_6;
     GPIO_InitStruct.Mode = HAL_GPIO_MODE_GPIO_INPUT;
     GPIO_InitStruct.Pull = HAL_GPIO_PULL_NONE;
     HAL_GPIO_Init(GPIO_2, &GPIO_InitStruct);
