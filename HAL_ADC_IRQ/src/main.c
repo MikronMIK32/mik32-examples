@@ -33,7 +33,7 @@ int main()
 
     SystemClock_Config();
 
-    HAL_EPIC_MaskSet(HAL_EPIC_ADC_MASK);
+    HAL_EPIC_MaskEdgeSet(HAL_EPIC_ADC_MASK);
     HAL_IRQ_EnableInterrupts();
 
     UART_Init(UART_0, 3333, UART_CONTROL1_TE_M | UART_CONTROL1_M_8BIT_M, 0, 0);
