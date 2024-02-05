@@ -3,7 +3,6 @@
 #include "uart_lib.h"
 #include "xprintf.h"
 
-#include "assert.h"
 
 WDT_HandleTypeDef hwdt;
 
