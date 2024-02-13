@@ -1,8 +1,17 @@
 #include "uart_lib.h"
 #include "xprintf.h"
 
-#include "mik32_hal_rcc.h"
+#include "mik32_hal_PCC.h"
 #include "mik32_hal_crypto.h"
+
+/*
+* В примере демонстрируется работа с крипто-блоком
+*
+* Используется алгоритм шифрования Кузнечик в разных режимах шифрования (ECB, CBC, CTR)
+* Ключ и открытый текст взяты из контрольных примеров ГОСТ 34.13—2015 приложение А.
+*
+* В каждом режиме шифрования текст зашифровывается, затем расшифровывается и сравнивается с ожидаемым. Результат выводится в UART0.
+*/
 
 
 Crypto_HandleTypeDef hcrypto;
@@ -543,24 +552,20 @@ int main()
 
 void SystemClock_Config(void)
 {
-    RCC_OscInitTypeDef RCC_OscInit = {0};
-    RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
+    PCC_InitTypeDef PCC_OscInit = {0};
 
-    RCC_OscInit.OscillatorEnable = RCC_OSCILLATORTYPE_OSC32K | RCC_OSCILLATORTYPE_OSC32M;   
-    RCC_OscInit.OscillatorSystem = RCC_OSCILLATORTYPE_OSC32M;                          
-    RCC_OscInit.AHBDivider = 0;                             
-    RCC_OscInit.APBMDivider = 0;                             
-    RCC_OscInit.APBPDivider = 0;                             
-    RCC_OscInit.HSI32MCalibrationValue = 0;                  
-    RCC_OscInit.LSI32KCalibrationValue = 0;
-    RCC_OscInit.RTCClockSelection = RCC_RTCCLKSOURCE_NO_CLK;
-    RCC_OscInit.RTCClockCPUSelection = RCC_RTCCLKCPUSOURCE_NO_CLK;
-    HAL_RCC_OscConfig(&RCC_OscInit);
-
-    PeriphClkInit.PMClockAHB = PMCLOCKAHB_DEFAULT | PM_CLOCK_CRYPTO_M;    
-    PeriphClkInit.PMClockAPB_M = PMCLOCKAPB_M_DEFAULT | PM_CLOCK_WU_M | PM_CLOCK_PAD_CONFIG_M;     
-    PeriphClkInit.PMClockAPB_P = PMCLOCKAPB_P_DEFAULT | PM_CLOCK_UART_0_M; 
-    HAL_RCC_ClockConfig(&PeriphClkInit);
+    PCC_OscInit.OscillatorEnable = PCC_OSCILLATORTYPE_ALL;
+    PCC_OscInit.FreqMon.OscillatorSystem = PCC_OSCILLATORTYPE_OSC32M;
+    PCC_OscInit.FreqMon.ForceOscSys = PCC_FORCE_OSC_SYS_UNFIXED;
+    PCC_OscInit.FreqMon.Force32KClk = PCC_FREQ_MONITOR_SOURCE_OSC32K;
+    PCC_OscInit.AHBDivider = 0;
+    PCC_OscInit.APBMDivider = 0;
+    PCC_OscInit.APBPDivider = 0;
+    PCC_OscInit.HSI32MCalibrationValue = 128;
+    PCC_OscInit.LSI32KCalibrationValue = 128;
+    PCC_OscInit.RTCClockSelection = PCC_RTC_CLOCK_SOURCE_AUTO;
+    PCC_OscInit.RTCClockCPUSelection = PCC_CPU_RTC_CLOCK_SOURCE_OSC32K;
+    HAL_PCC_Config(&PCC_OscInit);
 }
 
 static void Crypto_Init(void)

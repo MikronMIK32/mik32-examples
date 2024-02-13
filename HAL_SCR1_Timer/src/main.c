@@ -1,75 +1,99 @@
-#include "mik32_hal_rcc.h"
 #include "mik32_hal_scr1_timer.h"
-#include "mik32_hal_pad_config.h"
 #include "mik32_hal_gpio.h"
+#include "mik32_hal_pcc.h"
 
-#include <pad_config.h>
-#include <gpio.h>
+/*
+ * Данный пример демонстрирует работу с системным таймером
+ * Системный таймер используется для задержки между сменой сигнала на выводе GPIO.
+ * В функции HAL_DelayMs задается время задержки в миллисекундах, по которому рассчитывается значение сравнение таймера.
+ */
 
 /* Тип платы */
-#define BOARD_DIP
+#define BOARD_LITE
 
 #ifdef BOARD_DIP
-#define PIN_LED PORT0_3
-#endif 
+#define PIN_LED GPIO_PIN_3
+#endif
 #ifdef BOARD_LITE
-#define PIN_LED PORT2_7
-#endif 
-
+#define PIN_LED GPIO_PIN_7
+#endif
 
 SCR1_TIMER_HandleTypeDef hscr1_timer;
 
 void SystemClock_Config(void);
 static void Scr1_Timer_Init(void);
-
+void GPIO_Init();
 
 int main()
-{    
+{
 
     SystemClock_Config();
 
+    GPIO_Init();
+
     Scr1_Timer_Init();
-
-    HAL_PadConfig_PinMode(PIN_LED, PIN_MODE1);
-    HAL_GPIO_PinDirection(PIN_LED, GPIO_PIN_OUTPUT);
-
 
     while (1)
     {
-        HAL_GPIO_PinToggle(PIN_LED);
+#ifdef BOARD_LITE
+        HAL_GPIO_TogglePin(GPIO_2, PIN_LED);
+#endif
+
+#ifdef BOARD_DIP
+        HAL_GPIO_TogglePin(GPIO_0, PIN_LED);
+#endif
         HAL_DelayMs(&hscr1_timer, 1000);
     }
-       
 }
 
 void SystemClock_Config(void)
 {
-    RCC_OscInitTypeDef RCC_OscInit = {0};
-    RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
+    PCC_InitTypeDef PCC_OscInit = {0};
 
-    RCC_OscInit.OscillatorEnable = RCC_OSCILLATORTYPE_OSC32K | RCC_OSCILLATORTYPE_OSC32M;   
-    RCC_OscInit.OscillatorSystem = RCC_OSCILLATORTYPE_OSC32M;                          
-    RCC_OscInit.AHBDivider = 0;                             
-    RCC_OscInit.APBMDivider = 0;                             
-    RCC_OscInit.APBPDivider = 0;                             
-    RCC_OscInit.HSI32MCalibrationValue = 0;                  
-    RCC_OscInit.LSI32KCalibrationValue = 0;
-    RCC_OscInit.RTCClockSelection = RCC_RTCCLKSOURCE_NO_CLK;
-    RCC_OscInit.RTCClockCPUSelection = RCC_RTCCLKCPUSOURCE_NO_CLK;
-    HAL_RCC_OscConfig(&RCC_OscInit);
-
-    PeriphClkInit.PMClockAHB = PMCLOCKAHB_DEFAULT;    
-    PeriphClkInit.PMClockAPB_M = PMCLOCKAPB_M_DEFAULT | PM_CLOCK_WU_M | PM_CLOCK_PAD_CONFIG_M;    
-    PeriphClkInit.PMClockAPB_P = PMCLOCKAPB_P_DEFAULT | PM_CLOCK_GPIO_0_M | PM_CLOCK_GPIO_1_M | PM_CLOCK_GPIO_2_M;      
-    HAL_RCC_ClockConfig(&PeriphClkInit);
+    PCC_OscInit.OscillatorEnable = PCC_OSCILLATORTYPE_ALL;
+    PCC_OscInit.FreqMon.OscillatorSystem = PCC_OSCILLATORTYPE_OSC32M;
+    PCC_OscInit.FreqMon.ForceOscSys = PCC_FORCE_OSC_SYS_UNFIXED;
+    PCC_OscInit.FreqMon.Force32KClk = PCC_FREQ_MONITOR_SOURCE_OSC32K;
+    PCC_OscInit.AHBDivider = 0;
+    PCC_OscInit.APBMDivider = 0;
+    PCC_OscInit.APBPDivider = 0;
+    PCC_OscInit.HSI32MCalibrationValue = 128;
+    PCC_OscInit.LSI32KCalibrationValue = 128;
+    PCC_OscInit.RTCClockSelection = PCC_RTC_CLOCK_SOURCE_AUTO;
+    PCC_OscInit.RTCClockCPUSelection = PCC_CPU_RTC_CLOCK_SOURCE_OSC32K;
+    HAL_PCC_Config(&PCC_OscInit);
 }
 
 static void Scr1_Timer_Init(void)
 {
     hscr1_timer.Instance = SCR1_TIMER;
 
-    hscr1_timer.ClockSource = SCR1_TIMER_CLKSRC_INTERNAL;    /* Источник тактирования */
-    hscr1_timer.Divider = 0;       /* Делитель частоты 10-битное число */
+    hscr1_timer.ClockSource = SCR1_TIMER_CLKSRC_INTERNAL; /* Источник тактирования */
+    hscr1_timer.Divider = 0;                              /* Делитель частоты 10-битное число */
 
     HAL_SCR1_Timer_Init(&hscr1_timer);
+}
+
+void GPIO_Init()
+{
+    GPIO_InitTypeDef GPIO_InitStruct = {0};
+
+    __HAL_PCC_GPIO_0_CLK_ENABLE();
+    __HAL_PCC_GPIO_1_CLK_ENABLE();
+    __HAL_PCC_GPIO_2_CLK_ENABLE();
+    __HAL_PCC_GPIO_IRQ_CLK_ENABLE();
+
+#ifdef BOARD_LITE
+    GPIO_InitStruct.Pin = PIN_LED;
+    GPIO_InitStruct.Mode = HAL_GPIO_MODE_GPIO_OUTPUT;
+    GPIO_InitStruct.Pull = HAL_GPIO_PULL_NONE;
+    HAL_GPIO_Init(GPIO_2, &GPIO_InitStruct);
+#endif
+
+#ifdef BOARD_DIP
+    GPIO_InitStruct.Pin = PIN_LED;
+    GPIO_InitStruct.Mode = HAL_GPIO_MODE_GPIO_OUTPUT;
+    GPIO_InitStruct.Pull = HAL_GPIO_PULL_NONE;
+    HAL_GPIO_Init(GPIO_0, &GPIO_InitStruct);
+#endif
 }

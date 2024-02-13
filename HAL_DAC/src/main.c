@@ -1,9 +1,14 @@
-#include "mik32_hal_rcc.h"
 #include "mik32_hal_dac.h"
 
 #include "uart_lib.h"
 #include "xprintf.h"
 
+/*
+ * В данном примере демонстрируется работа с ЦАП1
+ *
+ * На вывод PORT_1_12 задается напряжение, которое периодически увеличивается от 0В до 1,2В.
+ *
+ */
 
 DAC_HandleTypeDef hdac1;
 
@@ -11,57 +16,40 @@ void SystemClock_Config(void);
 static void DAC_Init(void);
 
 int main()
-{    
+{
 
     SystemClock_Config();
-
-    UART_Init(UART_0, 3333, UART_CONTROL1_TE_M | UART_CONTROL1_M_8BIT_M, 0, 0);
 
     DAC_Init();
 
     while (1)
-    {    
+    {
         for (uint16_t DAC_Value = 0; DAC_Value <= 0x0FFF; DAC_Value += 819)
         {
             HAL_DAC_SetValue(&hdac1, DAC_Value);
 
-            #ifdef MIK32_DAC_DEBUG
-            if(( (DAC_Value*1200/4095)%1000 ) > 99)
-            {
-                xprintf("DAC: %d (V = %d,%d)\n", DAC_Value, ((DAC_Value*1200)/4095)/1000, ((DAC_Value*1200)/4095)%1000);
-            }
-            else
-            {
-                xprintf("DAC: %d (V = %d,0%d)\n", DAC_Value, ((DAC_Value*1200)/4095)/1000, ((DAC_Value*1200)/4095)%1000);
-            }
-            #endif
-
-            for (volatile int i = 0; i < 1000000; i++);
+            for (volatile int i = 0; i < 10000; i++)
+                ;
         }
     }
-       
 }
 
 void SystemClock_Config(void)
 {
-    RCC_OscInitTypeDef RCC_OscInit = {0};
-    RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
+    PCC_InitTypeDef PCC_OscInit = {0};
 
-    RCC_OscInit.OscillatorEnable = RCC_OSCILLATORTYPE_OSC32K | RCC_OSCILLATORTYPE_OSC32M;   
-    RCC_OscInit.OscillatorSystem = RCC_OSCILLATORTYPE_OSC32M;                          
-    RCC_OscInit.AHBDivider = 0;                             
-    RCC_OscInit.APBMDivider = 0;                             
-    RCC_OscInit.APBPDivider = 0;                             
-    RCC_OscInit.HSI32MCalibrationValue = 0;                  
-    RCC_OscInit.LSI32KCalibrationValue = 0;
-    RCC_OscInit.RTCClockSelection = RCC_RTCCLKSOURCE_NO_CLK;
-    RCC_OscInit.RTCClockCPUSelection = RCC_RTCCLKCPUSOURCE_NO_CLK;
-    HAL_RCC_OscConfig(&RCC_OscInit);
-
-    PeriphClkInit.PMClockAHB = PMCLOCKAHB_DEFAULT;    
-    PeriphClkInit.PMClockAPB_M = PMCLOCKAPB_M_DEFAULT | PM_CLOCK_WU_M | PM_CLOCK_PAD_CONFIG_M;     
-    PeriphClkInit.PMClockAPB_P = PMCLOCKAPB_P_DEFAULT | PM_CLOCK_UART_0_M | PM_CLOCK_ANALOG_REG_M;     
-    HAL_RCC_ClockConfig(&PeriphClkInit);
+    PCC_OscInit.OscillatorEnable = PCC_OSCILLATORTYPE_ALL;
+    PCC_OscInit.FreqMon.OscillatorSystem = PCC_OSCILLATORTYPE_OSC32M;
+    PCC_OscInit.FreqMon.ForceOscSys = PCC_FORCE_OSC_SYS_UNFIXED;
+    PCC_OscInit.FreqMon.Force32KClk = PCC_FREQ_MONITOR_SOURCE_OSC32K;
+    PCC_OscInit.AHBDivider = 0;
+    PCC_OscInit.APBMDivider = 0;
+    PCC_OscInit.APBPDivider = 0;
+    PCC_OscInit.HSI32MCalibrationValue = 128;
+    PCC_OscInit.LSI32KCalibrationValue = 128;
+    PCC_OscInit.RTCClockSelection = PCC_RTC_CLOCK_SOURCE_AUTO;
+    PCC_OscInit.RTCClockCPUSelection = PCC_CPU_RTC_CLOCK_SOURCE_OSC32K;
+    HAL_PCC_Config(&PCC_OscInit);
 }
 
 static void DAC_Init(void)
@@ -70,8 +58,8 @@ static void DAC_Init(void)
 
     hdac1.Instance_dac = HAL_DAC1;
     hdac1.Init.DIV = 0;
-    hdac1.Init.EXTRef = DAC_EXTREF_OFF;     /* Выбор источника опорного напряжения: «1» - внешний; «0» - встроенный */
-    hdac1.Init.EXTClb = DAC_EXTCLB_DACREF;  /* Выбор источника внешнего опорного напряжения: «1» - внешний вывод; «0» - настраиваемый ОИН */
+    hdac1.Init.EXTRef = DAC_EXTREF_OFF;    /* Выбор источника опорного напряжения: «1» - внешний; «0» - встроенный */
+    hdac1.Init.EXTClb = DAC_EXTCLB_DACREF; /* Выбор источника внешнего опорного напряжения: «1» - внешний вывод; «0» - настраиваемый ОИН */
 
     HAL_DAC_Init(&hdac1);
 }
