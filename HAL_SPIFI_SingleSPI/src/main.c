@@ -19,7 +19,7 @@ int main()
 {
     SystemClock_Config();
 
-    UART_Init(UART_0, 277, UART_CONTROL1_TE_M | UART_CONTROL1_M_8BIT_M, 0, 0);
+    UART_Init(UART_0, 3333, UART_CONTROL1_TE_M | UART_CONTROL1_M_8BIT_M, 0, 0);
     xprintf("start\n");
 
     SPIFI_HandleTypeDef spifi = {
