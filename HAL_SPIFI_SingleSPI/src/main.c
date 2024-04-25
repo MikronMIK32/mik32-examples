@@ -7,8 +7,8 @@
 
 /**
  * @file main.c
- * 
- * @brief Пример демонстрирует чтение и запись значений во внешнюю флеш память Winbond W25 по Standard/Single SPI
+ *
+ * @brief Пример демонстрирует чтение и запись значений во внешнюю флеш память Winbond W25 по Standard (Single) SPI
  */
 
 void SystemClock_Config(void);
@@ -23,10 +23,13 @@ int main()
     xprintf("start\n");
 
     SPIFI_HandleTypeDef spifi = {
-        .Instance = SPIFI_CONFIG};
+        .Instance = SPIFI_CONFIG,
+    };
+
 
     HAL_SPIFI_MspInit(&spifi);
     xprintf("msp init complete\n");
+
 
     HAL_SPIFI_Reset(&spifi);
     xprintf("spifi reset complete\n");
