@@ -1,4 +1,3 @@
-
 #include "mik32_hal.h"
 
 #include "mik32_hal_timer16.h"
@@ -123,10 +122,18 @@ int main()
         HAL_GPIO_TogglePin(GPIO_1, GPIO_PIN_3);
 #endif
         /* Задержка */
-        HAL_DelayMs(30);
+        HAL_DelayMs(500);
     }
        
 }
+
+/* System timer16 uses interrupts */
+#if defined SYSTEM_TIME_TIMER16
+void trap_handler()
+{
+    HAL_Time_TIM16_InterruptHandler();
+}
+#endif
 
 void SystemClock_Config(void)
 {
