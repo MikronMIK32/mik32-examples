@@ -18,7 +18,6 @@ static void Scr1_Timer_Init(void);
 void SystemClock_Config();
 void SPIFI_Init();
 
-extern unsigned long __TEXT_START__;
 
 int main()
 {
@@ -26,7 +25,7 @@ int main()
 
     SPIFI_Init();
 
-    write_csr(mtvec, &__TEXT_START__);
+    write_csr(mtvec, 0x80000000); // Задать адрес входа в прерывание как 0x800000C0
 
     asm volatile("la ra, 0x80000000\n\t"
                  "jalr ra");
