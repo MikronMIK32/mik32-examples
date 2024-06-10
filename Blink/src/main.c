@@ -55,7 +55,7 @@ void ledBlink()
 #ifdef BOARD_LITE
 void ledButton()
 {
-	if (GPIO_2->SET == (1 << PIN_BUTTON))
+	if (GPIO_2->STATE & (1 << PIN_BUTTON))
 	{
 		GPIO_2->OUTPUT |= 1 << PIN_LED; // Установка сигнала вывода 7 порта 2 в высокий уровень
 	}
