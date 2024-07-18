@@ -35,7 +35,6 @@ int main()
 
     HAL_USART_Print(UART_0, "Start\n");
 
-    /* Включать прерывания Timer16 рекомендуется после его инициализации */
     __HAL_PCC_EPIC_CLK_ENABLE();
     HAL_EPIC_MaskLevelSet(HAL_EPIC_UART_0_MASK); 
     HAL_IRQ_EnableInterrupts();
