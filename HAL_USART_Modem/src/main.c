@@ -60,13 +60,13 @@ int main()
     while (1)
     {
 #if defined Transmitter
-        HAL_USART_Transmit(&husart0, '\n');
+        HAL_USART_Transmit(&husart0, '\n', USART_TIMEOUT_DEFAULT);
 #endif
 #if defined Receiver
         while(!HAL_USART_RXNE_ReadFlag(&husart0));
         HAL_DelayUs(1000);
         uint8_t data = HAL_USART_ReadByte(&husart0);
-        HAL_USART_Transmit(&husart0, data);
+        HAL_USART_Transmit(&husart0, data, USART_TIMEOUT_DEFAULT);
 #endif
     }
 }
