@@ -1,37 +1,46 @@
-#include "xprintf.h"
 #include "mik32_hal_usart.h"
-#include "mik32_hal_irq.h"
+
+/*
+ * Данный пример демонстрирует возможности приема и передачи данных
+ * по интерфейсу USART.
+ * 
+ * При передаче на устройство (микроконтроллер) строки текста, символы
+ * загружаются в буфер, пока не будет обнаружен символ '\n' возврата
+ * каретки. Он заменяется на символ '\0' конца строки, а затем содержимое
+ * буфера печатается функцией HAL_USART_Print.
+ */
+
 
 /* Value must be less than 255 */
 #define BUFFER_LENGTH   50
 
-UART_TypeDef husart0;
 
+USART_HandleTypeDef husart0;
 
 void SystemClock_Config(void);
-void _UART_Init();
+void USART_Init();
 
 
 int main()
 {
     SystemClock_Config();
 
-    _UART_Init();
+    USART_Init();
 
-    HAL_USART_Print(UART_0, "Start\n");
+    HAL_USART_Print(&husart0, "Start\n");
 
     char buf[BUFFER_LENGTH];
     uint8_t buf_pointer = 0;
 
     while (1)
     {
-        buf[buf_pointer] = HAL_USART_Receive(UART_0);
+        buf[buf_pointer] = HAL_USART_Receive(&husart0);
         if (buf[buf_pointer] == '\n')
         {
             buf[buf_pointer] = '\0';
             buf_pointer = 0;
-            HAL_USART_Print(UART_0, buf);
-            HAL_USART_Transmit(UART_0, '\n');
+            HAL_USART_Print(&husart0, buf);
+            HAL_USART_Transmit(&husart0, '\n');
         }
         else
         {
@@ -60,41 +69,38 @@ void SystemClock_Config(void)
 }
 
 
-void _UART_Init()
+void USART_Init()
 {
-    UART_Setting_TypeDef setting;
-    //
-    setting.Instance = UART_0;
-    setting.transmitting = Enable;
-    setting.receiving = Enable;
-    setting.frame = Frame_8bit;
-    setting.parity_bit = Disable;
-    setting.parity_bit_inversion = Disable;
-    setting.bit_direction = LSB_First;
-    setting.data_inversion = Disable;
-    setting.tx_inversion = Disable;
-    setting.rx_inversion = Disable;
-    setting.swap = Disable;
-    setting.lbm = Disable;
-    setting.stop_bit = StopBit_1;
-    setting.mode = Asynchronous_Mode;
-    setting.xck_mode = XCK_Mode0;
-    setting.last_byte_clock = Disable;
-    setting.overwrite = Disable;
-    setting.cts_processing = Disable;
-    setting.rts_processing = Disable;
-    setting.dma_tx_request = Disable;
-    setting.dma_rx_request = Disable;
-    setting.channel_mode = Duplex_Mode;
-    setting.tx_break_mode = Disable;
-    setting.Interrupt.ctsie = Disable;
-    setting.Interrupt.eie = Disable;
-    setting.Interrupt.idleie = Disable;
-    setting.Interrupt.lbdie = Disable;
-    setting.Interrupt.peie = Disable;
-    setting.Interrupt.rxneie = Disable;
-    setting.Interrupt.tcie = Disable;
-    setting.Interrupt.txeie = Disable;
-    setting.baudrate = 115200;
-    HAL_USART_Init(&setting);
+    husart0.Instance = UART_0;
+    husart0.transmitting = Enable;
+    husart0.receiving = Enable;
+    husart0.frame = Frame_8bit;
+    husart0.parity_bit = Disable;
+    husart0.parity_bit_inversion = Disable;
+    husart0.bit_direction = LSB_First;
+    husart0.data_inversion = Disable;
+    husart0.tx_inversion = Disable;
+    husart0.rx_inversion = Disable;
+    husart0.swap = Disable;
+    husart0.lbm = Disable;
+    husart0.stop_bit = StopBit_1;
+    husart0.mode = Asynchronous_Mode;
+    husart0.xck_mode = XCK_Mode0;
+    husart0.last_byte_clock = Disable;
+    husart0.overwrite = Disable;
+    husart0.rts_mode = AlwaysEnable_mode;
+    husart0.dma_tx_request = Disable;
+    husart0.dma_rx_request = Disable;
+    husart0.channel_mode = Duplex_Mode;
+    husart0.tx_break_mode = Disable;
+    husart0.Interrupt.ctsie = Disable;
+    husart0.Interrupt.eie = Disable;
+    husart0.Interrupt.idleie = Disable;
+    husart0.Interrupt.lbdie = Disable;
+    husart0.Interrupt.peie = Disable;
+    husart0.Interrupt.rxneie = Disable;
+    husart0.Interrupt.tcie = Disable;
+    husart0.Interrupt.txeie = Disable;
+    husart0.baudrate = 115200;
+    HAL_USART_Init(&husart0);
 }
