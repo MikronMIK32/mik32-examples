@@ -1,7 +1,7 @@
 {
     "files.associations": {
         "mik32_hal_dac.h": "c",
-        "mcu32_memory_map.h": "c",
+        "mik32_memory_map.h": "c",
         "analog_reg.h": "c",
         "pad_config.h": "c",
         "stdbool.h": "c",
