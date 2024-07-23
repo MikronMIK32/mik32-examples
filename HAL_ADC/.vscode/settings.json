@@ -5,7 +5,7 @@
         "uart_lib.h": "c",
         "mik32_hal_rcc.h": "c",
         "xprintf.h": "c",
-        "mcu32_memory_map.h": "c",
+        "mik32_memory_map.h": "c",
         "analog_reg.h": "c"
     }
 }
