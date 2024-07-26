@@ -1,6 +1,6 @@
 #include "power_manager.h"
 #include "spifi.h"
-#include "mcu32_memory_map.h"
+#include "mik32_memory_map.h"
 #include "array.h"
 
 #include "uart_lib.h"

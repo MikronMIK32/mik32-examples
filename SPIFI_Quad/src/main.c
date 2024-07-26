@@ -1,4 +1,4 @@
-#include "mcu32_memory_map.h"
+#include "mik32_memory_map.h"
 #include "power_manager.h"
 #include "spifi.h"
 #include "array.h"

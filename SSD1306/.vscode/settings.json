@@ -8,7 +8,7 @@
         "inttypes.h": "c",
         "stdint.h": "c",
         "mik32_hal_ssd1306.h": "c",
-        "mcu32_memory_map.h": "c",
+        "mik32_memory_map.h": "c",
         "stdbool.h": "c",
         "def_list.h": "c",
         "wakeup.h": "c"
