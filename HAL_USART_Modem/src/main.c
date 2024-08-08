@@ -1,6 +1,8 @@
 #include "xprintf.h"
 #include "mik32_hal_usart.h"
 #include "mik32_hal_irq.h"
+#include "mik32_hal_scr1_timer.h"
+#include "mik32_hal_gpio.h"
 
 /*
  * Данный пример  демонстрирует возможности передачи данных по
@@ -12,6 +14,8 @@
  * задержки линия RTS автоматически устанавливается в лог.1.
  * Устройство Transmitter не посылает следующий байт до того
  * момента, как RTS не будет сброшен в лог.0.
+ * Если при передаче данных обнаружена ошибка timeout, на плате
+ * загораются светодиоды
  *
  * Сигнал RTS ("request to send, запрос на передачу", выход,
  * соединяется с CTS внешнего устройства) используется, чтобы
@@ -41,26 +45,53 @@
  * 
  */
 
+/* Выбор режима работы устройства */
 #define Transmitter
 //#define Receiver
+
+/* Выбор платы */
+//#define BOARD_LITE
+#define BOARD_DIP
 
 
 USART_HandleTypeDef husart0;
 
 void SystemClock_Config(void);
 void USART_Init();
+void GPIO_Init();
+
+
+uint32_t HAL_Micros()
+{
+    return HAL_Time_SCR1TIM_Micros();
+}
+void HAL_DelayUs(uint32_t time_us)
+{
+    HAL_Time_SCR1TIM_DelayUs(time_us);
+}
 
 
 int main()
 {
     SystemClock_Config();
 
+    GPIO_Init();
+
+    HAL_Time_SCR1TIM_Init();
+
     USART_Init();
 
     while (1)
     {
 #if defined Transmitter
-        HAL_USART_Transmit(&husart0, '\n', USART_TIMEOUT_DEFAULT);
+        bool flag = HAL_USART_Transmit(&husart0, '\n', 100000UL);
+#if defined BOARD_LITE
+        HAL_GPIO_WritePin(GPIO_2, GPIO_PIN_7, flag == true ? 0 : 1);
+#endif
+#if defined BOARD_DIP
+        HAL_GPIO_WritePin(GPIO_0, GPIO_PIN_3, flag == true ? 0 : 1);
+        HAL_GPIO_WritePin(GPIO_1, GPIO_PIN_3, flag == true ? 0 : 1);
+#endif
 #endif
 #if defined Receiver
         while(!HAL_USART_RXNE_ReadFlag(&husart0));
@@ -137,4 +168,27 @@ void USART_Init()
     husart0.Modem.ddis = Enable;//out
     husart0.baudrate = 9600;
     HAL_USART_Init(&husart0);
+}
+
+void GPIO_Init()
+{
+    GPIO_InitTypeDef GPIO_InitStruct = {0};
+
+#if defined BOARD_LITE
+    __HAL_PCC_GPIO_2_CLK_ENABLE();
+    GPIO_InitStruct.Pin = GPIO_PIN_7;
+    GPIO_InitStruct.Mode = HAL_GPIO_MODE_GPIO_OUTPUT;
+    GPIO_InitStruct.Pull = HAL_GPIO_PULL_NONE;
+    HAL_GPIO_Init(GPIO_2, &GPIO_InitStruct);
+#endif
+#if defined BOARD_DIP
+    __HAL_PCC_GPIO_0_CLK_ENABLE();
+    __HAL_PCC_GPIO_1_CLK_ENABLE();
+    GPIO_InitStruct.Pin = GPIO_PIN_3;
+    GPIO_InitStruct.Mode = HAL_GPIO_MODE_GPIO_OUTPUT;
+    GPIO_InitStruct.Pull = HAL_GPIO_PULL_NONE;
+    HAL_GPIO_Init(GPIO_0, &GPIO_InitStruct);
+    GPIO_InitStruct.Pin = GPIO_PIN_3;
+    HAL_GPIO_Init(GPIO_1, &GPIO_InitStruct);
+#endif
 }
