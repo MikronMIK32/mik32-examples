@@ -27,20 +27,20 @@ int main()
 
     USART_Init();
 
-    HAL_USART_Print(&husart0, "Start\n");
+    HAL_USART_Print(&husart0, "Start\n", USART_TIMEOUT_DEFAULT);
 
     char buf[BUFFER_LENGTH];
     uint8_t buf_pointer = 0;
 
     while (1)
     {
-        buf[buf_pointer] = HAL_USART_Receive(&husart0);
+        HAL_USART_Receive(&husart0, buf+buf_pointer, USART_TIMEOUT_DEFAULT);
         if (buf[buf_pointer] == '\n')
         {
             buf[buf_pointer] = '\0';
             buf_pointer = 0;
-            HAL_USART_Print(&husart0, buf);
-            HAL_USART_Transmit(&husart0, '\n');
+            HAL_USART_Print(&husart0, buf, USART_TIMEOUT_DEFAULT);
+            HAL_USART_Transmit(&husart0, '\n', USART_TIMEOUT_DEFAULT);
         }
         else
         {
@@ -85,7 +85,7 @@ void USART_Init()
     husart0.lbm = Disable;
     husart0.stop_bit = StopBit_1;
     husart0.mode = Asynchronous_Mode;
-    husart0.xck_mode = XCK_Mode0;
+    husart0.xck_mode = XCK_Mode3;
     husart0.last_byte_clock = Disable;
     husart0.overwrite = Disable;
     husart0.rts_mode = AlwaysEnable_mode;
@@ -101,6 +101,13 @@ void USART_Init()
     husart0.Interrupt.rxneie = Disable;
     husart0.Interrupt.tcie = Disable;
     husart0.Interrupt.txeie = Disable;
+    husart0.Modem.rts = Disable; //out
+    husart0.Modem.cts = Disable; //in
+    husart0.Modem.dtr = Disable; //out
+    husart0.Modem.dcd = Disable; //in
+    husart0.Modem.dsr = Disable; //in
+    husart0.Modem.ri = Disable;  //in
+    husart0.Modem.ddis = Disable;//out
     husart0.baudrate = 115200;
     HAL_USART_Init(&husart0);
 }
