@@ -1,20 +1,21 @@
 #include "mik32_hal_timer16.h"
-
-#include "uart_lib.h"
+#include "mik32_hal_usart.h"
 #include "xprintf.h"
 
 /*
  * Данный пример демонстрирует работу с Timer16.
  * Таймер тактируется и считает от внутреннего источника (sys_clk - системная частота) и запускается в непрерывном режиме.
  * Значения счетчика периодически выводятся по UART0. На выводе PORT0_10 генерируется ШИМ сигнал. 
- *
+ * Скорость последовательного порта 1000000 бод
  */
 
 Timer16_HandleTypeDef htimer16_1;
+USART_HandleTypeDef husart0;
 
 void SystemClock_Config(void);
 static void Timer16_1_Init(void);
-void GPIO_Init();
+static void GPIO_Init();
+static void USART_Init();
 
 int main()
 {
@@ -23,7 +24,7 @@ int main()
 
     GPIO_Init();
 
-    UART_Init(UART_0, 3333, UART_CONTROL1_TE_M | UART_CONTROL1_M_8BIT_M, 0, 0);
+    USART_Init();
 
     Timer16_1_Init();
 
@@ -54,11 +55,11 @@ int main()
         xprintf("Counter = %d\n", HAL_Timer16_GetCounterValue(&htimer16_1));
 
         /* Ожидание совпадения с CMP */
-        // if(HAL_Timer16_CheckCMP(&htimer16_1))
-        // {
-        //     HAL_Timer16_ClearCMPFlag(&htimer16_1);
-        //     xprintf("CMP\n");
-        // }
+        if(HAL_Timer16_CheckCMP(&htimer16_1))
+        {
+            HAL_Timer16_ClearInterruptMask(&htimer16_1, TIMER16_ISR_CMP_MATCH_M);
+            xprintf("CMP\n");
+        }
     }
 }
 
@@ -112,9 +113,53 @@ static void Timer16_1_Init(void)
     HAL_Timer16_Init(&htimer16_1);
 }
 
-void GPIO_Init()
+static void GPIO_Init()
 {
     __HAL_PCC_GPIO_0_CLK_ENABLE();
     __HAL_PCC_GPIO_1_CLK_ENABLE();
     __HAL_PCC_GPIO_2_CLK_ENABLE();
+}
+
+
+static void USART_Init()
+{
+    husart0.Instance = UART_0;
+    husart0.transmitting = Enable;
+    husart0.receiving = Disable;
+    husart0.frame = Frame_8bit;
+    husart0.parity_bit = Disable;
+    husart0.parity_bit_inversion = Disable;
+    husart0.bit_direction = LSB_First;
+    husart0.data_inversion = Disable;
+    husart0.tx_inversion = Disable;
+    husart0.rx_inversion = Disable;
+    husart0.swap = Disable;
+    husart0.lbm = Disable;
+    husart0.stop_bit = StopBit_1;
+    husart0.mode = Asynchronous_Mode;
+    husart0.xck_mode = XCK_Mode3;
+    husart0.last_byte_clock = Disable;
+    husart0.overwrite = Disable;
+    husart0.rts_mode = AlwaysEnable_mode;
+    husart0.dma_tx_request = Disable;
+    husart0.dma_rx_request = Disable;
+    husart0.channel_mode = Duplex_Mode;
+    husart0.tx_break_mode = Disable;
+    husart0.Interrupt.ctsie = Disable;
+    husart0.Interrupt.eie = Disable;
+    husart0.Interrupt.idleie = Disable;
+    husart0.Interrupt.lbdie = Disable;
+    husart0.Interrupt.peie = Disable;
+    husart0.Interrupt.rxneie = Disable;
+    husart0.Interrupt.tcie = Disable;
+    husart0.Interrupt.txeie = Disable;
+    husart0.Modem.rts = Disable; //out
+    husart0.Modem.cts = Disable; //in
+    husart0.Modem.dtr = Disable; //out
+    husart0.Modem.dcd = Disable; //in
+    husart0.Modem.dsr = Disable; //in
+    husart0.Modem.ri = Disable;  //in
+    husart0.Modem.ddis = Disable;//out
+    husart0.baudrate = 1000000;
+    HAL_USART_Init(&husart0);
 }
