@@ -43,8 +43,7 @@ int main()
     while (1)
     {
         HAL_GPIO_TogglePin(GPIO_2, GPIO_PIN_5);
-        for (volatile int i = 0; i < 100000; i++)
-            ;
+        HAL_DelayMs(500);
 
         if (flag)
         {
