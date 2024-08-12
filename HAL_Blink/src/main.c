@@ -1,8 +1,6 @@
 #include "mik32_hal_pcc.h"
 #include "mik32_hal_gpio.h"
 
-#include "uart_lib.h"
-#include "xprintf.h"
 /*
  * Данный пример демонстрирует работу с GPIO и PAD_CONFIG.
  * В примере настраивается вывод, который подключенный к светодиоду, в режим GPIO.
@@ -33,8 +31,7 @@ int main()
         HAL_GPIO_TogglePin(GPIO_0, GPIO_PIN_3);
         HAL_GPIO_TogglePin(GPIO_1, GPIO_PIN_3);
 #endif
-        for (volatile int i = 0; i < 100000; i++)
-            ;
+        HAL_DelayMs(500);
     }
 }
 
