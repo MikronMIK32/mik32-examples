@@ -3,9 +3,6 @@
 #include "mik32_hal_gpio.h"
 #include "mik32_hal_irq.h"
 
-#include "uart_lib.h"
-#include "xprintf.h"
-
 /*
  * Данный пример демонстрирует работу с прерываниями GPIO.
  * Вывод PORT2_5 должен быть соединен с PORT2_6
@@ -32,7 +29,6 @@ int main()
 
     SystemClock_Config();
 
-    UART_Init(UART_0, 3333, UART_CONTROL1_TE_M | UART_CONTROL1_M_8BIT_M, 0, 0);
     GPIO_Init();
 
     /* Разрешить прерывания по уровню для линии EPIC GPIO_IRQ */
@@ -125,6 +121,7 @@ void GPIO_Init()
     HAL_GPIO_Init(GPIO_2, &GPIO_InitStruct);
     HAL_GPIO_InitInterruptLine(GPIO_MUX_PORT2_6_LINE_2, GPIO_INT_MODE_RISING);
 }
+
 
 void trap_handler()
 {

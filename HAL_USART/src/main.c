@@ -1,49 +1,52 @@
-#include "mik32_hal_crc32.h"
 #include "mik32_hal_usart.h"
-#include "xprintf.h"
 
 /*
-* В примере демонстрируется работа с CRC32 (алгоритм CRC-32Q)
-*
-* Вычисляется контрольная сумма для массива байт message и для массива слов data.
-* Результат выводится по UART0
-*
-*/
+ * Данный пример демонстрирует возможности приема и передачи данных
+ * по интерфейсу USART.
+ * 
+ * При передаче на устройство (микроконтроллер) строки текста, символы
+ * загружаются в буфер, пока не будет обнаружен символ '\n' возврата
+ * каретки. Он заменяется на символ '\0' конца строки, а затем содержимое
+ * буфера печатается функцией HAL_USART_Print.
+ */
 
 
-CRC_HandleTypeDef hcrc;
+/* Value must be less than 255 */
+#define BUFFER_LENGTH   50
+
 
 USART_HandleTypeDef husart0;
 
 void SystemClock_Config(void);
-static void CRC_Init(void);
 void USART_Init();
 
-int main()
-{    
 
+int main()
+{
     SystemClock_Config();
 
     USART_Init();
 
-    CRC_Init();
+    HAL_USART_Print(&husart0, "Start\n", USART_TIMEOUT_DEFAULT);
 
-    uint8_t  message[] ={'1', '2', '3', '4', '5', '6', '7', '8', '9'};
-    uint32_t data[] = {0xABCDABCD, 0xA1B2C3D4};
-    uint32_t CRCValue = 0;
-    
-    /* Запись по байтам */
-    HAL_CRC_WriteData(&hcrc, message, sizeof(message));
-    CRCValue = HAL_CRC_ReadCRC(&hcrc);
-    xprintf("CRC32 = 0x%08x, ожидалось 0x3010BF7F\n", CRCValue);
-    
-    /* Запись по словам */
-    HAL_CRC_WriteData32(&hcrc, data, sizeof(data)/sizeof(*data));
-    CRCValue = HAL_CRC_ReadCRC(&hcrc);
-    xprintf("CRC32 = 0x%08x, ожидалось 0x6311BC18\n", CRCValue);
-    
+    char buf[BUFFER_LENGTH];
+    uint8_t buf_pointer = 0;
 
-    while (1);
+    while (1)
+    {
+        HAL_USART_Receive(&husart0, buf+buf_pointer, USART_TIMEOUT_DEFAULT);
+        if (buf[buf_pointer] == '\n')
+        {
+            buf[buf_pointer] = '\0';
+            buf_pointer = 0;
+            HAL_USART_Print(&husart0, buf, USART_TIMEOUT_DEFAULT);
+            HAL_USART_Transmit(&husart0, '\n', USART_TIMEOUT_DEFAULT);
+        }
+        else
+        {
+            if (++buf_pointer >= BUFFER_LENGTH) buf_pointer = 0;
+        }
+    }
 }
 
 
@@ -65,29 +68,12 @@ void SystemClock_Config(void)
     HAL_PCC_Config(&PCC_OscInit);
 }
 
-static void CRC_Init(void)
-{
-
-    hcrc.Instance = CRC;
-    
-    /* Настройки вычисления CRC */                    
-    /*******************************************CRC-32Q*******************************************/
-    hcrc.Poly = 0x814141AB;                             
-    hcrc.Init = 0x00000000;                                 
-    hcrc.InputReverse = CRC_REFIN_FALSE;                 
-    hcrc.OutputReverse = CRC_REFOUT_FALSE;                          
-    hcrc.OutputInversion = CRC_OUTPUTINVERSION_OFF;
-
-    HAL_CRC_Init(&hcrc);
-
-}
-
 
 void USART_Init()
 {
     husart0.Instance = UART_0;
     husart0.transmitting = Enable;
-    husart0.receiving = Disable;
+    husart0.receiving = Enable;
     husart0.frame = Frame_8bit;
     husart0.parity_bit = Disable;
     husart0.parity_bit_inversion = Disable;
@@ -115,13 +101,13 @@ void USART_Init()
     husart0.Interrupt.rxneie = Disable;
     husart0.Interrupt.tcie = Disable;
     husart0.Interrupt.txeie = Disable;
-    husart0.Modem.rts = Disable;
-    husart0.Modem.cts = Disable;
-    husart0.Modem.dtr = Disable;
-    husart0.Modem.dcd = Disable;
-    husart0.Modem.dsr = Disable;
-    husart0.Modem.ri = Disable;
-    husart0.Modem.ddis = Disable;
+    husart0.Modem.rts = Disable; //out
+    husart0.Modem.cts = Disable; //in
+    husart0.Modem.dtr = Disable; //out
+    husart0.Modem.dcd = Disable; //in
+    husart0.Modem.dsr = Disable; //in
+    husart0.Modem.ri = Disable;  //in
+    husart0.Modem.ddis = Disable;//out
     husart0.baudrate = 115200;
     HAL_USART_Init(&husart0);
 }

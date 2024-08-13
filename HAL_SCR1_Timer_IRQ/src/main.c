@@ -5,15 +5,22 @@
 /*
  * Пример для платы DIP-MIK32.
  *
- * Данный пример демонстрирует работу с системным таймером.
+ * Данный пример демонстрирует работу с прерыванием системного таймера по сравнению.
  * В примере настраивается вывод PORT1_3, который подключен к светодиоду, в режим GPIO.
- * Системный таймер отсчитывает 1 секунду, после чего на выводе PORT1_3 инвертируется выходной сигнал.
+ * По достижению счетчика таймера значения сравнения срабатывает прерывание, по которому
+ * переменная flag устанавливается в 1. В зависимости от значения flag инвертируется сигнал
+ * на выводе PORT1_3.
  **/
 
 #define DELAY_VALUE 32000000 // Значение счетчика таймера (1 секунда при частоте ядра 32МГц).
 
 void SystemClock_Config(void);
 void GPIO_Init(void);
+
+/* Флаг, по которому инвертируется выходной сигнал на выводе PORT1_3.
+ * Устанавливается в обработчике прерывания trap_handler.
+ */
+volatile int flag = 0;
 
 int main()
 {
@@ -25,13 +32,15 @@ int main()
 
     /* Инициализация системного таймера. */
     HAL_SCR1_Timer_Init(HAL_SCR1_TIMER_CLKSRC_INTERNAL, 0);
+    __HAL_SCR1_TIMER_SET_CMP(DELAY_VALUE);
+    __HAL_SCR1_TIMER_IRQ_ENABLE(); // Разрешить прерывание системного таймера.
 
     while (1)
     {
-        if (__HAL_SCR1_TIMER_GET_TIME() >= DELAY_VALUE)
+        if (flag)
         {
-            HAL_GPIO_TogglePin(GPIO_1, GPIO_PIN_3); // Инверсия выходного сигнала на выводе PORT1_3.
-            __HAL_SCR1_TIMER_SET_TIME(0);           // Сбросить счетчик системного таймера.
+            HAL_GPIO_TogglePin(GPIO_1, GPIO_PIN_3);
+            flag = 0;
         }
     }
 }
@@ -65,4 +74,13 @@ void GPIO_Init()
     GPIO_InitStruct.Pull = HAL_GPIO_PULL_NONE;
     HAL_GPIO_Init(GPIO_1, &GPIO_InitStruct);
     HAL_GPIO_WritePin(GPIO_1, GPIO_InitStruct.Pin, __LOW);
+}
+
+void trap_handler()
+{
+    flag = 1;
+    __HAL_SCR1_TIMER_SET_TIME(0); // Сброс счетчика системного таймера.
+
+    /* Перезапись значения сравнения используется для сброса запроса прерывания по сравнению. */
+    __HAL_SCR1_TIMER_SET_CMP(DELAY_VALUE);
 }

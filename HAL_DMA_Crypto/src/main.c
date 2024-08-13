@@ -1,7 +1,7 @@
 #include "mik32_hal_crypto.h"
 #include "mik32_hal_dma.h"
 
-#include "uart_lib.h"
+#include "mik32_hal_usart.h"
 #include "xprintf.h"
 
 /*
@@ -19,12 +19,14 @@ Crypto_HandleTypeDef hcrypto;
 DMA_InitTypeDef hdma;
 DMA_ChannelHandleTypeDef hdma_ch0;
 DMA_ChannelHandleTypeDef hdma_ch1;
+USART_HandleTypeDef husart0;
 
 void SystemClock_Config(void);
 static void Crypto_Init(void);
 static void DMA_CH0_Init(DMA_InitTypeDef* hdma);
 static void DMA_CH1_Init(DMA_InitTypeDef* hdma);
 static void DMA_Init(void);
+static void USART_Init();
 
 uint32_t crypto_key[CRYPTO_KEY_KUZNECHIK] = {0x8899aabb, 0xccddeeff, 0x00112233, 0x44556677, 0xfedcba98, 0x76543210, 0x01234567, 0x89abcdef};
                     
@@ -127,7 +129,7 @@ int main()
 {    
     SystemClock_Config();
 
-    UART_Init(UART_0, 3333, UART_CONTROL1_TE_M | UART_CONTROL1_M_8BIT_M, 0, 0);
+    USART_Init();
 
     Crypto_Init();
     
@@ -242,9 +244,45 @@ static void DMA_Init(void)
 }
 
 
-
-
-
-
-
-
+void USART_Init()
+{
+    husart0.Instance = UART_0;
+    husart0.transmitting = Enable;
+    husart0.receiving = Disable;
+    husart0.frame = Frame_8bit;
+    husart0.parity_bit = Disable;
+    husart0.parity_bit_inversion = Disable;
+    husart0.bit_direction = LSB_First;
+    husart0.data_inversion = Disable;
+    husart0.tx_inversion = Disable;
+    husart0.rx_inversion = Disable;
+    husart0.swap = Disable;
+    husart0.lbm = Disable;
+    husart0.stop_bit = StopBit_1;
+    husart0.mode = Asynchronous_Mode;
+    husart0.xck_mode = XCK_Mode3;
+    husart0.last_byte_clock = Disable;
+    husart0.overwrite = Disable;
+    husart0.rts_mode = AlwaysEnable_mode;
+    husart0.dma_tx_request = Disable;
+    husart0.dma_rx_request = Disable;
+    husart0.channel_mode = Duplex_Mode;
+    husart0.tx_break_mode = Disable;
+    husart0.Interrupt.ctsie = Disable;
+    husart0.Interrupt.eie = Disable;
+    husart0.Interrupt.idleie = Disable;
+    husart0.Interrupt.lbdie = Disable;
+    husart0.Interrupt.peie = Disable;
+    husart0.Interrupt.rxneie = Disable;
+    husart0.Interrupt.tcie = Disable;
+    husart0.Interrupt.txeie = Disable;
+    husart0.Modem.rts = Disable; //out
+    husart0.Modem.cts = Disable; //in
+    husart0.Modem.dtr = Disable; //out
+    husart0.Modem.dcd = Disable; //in
+    husart0.Modem.dsr = Disable; //in
+    husart0.Modem.ri = Disable;  //in
+    husart0.Modem.ddis = Disable;//out
+    husart0.baudrate = 115200;
+    HAL_USART_Init(&husart0);
+}

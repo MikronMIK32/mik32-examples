@@ -28,8 +28,7 @@ int main()
         {
             HAL_DAC_SetValue(&hdac1, DAC_Value);
 
-            for (volatile int i = 0; i < 10000; i++)
-                ;
+            HAL_DelayMs(50);
         }
     }
 }

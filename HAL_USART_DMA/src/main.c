@@ -1,22 +1,36 @@
 #include "mik32_hal.h"
-#include "mik32_hal_pcc.h"
+#include "mik32_hal_timer32.h"
 #include "mik32_hal_dma.h"
-
+#include "mik32_hal_dac.h"
 #include "mik32_hal_usart.h"
-#include "xprintf.h"
+#include "mik32_hal_scr1_timer.h"
 
+/*
+ * Данный пример демонстрирует возможности передачи данных по интерфейсту USART
+ * с использованием DMA.
+ *
+ * В главном цикле запускается передача данных по DMA, затем в течение времени
+ * задержки DMA передает данные из ОЗУ в USART порт
+ */
+
+
+USART_HandleTypeDef husart0;
 DMA_InitTypeDef hdma;
 DMA_ChannelHandleTypeDef hdma_ch0;
-USART_HandleTypeDef husart0;
 
-void SystemClock_Config(void);
-
+static void SystemClock_Config(void);
 static void DMA_CH0_Init(DMA_InitTypeDef *hdma);
 static void DMA_Init(void);
 static void USART_Init();
 
-uint32_t word_src[] = {0xAAAAAAAA, 0xBBBBBBBB, 0xCCCCCCCC, 0xDDDDDDDD};
-uint32_t word_dst[] = {0, 0, 0, 0};
+char array[] = "\ntime: ************";
+
+/* Переопределение функции Millis, источник - таймер SCR1 */
+uint32_t HAL_Millis()
+{
+    return HAL_Time_SCR1TIM_Millis();
+}
+
 
 int main()
 {
@@ -24,28 +38,28 @@ int main()
 
     SystemClock_Config();
 
-    USART_Init();
-
     DMA_Init();
 
-    HAL_DMA_Start(&hdma_ch0, word_src, word_dst, sizeof(word_src) - 1);
+    USART_Init();
 
-    if (HAL_DMA_Wait(&hdma_ch0, DMA_TIMEOUT_DEFAULT) != HAL_OK)
-    {
-        xprintf("Timeout\n");
-    }
-
-    for (uint32_t i = 0; i < sizeof(word_src) / sizeof(*word_src); i++)
-    {
-        xprintf("word_dst[%d] = 0x%08x\n", i, word_dst[i]);
-    }
+    HAL_Time_SCR1TIM_Init();
 
     while (1)
     {
+        /* Получить значение времени */
+        uint32_t time = HAL_Millis();
+
+        /* Преобразовать значение времени в строку */
+        utoa(time, array+7, 10);
+
+        HAL_DMA_Start(&hdma_ch0, (void*)array, (void*)&UART_0->TXDATA, strlen(array)-1);
+
+        /* Задержка */
+        while (HAL_Millis() - time < 500);
     }
 }
 
-void SystemClock_Config(void)
+static void SystemClock_Config(void)
 {
     PCC_InitTypeDef PCC_OscInit = {0};
 
@@ -63,6 +77,7 @@ void SystemClock_Config(void)
     HAL_PCC_Config(&PCC_OscInit);
 }
 
+
 static void DMA_CH0_Init(DMA_InitTypeDef *hdma)
 {
     hdma_ch0.dma = hdma;
@@ -73,17 +88,17 @@ static void DMA_CH0_Init(DMA_InitTypeDef *hdma)
 
     hdma_ch0.ChannelInit.ReadMode = DMA_CHANNEL_MODE_MEMORY;
     hdma_ch0.ChannelInit.ReadInc = DMA_CHANNEL_INC_ENABLE;
-    hdma_ch0.ChannelInit.ReadSize = DMA_CHANNEL_SIZE_WORD; /* data_len должно быть кратно read_size */
-    hdma_ch0.ChannelInit.ReadBurstSize = 2;                /* read_burst_size должно быть кратно read_size */
-    hdma_ch0.ChannelInit.ReadRequest = 0;
+    hdma_ch0.ChannelInit.ReadSize = DMA_CHANNEL_SIZE_BYTE; /* data_len должно быть кратно read_size */
+    hdma_ch0.ChannelInit.ReadBurstSize = 0;                /* read_burst_size должно быть кратно read_size */
+    hdma_ch0.ChannelInit.ReadRequest = DMA_CHANNEL_USART_0_REQUEST;
     hdma_ch0.ChannelInit.ReadAck = DMA_CHANNEL_ACK_DISABLE;
 
-    hdma_ch0.ChannelInit.WriteMode = DMA_CHANNEL_MODE_MEMORY;
-    hdma_ch0.ChannelInit.WriteInc = DMA_CHANNEL_INC_ENABLE;
-    hdma_ch0.ChannelInit.WriteSize = DMA_CHANNEL_SIZE_WORD; /* data_len должно быть кратно write_size */
-    hdma_ch0.ChannelInit.WriteBurstSize = 2;                /* write_burst_size должно быть кратно read_size */
-    hdma_ch0.ChannelInit.WriteRequest = 0;
-    hdma_ch0.ChannelInit.WriteAck = DMA_CHANNEL_ACK_DISABLE;
+    hdma_ch0.ChannelInit.WriteMode = DMA_CHANNEL_MODE_PERIPHERY;
+    hdma_ch0.ChannelInit.WriteInc = DMA_CHANNEL_INC_DISABLE;
+    hdma_ch0.ChannelInit.WriteSize = DMA_CHANNEL_SIZE_BYTE; /* data_len должно быть кратно write_size */
+    hdma_ch0.ChannelInit.WriteBurstSize = 0;                /* write_burst_size должно быть кратно read_size */
+    hdma_ch0.ChannelInit.WriteRequest = DMA_CHANNEL_USART_0_REQUEST;
+    hdma_ch0.ChannelInit.WriteAck = DMA_CHANNEL_ACK_ENABLE;
 }
 
 static void DMA_Init(void)
@@ -118,11 +133,12 @@ static void USART_Init()
     husart0.lbm = Disable;
     husart0.stop_bit = StopBit_1;
     husart0.mode = Asynchronous_Mode;
-    husart0.xck_mode = XCK_Mode3;
+    husart0.xck_mode = XCK_Mode0;
     husart0.last_byte_clock = Disable;
     husart0.overwrite = Disable;
     husart0.rts_mode = AlwaysEnable_mode;
-    husart0.dma_tx_request = Disable;
+    /* Разрешить активацию DMA по запросу USART0 */
+    husart0.dma_tx_request = Enable;
     husart0.dma_rx_request = Disable;
     husart0.channel_mode = Duplex_Mode;
     husart0.tx_break_mode = Disable;
@@ -134,13 +150,13 @@ static void USART_Init()
     husart0.Interrupt.rxneie = Disable;
     husart0.Interrupt.tcie = Disable;
     husart0.Interrupt.txeie = Disable;
-    husart0.Modem.rts = Disable;
-    husart0.Modem.cts = Disable;
-    husart0.Modem.dtr = Disable;
-    husart0.Modem.dcd = Disable;
-    husart0.Modem.dsr = Disable;
-    husart0.Modem.ri = Disable;
-    husart0.Modem.ddis = Disable;
+    husart0.Modem.rts = Disable; //out
+    husart0.Modem.cts = Disable; //in
+    husart0.Modem.dtr = Disable; //out
+    husart0.Modem.dcd = Disable; //in
+    husart0.Modem.dsr = Disable; //in
+    husart0.Modem.ri = Disable;  //in
+    husart0.Modem.ddis = Disable;//out
     husart0.baudrate = 115200;
     HAL_USART_Init(&husart0);
 }
