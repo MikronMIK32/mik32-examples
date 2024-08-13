@@ -1,4 +1,4 @@
-#include <mcu32_memory_map.h>
+#include <mik32_memory_map.h>
 #include <pad_config.h>
 #include <gpio.h>
 #include <power_manager.h>
