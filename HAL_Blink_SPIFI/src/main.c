@@ -6,7 +6,7 @@
 #include "uart_lib.h"
 #include "xprintf.h"
 
-#include "riscv_csr_encoding.h"
+#include "scr1_csr_encoding.h"
 #include "csr.h"
 
 /*
