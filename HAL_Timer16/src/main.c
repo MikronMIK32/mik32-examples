@@ -160,6 +160,6 @@ static void USART_Init()
     husart0.Modem.dsr = Disable; //in
     husart0.Modem.ri = Disable;  //in
     husart0.Modem.ddis = Disable;//out
-    husart0.baudrate = 1000000;
+    husart0.baudrate = 9600;
     HAL_USART_Init(&husart0);
 }
