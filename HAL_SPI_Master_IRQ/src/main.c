@@ -7,7 +7,7 @@
 
 /*
  * Данный пример демонстрирует работу с SPI в режиме ведущего с использованием прерываний.
- * Ведущий передает и принимает от ведомого на выводе CS0 20 байт. Сигнал CS управляются вручную 
+ * Ведущий передает и принимает от ведомого на выводе CS0 20 байт. Сигнал CS управляются вручную
  * с помощью функций HAL_SPI_CS_Enable и HAL_SPI_CS_Disable.
  *
  * Результат передачи выводится по UART0.
@@ -52,6 +52,7 @@ int main()
             /* Начало передачи в ручном режиме управления CS */
             if (hspi0.Init.ManualCS == SPI_MANUALCS_ON)
             {
+                HAL_SPI_Enable(&hspi0);
                 HAL_SPI_CS_Enable(&hspi0, SPI_CS_0);
             }
 
@@ -70,6 +71,7 @@ int main()
             if (hspi0.Init.ManualCS == SPI_MANUALCS_ON)
             {
                 HAL_SPI_CS_Disable(&hspi0);
+                HAL_SPI_Disable(&hspi0);
             }
 
             /* Вывод принятый данных и обнуление массива master_input */
@@ -114,7 +116,6 @@ void SystemClock_Config(void)
     HAL_PCC_Config(&PCC_OscInit);
 }
 
-
 static void SPI0_Init(void)
 {
     hspi0.Instance = SPI_0;
@@ -124,15 +125,14 @@ static void SPI0_Init(void)
 
     /* Настройки */
     hspi0.Init.CLKPhase = SPI_PHASE_ON;
-    hspi0.Init.CLKPolarity = SPI_POLARITY_LOW;
+    hspi0.Init.CLKPolarity = SPI_POLARITY_HIGH;
     hspi0.Init.ThresholdTX = 4;
 
     /* Настройки для ведущего */
     hspi0.Init.BaudRateDiv = SPI_BAUDRATE_DIV64;
     hspi0.Init.Decoder = SPI_DECODER_NONE;
-    hspi0.Init.ManualCS = SPI_MANUALCS_ON;
-    hspi0.Init.ChipSelect = SPI_CS_0;     
-    
+    hspi0.Init.ManualCS = SPI_MANUALCS_OFF;
+    hspi0.Init.ChipSelect = SPI_CS_0;
 
     if (HAL_SPI_Init(&hspi0) != HAL_OK)
     {
