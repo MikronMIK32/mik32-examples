@@ -33,6 +33,7 @@ int main()
         /* Начало передачи в ручном режиме управления CS */
         if (hspi0.Init.ManualCS == SPI_MANUALCS_ON)
         {
+            __HAL_SPI_ENABLE(&hspi0);
             HAL_SPI_CS_Enable(&hspi0, SPI_CS_0);
         }
 
@@ -48,6 +49,7 @@ int main()
         if (hspi0.Init.ManualCS == SPI_MANUALCS_ON)
         {
             HAL_SPI_CS_Disable(&hspi0);
+            __HAL_SPI_DISABLE(&hspi0);
         }
 
         /* Вывод принятый данных и обнуление массива master_input */
@@ -91,7 +93,7 @@ static void SPI0_Init(void)
 
     /* Настройки */
     hspi0.Init.CLKPhase = SPI_PHASE_ON;
-    hspi0.Init.CLKPolarity = SPI_POLARITY_LOW;
+    hspi0.Init.CLKPolarity = SPI_POLARITY_HIGH;
     hspi0.Init.ThresholdTX = 4;
 
     /* Настройки для ведущего */
