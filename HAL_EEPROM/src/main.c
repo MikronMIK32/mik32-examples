@@ -5,10 +5,8 @@
 #include "xprintf.h"
 
 /*
- * Данный пример демонстрирует работу с GPIO и PAD_CONFIG.
- * В примере настраивается вывод, который подключенный к светодиоду, в режим GPIO.
- *
- * Плата выбирается ниже в #define
+ * Пример демонстрирует стирание, запись и чтение EEPROM
+ * с использованием HAL библиотеки.
  */
 
 
@@ -87,6 +85,8 @@ int main()
 
     int result2 = 0;
 
+    HAL_EEPROM_SetMode(&heeprom, HAL_EEPROM_MODE_THREE_STAGE);
+
     xprintf("Erasing Odd...\n");
     HAL_EEPROM_Erase(&heeprom, 0, EEPROM_PAGE_WORDS, HAL_EEPROM_WRITE_ODD, EEPROM_OP_TIMEOUT);
 
@@ -136,6 +136,8 @@ int main()
 
         HAL_GPIO_TogglePin(STATUS_LED_PORT, STATUS_LED_PIN);
     }
+
+    HAL_EEPROM_SetMode(&heeprom, HAL_EEPROM_MODE_TWO_STAGE);
 
     if (result2)
     {
