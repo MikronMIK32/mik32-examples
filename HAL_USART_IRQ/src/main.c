@@ -67,7 +67,7 @@ int main()
 
         /* Задержка */
         //for (volatile uint32_t i=0; i<1000000; i++);
-        HAL_DelayMs(1000);
+        HAL_DelayMs(100);
 
         /* Запретить прерывания по передаче данных */
         HAL_USART_TXC_DisableInterrupt(&husart0);
