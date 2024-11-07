@@ -99,7 +99,7 @@ static void Timer32_1_Init(void)
     HAL_Timer32_Init(&htimer32_1);
 
     htimer32_channel0.TimerInstance = htimer32_1.Instance;
-    htimer32_channel0.ChannelIndex = TIMER32_CHANNEL_0;
+    htimer32_channel0.ChannelIndex = TIMER32_CHANNEL_1;
     htimer32_channel0.PWM_Invert = TIMER32_CHANNEL_NON_INVERTED_PWM;
     htimer32_channel0.Mode = TIMER32_CHANNEL_MODE_PWM;
     htimer32_channel0.CaptureEdge = TIMER32_CHANNEL_CAPTUREEDGE_RISING;
