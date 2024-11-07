@@ -5,7 +5,7 @@
 #include "stdlib.h"
 
 TIMER32_HandleTypeDef htimer32_1;
-TIMER32_CHANNEL_HandleTypeDef htimer32_channel0;
+TIMER32_CHANNEL_HandleTypeDef htimer32_channel1;
 
 void SystemClock_Config(void);
 static void Timer32_1_Init(void);
@@ -13,12 +13,14 @@ void GPIO_Init();
 
 /*
  * В данном примере демонстрируется работа таймера32.
- * Нулевой канал таймера используется в режиме ШИМ. На Port0_0 генерирует периодичный сигнал (ШИМ)
+ * Нулевой канал таймера используется в режиме ШИМ. На Port0_1 генерирует периодичный сигнал (ШИМ)
  * с заполнением 50 %, частота которого задается верхним пределом таймера. Таймер считает от частоты
  * системной шины, поэтому для установки частоты нужно передать по UART0 значение: 
  * top = (частота основного генератора) / (задаваемая частота).
  * 
  * Например, для частоты 100кГц следует отправить "t320\n".
+ * 
+ * ШИМ работает с каналом 1 2 3 4 
  */
 
 int main()
@@ -34,7 +36,7 @@ int main()
 
     xprintf("UART init\n");
 
-    HAL_Timer32_Channel_Enable(&htimer32_channel0);
+    HAL_Timer32_Channel_Enable(&htimer32_channel1);
     HAL_Timer32_Value_Clear(&htimer32_1);
     HAL_Timer32_Start(&htimer32_1);
 
@@ -62,7 +64,7 @@ int main()
         {
             xprintf("top = %d\n", top);
             HAL_Timer32_Top_Set(&htimer32_1, top);
-            HAL_Timer32_Channel_OCR_Set(&htimer32_channel0, top >> 1);
+            HAL_Timer32_Channel_OCR_Set(&htimer32_channel1, top >> 1);
             HAL_Timer32_Value_Clear(&htimer32_1);
         }
     }
@@ -98,14 +100,14 @@ static void Timer32_1_Init(void)
     htimer32_1.CountMode = TIMER32_COUNTMODE_FORWARD;
     HAL_Timer32_Init(&htimer32_1);
 
-    htimer32_channel0.TimerInstance = htimer32_1.Instance;
-    htimer32_channel0.ChannelIndex = TIMER32_CHANNEL_1;
-    htimer32_channel0.PWM_Invert = TIMER32_CHANNEL_NON_INVERTED_PWM;
-    htimer32_channel0.Mode = TIMER32_CHANNEL_MODE_PWM;
-    htimer32_channel0.CaptureEdge = TIMER32_CHANNEL_CAPTUREEDGE_RISING;
-    htimer32_channel0.OCR = 7544 >> 1;
-    htimer32_channel0.Noise = TIMER32_CHANNEL_FILTER_OFF;
-    HAL_Timer32_Channel_Init(&htimer32_channel0);
+    htimer32_channel1.TimerInstance = htimer32_1.Instance;
+    htimer32_channel1.ChannelIndex = TIMER32_CHANNEL_1;
+    htimer32_channel1.PWM_Invert = TIMER32_CHANNEL_NON_INVERTED_PWM;
+    htimer32_channel1.Mode = TIMER32_CHANNEL_MODE_PWM;
+    htimer32_channel1.CaptureEdge = TIMER32_CHANNEL_CAPTUREEDGE_RISING;
+    htimer32_channel1.OCR = 7544 >> 1;
+    htimer32_channel1.Noise = TIMER32_CHANNEL_FILTER_OFF;
+    HAL_Timer32_Channel_Init(&htimer32_channel1);
 }
 
 void GPIO_Init()
