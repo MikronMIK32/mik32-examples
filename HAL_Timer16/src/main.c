@@ -4,9 +4,8 @@
 
 /*
  * Данный пример демонстрирует работу с Timer16.
- * Таймер тактируется и считает от внутреннего источника (sys_clk - системная частота) и запускается в непрерывном режиме.
- * Значения счетчика периодически выводятся по UART0. На выводе PORT0_10 генерируется ШИМ сигнал. 
- * Скорость последовательного порта 1000000 бод
+ * Таймер тактируется и считает в непрерывном режиме от внутреннего источника (sys_clk - системная частота).
+ * Значения счетчика периодически выводятся по UART0. На выводе PORT0_10 генерируется ШИМ сигнал.
  */
 
 Timer16_HandleTypeDef htimer16_1;
@@ -28,37 +27,33 @@ int main()
 
     Timer16_1_Init();
 
-    /* Задать значение для сравнения */
-    // HAL_Timer16_SetCMP(&htimer16_1, 0xFFFF/2);
-
-    /* Запуск таймера в одиночном или продолжительном режиме */
-    HAL_Timer16_Counter_Start(&htimer16_1, 0xFFFF);
+    /* Запуск таймера в продолжительном режиме */
+    // HAL_Timer16_Counter_Start(&htimer16_1, 0xFFFF);
 
     /********************************Генерация волновой формы********************************/
-    // HAL_Timer16_StartPWM(&htimer16_1, 0xFFFF, 0xFFFF/3);
-    // HAL_Timer16_StartOneShot(&htimer16_1, 0xFFFF, 0xFFFF/2);
-    // HAL_Timer16_StartSetOnes(&htimer16_1, 0xFFFF, 0xFFFF/2);
+    HAL_Timer16_StartPWM(&htimer16_1, 0xFFFF, 0xFFFF / 2);
+    // HAL_Timer16_StartOneShot(&htimer16_1, 0xFFFF, 0xFFFF / 2);
+    // HAL_Timer16_StartSetOnes(&htimer16_1, 0xFFFF, 0xFFFF / 2);
     /****************************************************************************************/
 
-    /* Запуск таймера в режиме энкодера */
-    // HAL_Timer16_Encoder_Start(&htimer16_1, 0xFFFF);
-
-    /* Ожидание флага триггера */
-    // HAL_Timer16_WaitTrigger(&htimer16_1);
-
+    uint16_t lastCounterValue = -1;
+    uint16_t counterValue = 0;
     while (1)
     {
-        /* Очистка флага триггера */
-        // HAL_Timer16_ClearTriggerFlag(&htimer16_1);
+        counterValue = HAL_Timer16_GetCounterValue(&htimer16_1);
 
-        /* Вывод значения счетчика */
-        xprintf("Counter = %d\n", HAL_Timer16_GetCounterValue(&htimer16_1));
+        if (counterValue != lastCounterValue)
+        {
+            /* Вывод значения счетчика */
+            xprintf("CNT = %d\n", HAL_Timer16_GetCounterValue(&htimer16_1));
+            lastCounterValue = counterValue;
+        }
 
         /* Ожидание совпадения с CMP */
-        if(HAL_Timer16_CheckCMP(&htimer16_1))
+        if (__HAL_TIMER16_GET_FLAG(&htimer16_1, TIMER16_FLAG_CMPM))
         {
-            HAL_Timer16_ClearInterruptMask(&htimer16_1, TIMER16_ISR_CMP_MATCH_M);
             xprintf("CMP\n");
+            __HAL_TIMER16_CLEAR_FLAG(&htimer16_1, TIMER16_FLAG_CMPM);
         }
     }
 }
@@ -81,7 +76,6 @@ void SystemClock_Config(void)
     HAL_PCC_Config(&PCC_OscInit);
 }
 
-
 static void Timer16_1_Init(void)
 {
     htimer16_1.Instance = TIMER16_1;
@@ -101,11 +95,11 @@ static void Timer16_1_Init(void)
     htimer16_1.Trigger.TimeOut = TIMER16_TIMEOUT_DISABLE;                /* Разрешить повторное срабатывание триггера */
 
     /* Настройки фильтра */
-    htimer16_1.Filter.ExternalClock = TIMER16_FILTER_8CLOCK;
+    htimer16_1.Filter.ExternalClock = TIMER16_FILTER_NONE;
     htimer16_1.Filter.Trigger = TIMER16_FILTER_NONE;
 
     /* Настройка режима энкодера */
-    htimer16_1.EncoderMode = TIMER16_ENCODER_ENABLE;
+    htimer16_1.EncoderMode = TIMER16_ENCODER_DISABLE;
 
     htimer16_1.Waveform.Enable = TIMER16_WAVEFORM_GENERATION_ENABLE;
     htimer16_1.Waveform.Polarity = TIMER16_WAVEFORM_POLARITY_NONINVERTED;
@@ -119,7 +113,6 @@ static void GPIO_Init()
     __HAL_PCC_GPIO_1_CLK_ENABLE();
     __HAL_PCC_GPIO_2_CLK_ENABLE();
 }
-
 
 static void USART_Init()
 {
@@ -153,13 +146,13 @@ static void USART_Init()
     husart0.Interrupt.rxneie = Disable;
     husart0.Interrupt.tcie = Disable;
     husart0.Interrupt.txeie = Disable;
-    husart0.Modem.rts = Disable; //out
-    husart0.Modem.cts = Disable; //in
-    husart0.Modem.dtr = Disable; //out
-    husart0.Modem.dcd = Disable; //in
-    husart0.Modem.dsr = Disable; //in
-    husart0.Modem.ri = Disable;  //in
-    husart0.Modem.ddis = Disable;//out
+    husart0.Modem.rts = Disable;  // out
+    husart0.Modem.cts = Disable;  // in
+    husart0.Modem.dtr = Disable;  // out
+    husart0.Modem.dcd = Disable;  // in
+    husart0.Modem.dsr = Disable;  // in
+    husart0.Modem.ri = Disable;   // in
+    husart0.Modem.ddis = Disable; // out
     husart0.baudrate = 9600;
     HAL_USART_Init(&husart0);
 }
