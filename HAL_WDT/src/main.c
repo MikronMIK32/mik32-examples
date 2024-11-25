@@ -20,8 +20,8 @@ int main()
 {
     SystemClock_Config();
 
-    WDT_Init();
     UART_Init(UART_0, 3333, UART_CONTROL1_TE_M | UART_CONTROL1_M_8BIT_M, 0, 0);
+    WDT_Init();
     xprintf("Start\n");
 
     /* Запуск таймера WDT */
@@ -63,6 +63,6 @@ void WDT_Init()
     hwdt.Init.ReloadMs = 1000;
     if (HAL_WDT_Init(&hwdt, WDT_TIMEOUT_DEFAULT) != HAL_OK)
     {
-        xprintf("hAL_WDT_Init\n");
+        xprintf("ERROR: HAL_WDT_Init\n");
     }
 }
