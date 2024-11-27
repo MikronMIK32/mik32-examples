@@ -1,7 +1,6 @@
 #include "mik32_hal.h"
 #include "mik32_hal_timer32.h"
 #include "mik32_hal_dma.h"
-#include "mik32_hal_dac.h"
 #include "mik32_hal_usart.h"
 #include "mik32_hal_scr1_timer.h"
 

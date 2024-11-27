@@ -55,10 +55,13 @@ static void DAC_Init(void)
 {
     hdac1.Instance = ANALOG_REG;
 
-    hdac1.Instance_dac = HAL_DAC1;
-    hdac1.Init.DIV = 0;
-    hdac1.Init.EXTRef = DAC_EXTREF_OFF;    /* Выбор источника опорного напряжения: «1» - внешний; «0» - встроенный */
-    hdac1.Init.EXTClb = DAC_EXTCLB_DACREF; /* Выбор источника внешнего опорного напряжения: «1» - внешний вывод; «0» - настраиваемый ОИН */
-
+    hdac1.Instance_dac = HAL_DAC0;
+    /* Выбор делителя частоты тактирования ЦАП, определяется как F_ЦАП=F_IN/(DIV+1) */
+    hdac1.Init.DIV = 31;    // 1 МГц
+    /* Выбор источника опорного напряжения: «1» - внешний; «0» - встроенный */                 
+    hdac1.Init.EXTRef = DAC_EXTREF_OFF;
+    /* Выбор источника внешнего опорного напряжения: «1» - внешний вывод; «0» - настраиваемый ОИН */
+    hdac1.Init.EXTClb = DAC_EXTCLB_DACREF;
+    
     HAL_DAC_Init(&hdac1);
 }
