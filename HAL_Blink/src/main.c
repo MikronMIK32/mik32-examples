@@ -4,13 +4,7 @@
 /*
  * Данный пример демонстрирует работу с GPIO и PAD_CONFIG.
  * В примере настраивается вывод, который подключенный к светодиоду, в режим GPIO.
- *
- * Плата выбирается ниже в #define
  */
-
-/* Тип платы */
-#define BOARD_LITE
-// #define BOARD_DIP
 
 void SystemClock_Config();
 void GPIO_Init();
@@ -23,14 +17,9 @@ int main()
 
     while (1)
     {
-#ifdef BOARD_LITE
-        HAL_GPIO_TogglePin(GPIO_2, GPIO_PIN_7);
-#endif
-
-#ifdef BOARD_DIP
         HAL_GPIO_TogglePin(GPIO_0, GPIO_PIN_3);
         HAL_GPIO_TogglePin(GPIO_1, GPIO_PIN_3);
-#endif
+
         HAL_DelayMs(500);
     }
 }
@@ -59,23 +48,11 @@ void GPIO_Init()
 
     __HAL_PCC_GPIO_0_CLK_ENABLE();
     __HAL_PCC_GPIO_1_CLK_ENABLE();
-    __HAL_PCC_GPIO_2_CLK_ENABLE();
-    __HAL_PCC_GPIO_IRQ_CLK_ENABLE();
 
-#ifdef BOARD_LITE
-    GPIO_InitStruct.Pin = GPIO_PIN_7;
-    GPIO_InitStruct.Mode = HAL_GPIO_MODE_GPIO_OUTPUT;
-    GPIO_InitStruct.Pull = HAL_GPIO_PULL_NONE;
-    HAL_GPIO_Init(GPIO_2, &GPIO_InitStruct);
-#endif
-
-#ifdef BOARD_DIP
     GPIO_InitStruct.Pin = GPIO_PIN_3;
     GPIO_InitStruct.Mode = HAL_GPIO_MODE_GPIO_OUTPUT;
     GPIO_InitStruct.Pull = HAL_GPIO_PULL_NONE;
+    
     HAL_GPIO_Init(GPIO_0, &GPIO_InitStruct);
-
-    GPIO_InitStruct.Pin = GPIO_PIN_3;
     HAL_GPIO_Init(GPIO_1, &GPIO_InitStruct);
-#endif
 }
